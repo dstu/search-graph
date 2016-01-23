@@ -20,6 +20,9 @@ pub struct MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     id: StateId,
 }
 
+/// Creates a new `MutNode` for the given graph and gamestate. This method is
+/// not exported by the crate because it exposes implementation details. It is
+/// used to provide a public cross-module interface for creating new `MutNode`s.
 pub fn make_mut_node<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: StateId) -> MutNode<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         MutNode { graph: graph, id: id, }
@@ -34,54 +37,78 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
         self.graph.get_vertex_mut(self.id)
     }
 
+    /// Returns an immutable ID that is guaranteed to identify this vertex
+    /// uniquely within its graph. This ID may change when the graph is mutated.
     pub fn get_id(&self) -> usize {
         self.id.as_usize()
     }
 
+    /// Returns the data at this vertex.
     pub fn get_data<'s>(&'s self) -> &'s S {
         &self.vertex().data
     }
 
+    /// Returns the data at this vertex, mutably.
     pub fn get_data_mut<'s>(&'s mut self) -> &'s mut S {
         &mut self.vertex_mut().data
     }
 
+    /// Returns true iff this vertex has no outgoing edges (regardless of
+    /// whether they are expanded).
     pub fn is_leaf(&self) -> bool {
         self.vertex().children.is_empty()
     }
 
+    /// Returns true iff this vertex has no incoming edges.
     pub fn is_root(&self) -> bool {
         self.vertex().parents.is_empty()
     }
 
+    /// Returns a traversible list of outgoing edges. Its lifetime will be
+    /// limited to a local borrow of `self`.
     pub fn get_child_list<'s>(&'s self) -> ChildList<'s, T, S, A> {
         make_child_list(self.graph, self.id)
     }
 
+    /// Returns a traversible list of outgoing edges. Its lifetime will be
+    /// limited to a local borrow of `self`.
     pub fn get_child_list_mut<'s>(&'s mut self) -> MutChildList<'s, T, S, A> {
         MutChildList { graph: self.graph, id: self.id, }
     }
 
+    /// Returns a traversible list of outgoing edges. `self` is consumed, and
+    /// the return value's lifetime will be the same as that of `self`.
     pub fn to_child_list(self) -> MutChildList<'a, T, S, A> {
         MutChildList { graph: self.graph, id: self.id, }
     }
 
+    /// Returns a traversible list of incoming edges. Its lifetime will be
+    /// limited to a local borrow of `self`.
     pub fn get_parent_list<'s>(&'s self) -> ParentList<'s, T, S, A> {
         make_parent_list(self.graph, self.id)
     }
 
+    /// Returns a traversible list of incoming edges. Its lifetime will be
+    /// limited to a local borrow of `self`.
     pub fn get_parent_list_mut<'s>(&'s mut self) -> MutParentList<'s, T, S, A> {
         MutParentList { graph: self.graph, id: self.id, }
     }
 
+    /// Returns a traversible list of outgoing edges. `self` is consumed, and
+    /// the return value's lifetime will be the same as that of `self`.
     pub fn to_parent_list(self) -> MutParentList<'a, T, S, A> {
         MutParentList { graph: self.graph, id: self.id, }
     }
 
+    /// Returns a handle that can be used to add children (outgoing edges) to
+    /// this vertex. Its lifetime will be limited to a local borrow of `self`.
     pub fn get_child_adder<'s>(&'s mut self) -> EdgeAdder<'s, T, S, A> {
         EdgeAdder { graph: self.graph, id: self.id, }
     }
 
+    /// Returns a handle that can be used to add children (outgoing edges) to
+    /// this vertex. `self` is consumed, and the return value's lifetime will be
+    /// the same as that of `self`.
     pub fn to_child_adder(self) -> EdgeAdder<'a, T, S, A> {
         EdgeAdder { graph: self.graph, id: self.id, }
     }
@@ -98,35 +125,50 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
         self.graph.get_vertex(self.id)
     }
 
+    /// Returns the number of outgoing eges.
     pub fn len(&self) -> usize {
         self.vertex().children.len()
     }
+
+    /// Returns true iff there are no outgoing edges.
     pub fn is_empty(&self) -> bool {
         self.vertex().children.is_empty()
     }
 
+    /// Returns an edge handle for the `i`th edge.
     pub fn get_edge<'s>(&'s self, i: usize) -> Edge<'s, T, S, A> {
         make_edge(self.graph, self.vertex().children[i])
     }
-
+    
+    /// Returns an edge handle for the `i`th edge. Its lifetime will be limited
+    /// to a local borrow of `self`.
     pub fn get_edge_mut<'s>(&'s mut self, i: usize) -> MutEdge<'s, T, S, A> {
         let id = self.vertex().children[i];
         MutEdge { graph: self.graph, id: id, }
     }
 
+    /// Returns an edge handle for the `i`th `self` is consumed, and the return
+    /// value's lifetime will be the same as that of `self`.
     pub fn to_edge(self, i: usize) -> MutEdge<'a, T, S, A> {
         let id = self.vertex().children[i];
         MutEdge { graph: self.graph, id: id, }
     }
 
+    /// Returns a node handle for the vertex these edges originate from. Its
+    /// lifetime will be limited to a local borrow of `self`.
     pub fn get_source_node<'s>(&'s self) -> Node<'s, T, S, A> {
         make_node(self.graph, self.id)
     }
 
+    /// Returns a mutable node handle for the vertex these edges originate
+    /// from. Its lifetime will be limited to a local borrow of `self`.
     pub fn get_source_node_mut<'s>(&'s mut self) -> MutNode<'s, T, S, A> {
         MutNode { graph: self.graph, id: self.id, }
     }
 
+    /// Returns a mutable node handle for the vertex these edges originate
+    /// from. `self` is consumed, and the return value's lifetime will be the
+    /// same as that of `self`.
     pub fn to_source_node(self) -> MutNode<'a, T, S, A> {
         MutNode { graph: self.graph, id: self.id, }
     }
@@ -143,23 +185,31 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
         self.graph.get_vertex(self.id)
     }
 
+    /// Returns the number of incoming edges.
     pub fn len(&self) -> usize {
         self.vertex().parents.len()
     }
 
+    /// Returns true iff there are no incoming edges.
     pub fn is_empty(&self) -> bool {
         self.vertex().parents.is_empty()
     }
 
+    /// Returns a handle to the `i`th edge. Its lifetime will be limited to a
+    /// local borrow of `self`.
     pub fn get_edge<'s>(&'s self, i: usize) -> Edge<'s, T, S, A> {
         make_edge(self.graph, self.vertex().parents[i])
     }
 
+    /// Returns a mutable handle to the `i`th edge. Its lifetime will be limited
+    /// to a local borrow of `self`.
     pub fn get_edge_mut<'s>(&'s mut self, i: usize) -> MutEdge<'s, T, S, A> {
         let id = self.vertex().parents[i];
         MutEdge { graph: self.graph, id: id, }
     }
 
+    /// Returns a mutable handle to the `i`th edge. `self` is consumed, and the
+    /// return value's lifetime will be the same as that of `self`.
     pub fn to_edge(self, i: usize) -> MutEdge<'a, T, S, A> {
         let id = self.vertex().parents[i];
         MutEdge { graph: self.graph, id: id, }
@@ -189,18 +239,25 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
         self.graph.get_arc_mut(self.id)
     }
 
+    /// Returns an immutable ID that is guaranteed to identify this vertex
+    /// uniquely within its graph. This ID may change when the graph is mutated.
     pub fn get_id(&self) -> usize {
         self.id.as_usize()
     }
 
+    /// Returns the data at this edge.
     pub fn get_data(&self) -> &A {
         &self.arc().data
     }
 
+    /// Returns the data at this edge, mutably.
     pub fn get_data_mut(&mut self) -> &mut A {
         &mut self.arc_mut().data
     }
 
+    /// Returns the target of this edge. If the edge is unexpanded, no data will
+    /// be available. If it is expanded, a node handle will be available, with
+    /// its lifetime limited to a local borrow of `self`.
     pub fn get_target<'s>(&'s self) -> Target<Node<'s, T, S, A>, ()> {
         match self.arc().target {
             Target::Cycle(id) => Target::Cycle(make_node(self.graph, id)),
@@ -210,6 +267,10 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
         }
     }
 
+    /// Returns the target of this edge. If the edge is unexpanded, an
+    /// `EdgeExpander` will be provided. If it is expanded, a mutable node
+    /// handle will be available. In both cases, lifetimes will be limited to a
+    /// local borrow of `self`.
     pub fn get_target_mut<'s>(&'s mut self) -> Target<MutNode<'s, T, S, A>, EdgeExpander<'s, T, S, A>> {
         match self.arc().target {
             Target::Cycle(id) => Target::Cycle(MutNode { graph: self.graph, id: id, }),
@@ -219,6 +280,10 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
         }
     }
 
+    /// Returns the target of this edge. If the edge is unexpanded, an
+    /// `EdgeExpander` will be provided. If it is expanded, a mutable node
+    /// handle will be available. In both cases `self` is consumed, and the
+    /// return value's lifetime will be the same as that of `self`.
     pub fn to_target(self) -> Target<MutNode<'a, T, S, A>, EdgeExpander<'a, T, S, A>> {
         match self.arc().target {
             Target::Cycle(id) => Target::Cycle(MutNode { graph: self.graph, id: id, }),
@@ -228,21 +293,34 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
         }
     }
 
+    /// Returns a node handle for the source of this edge. Its lifetime will be
+    /// limited to a local borrow of `self`.
     pub fn get_source<'s>(&'s self) -> Node<'s, T, S, A> {
         make_node(self.graph, self.arc().source)
     }
 
+    /// Returns a mutable node handle for the source of this edge. Its lifetime
+    /// will be limited to a local borrow of `self`.
     pub fn get_source_mut<'s>(&'s mut self) -> MutNode<'s, T, S, A> {
         let id = self.arc().source;
         MutNode { graph: self.graph, id: id, }
     }
 
+    /// Returns a mutable node handle for the source of this edge. `self` is
+    /// consumed, and the return value's lifetime will be equal to that of
+    /// `self`.
     pub fn to_source(self) -> MutNode<'a, T, S, A> {
         let id = self.arc().source;
         MutNode { graph: self.graph, id: id, }
     }
 }
 
+/// Modifies graph topology by connecting an unexpanded edge to its target
+/// vertex.
+///
+/// An unexpanded edge is one with known source but unknown target. Expanding an
+/// edge may connect it to an existing vertex (in which case `O(|V|)` cycle
+/// detection is done) or to a new one.
 pub struct EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
     id: ArcId,
@@ -257,18 +335,32 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
         self.graph.get_arc_mut(self.id)
     }
 
+    /// Returns an edge handle for the edge that this expander would expand. Its
+    /// lifetime will be limited to a local borrow of `self`.
     pub fn get_edge<'s>(&'s self) -> Edge<'s, T, S, A> {
         make_edge(self.graph, self.id)
     }
 
+    /// Returns a mutable edge handle for the edge that this expander would
+    /// expand. Its lifetime will be limited to a local borrow of `self`.
     pub fn get_edge_mut<'s>(&'s mut self) -> MutEdge<'s, T, S, A> {
         MutEdge { graph: self.graph, id: self.id, }
     }
 
+    /// Returns a mutable edge handle for the edge that this expander would
+    /// expand. `self` is consumed, and the return value's lifetime will be the
+    /// same as that of `self`.
     pub fn to_edge(self) -> MutEdge<'a, T, S, A> {
         MutEdge { graph: self.graph, id: self.id, }
     }
 
+    /// Expands this expander's edge, by connecting to the vertex associated
+    /// with the game state `state`.
+    ///
+    /// If `state` corresponds to an extant vertex, cycle detection will be run,
+    /// and the resulting edge may resolve to a `Target::Cycle`. Otherwise, a
+    /// new vertex will be added for `state`, and the vertex data produced by
+    /// `g` will be assigned to it.
     pub fn expand<G>(mut self, state: T, g: G) -> MutEdge<'a, T, S, A> where G: FnOnce() -> S {
         match self.graph.state_ids.get_or_insert(state) {
             NamespaceInsertion::Present(target_id) => {
@@ -287,18 +379,28 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     }
 }
 
+/// Modifies graph topology by adding an unexpanded edge to a vertex's children.
+///
+/// An unexpanded edge is one with known source but unknown target. Unexpanded
+/// edges may be expanded by resolving their target (which will be a
+/// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.
 pub struct EdgeAdder<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
     id: StateId,
 }
 
 impl<'a, T, S, A> EdgeAdder<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    /// Appends an edge to the vertex's children and returns a mutable handle to
+    /// it. Its lifetime will be limited to a local borrow of `self`.
     pub fn add<'s>(&'s mut self, data: A) -> MutEdge<'s, T, S, A> {
         let arc_id = ArcId(self.graph.arcs.len());
         self.graph.add_arc(data, self.id, Target::Unexpanded(()));
         MutEdge { graph: self.graph, id: arc_id, }
     }
 
+    /// Appends an edge to the vertex's' children and returns a mutable handle
+    /// to it. `self` will be consumed, and the return value's lifetime will be
+    /// equal to that of `self`.
     pub fn to_add(mut self, data: A) -> MutEdge<'a, T, S, A> {
         let arc_id = ArcId(self.graph.arcs.len());
         self.graph.add_arc(data, self.id, Target::Unexpanded(()));

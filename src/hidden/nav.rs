@@ -12,6 +12,9 @@ pub struct Node<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     id: StateId,
 }
 
+/// Creates a new `Node` for the given graph and gamestate. This method is not
+/// exported by the crate because it exposes implementation details. It is used
+/// to provide a public cross-module interface for creating new `Node`s.
 pub fn make_node<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: StateId) -> Node<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         Node { graph: graph, id: id, }
@@ -65,6 +68,10 @@ pub struct ChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a 
     id: StateId,
 }
 
+/// Creates a new `ChildList` for the given graph and gamestate. This method is
+/// not exported by the crate because it exposes implementation details. It is
+/// used to provide a public cross-module interface for creating new
+/// `ChildList`s.
 pub fn make_child_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: StateId) -> ChildList<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         ChildList { graph: graph, id: id, }
@@ -102,6 +109,10 @@ pub struct ParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a
     id: StateId,
 }
 
+/// Creates a new `ParentList` for the given graph and gamestate. This method is
+/// not exported by the crate because it exposes implementation details. It is
+/// used to provide a public cross-module interface for creating new
+/// `ParentList`s.
 pub fn make_parent_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: StateId) -> ParentList<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         ParentList { graph: graph, id: id, }
@@ -142,6 +153,9 @@ pub struct Edge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     id: ArcId,
 }
 
+/// Creates a new `Edge` for the given graph and gamestate. This method is not
+/// exported by the crate because it exposes implementation details. It is used
+/// to provide a public cross-module interface for creating new `Edge`s.
 pub fn make_edge<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: ArcId) -> Edge<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         Edge { graph: graph, id: id, }
@@ -169,7 +183,8 @@ impl<'a, T, S, A> Edge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: '
         Node { graph: self.graph, id: self.arc().source, }
     }
 
-    /// Returns a node handle for this edge's target vertex.
+    /// Returns the target of this edge. If the edge is unexpanded, no data will
+    /// be available. If it is expanded, a node handle will be available.
     pub fn get_target(&self) -> Target<Node<'a, T, S, A>, ()> {
         match self.arc().target {
             Target::Cycle(id) => Target::Cycle(Node { graph: self.graph, id: id, }),
