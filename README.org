@@ -1,0 +1,38 @@
+* Overview
+
+This package provide a rollout-based, DAG-like data structure. Its intended use
+is building game state graphs for general game-playing or similar AI
+tasks.
+
+Vertices correspond to game states. They are addressed by unique game states
+(which may be de-duplicated as if by transposition table by implementing
+=std::hash::Hash= and =std::cmp::Eq= appropriately for your game state type).
+
+Edges correspond to game-modifying moves. They are bidirectional, so paths may
+be traced up and down the graph.
+
+The structure is /rollout-based/ in that edges are expanded lazily. This should
+make it easy to implement planning algorithms like A* and Monte Carlo tree
+search on top of the DAG structure.
+
+It is /DAG-like/ in that it nominally maintains a cycle-free topology by
+checking for cycles at edge expansion time and noting which edges would create
+cycles when they are expanded. Such edges are added to the graph as half-edges,
+which are only present in one direction. Unfortunately, checking for cycles
+leads to =O(|V|)= running time when adding vertices.
+
+At present, the graph topology may be grown but not pruned. Vertex and edge
+deletion may be supported in a future version.
+
+* Copyright
+
+Copyright 2015-2016, Donald S. Black.
+
+Licensed under the Apache License, Version 2.0 (the “License”); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0.
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
