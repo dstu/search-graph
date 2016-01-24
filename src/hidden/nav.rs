@@ -1,9 +1,10 @@
 use std::hash::Hash;
+use std::iter::Iterator;
 
 use ::{Graph, Target};
 use ::hidden::base::{Arc, ArcId, StateId, Vertex};
 
-/// Immutable handle to a graph vertex, called a "node handle."
+/// Immutable handle to a graph vertex ("node handle").
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's
 /// incoming and outgoing edges.
@@ -101,7 +102,50 @@ impl<'a, T, S, A> ChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
     pub fn get_edge(&self, i: usize) -> Edge<'a, T, S, A> {
         Edge { graph: self.graph, id: self.vertex().children[i], }
     }
+
+    /// Returns an iterator over child edges.
+    pub fn iter(&self) -> ChildListIter<'a, T, S, A> {
+        ChildListIter { graph: self.graph, id: self.id, i: 0, }
+    }
 }
+
+pub struct ChildListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    graph: &'a Graph<T, S, A>,
+    id: StateId,
+    i: usize,
+}
+
+impl <'a, T, S, A> ChildListIter<'a, T, S, A>
+    where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+        fn children(&self) -> &'a [ArcId] {
+            &self.graph.get_vertex(self.id).children
+        }
+    }
+
+impl<'a, T, S, A> Iterator for ChildListIter<'a, T, S, A>
+    where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+        type Item = Edge<'a, T, S, A>;
+
+        fn next(&mut self) -> Option<Edge<'a, T, S, A>> {
+            let cs = self.children();
+            if self.i >= cs.len() {
+                None
+            } else {
+                let e = make_edge(self.graph, cs[self.i]);
+                self.i += 1;
+                Some(e)
+            }
+        }
+
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            let l = self.children().len();
+            if l <= self.i {
+                (0, Some(0))
+            } else {
+                (l - self.i, Some(l - self.i))
+            }
+        }
+    }
 
 /// A traversible list of a vertex's incoming edges.
 pub struct ParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
@@ -142,9 +186,49 @@ impl<'a, T, S, A> ParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a
     pub fn get_edge(&self, i: usize) -> Edge<'a, T, S, A> {
         Edge { graph: self.graph, id: self.vertex().parents[i] }
     }
+
+    /// Returns an iterator over parent edges.
+    pub fn iter(&self) -> ParentListIter<'a, T, S, A> {
+        ParentListIter { graph: self.graph, id: self.id, i: 0, }
+    }
 }
 
-/// Immutable handle to a graph edge, called an "edge handle."
+pub struct ParentListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    graph: &'a Graph<T, S, A>,
+    id: StateId,
+    i: usize,
+}
+
+impl<'a, T, S, A> ParentListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    fn parents(&self) -> &'a [ArcId] {
+        &self.graph.get_vertex(self.id).parents
+    }
+}
+
+impl<'a, T, S, A> Iterator for ParentListIter<'a, T, S, A>
+    where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+        type Item = Edge<'a, T, S, A>;
+
+        fn next(&mut self) -> Option<Edge<'a, T, S, A>> {
+            let ps = self.parents();
+            if ps.len() <= self.i {
+                None
+            } else {
+                Some(make_edge(self.graph, ps[self.i]))
+            }
+        }
+
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            let l = self.parents().len();
+            if l <= self.i {
+                (0, Some(0))
+            } else {
+                (l - self.i, Some(l - self.i))
+            }
+        }
+    }
+
+/// Immutable handle to a graph edge ("edge handle").
 ///
 /// This zipper-like type enables traversal of a graph along the edge's source
 /// and target vertices.

@@ -4,10 +4,10 @@ use std::hash::Hash;
 
 use ::{Graph, Target};
 use ::hidden::base::*;
-use ::hidden::nav::{ChildList, Edge, Node, ParentList};
+use ::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
 
-/// Mutable handle to a graph vertex, called a "node handle."
+/// Mutable handle to a graph vertex ("node handle").
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's
 /// incoming and outgoing edges.
@@ -99,19 +99,6 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     pub fn to_parent_list(self) -> MutParentList<'a, T, S, A> {
         MutParentList { graph: self.graph, id: self.id, }
     }
-
-    /// Returns a handle that can be used to add children (outgoing edges) to
-    /// this vertex. Its lifetime will be limited to a local borrow of `self`.
-    pub fn get_child_adder<'s>(&'s mut self) -> EdgeAdder<'s, T, S, A> {
-        EdgeAdder { graph: self.graph, id: self.id, }
-    }
-
-    /// Returns a handle that can be used to add children (outgoing edges) to
-    /// this vertex. `self` is consumed, and the return value's lifetime will be
-    /// the same as that of `self`.
-    pub fn to_child_adder(self) -> EdgeAdder<'a, T, S, A> {
-        EdgeAdder { graph: self.graph, id: self.id, }
-    }
 }
 
 /// A traversible list of a vertex's outgoing edges.
@@ -172,6 +159,36 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     pub fn to_source_node(self) -> MutNode<'a, T, S, A> {
         MutNode { graph: self.graph, id: self.id, }
     }
+
+    /// Returns an iterator over child edges.
+    pub fn iter<'s>(&'s self) -> ChildListIter<'s, T, S, A> {
+        self.get_source_node().get_child_list().iter()
+    }
+
+    /// Appends an unexpanded edge to this list of children and returns a mutable handle to
+    /// it. Its lifetime will be limited to a local borrow of `self`.
+    ///
+    /// An unexpanded edge is one with known source but unknown target. Unexpanded
+    /// edges may be expanded by resolving their target (which will be a
+    /// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.
+    pub fn add_child<'s>(&'s mut self, data: A) -> MutEdge<'s, T, S, A> {
+        let arc_id = ArcId(self.graph.arcs.len());
+        self.graph.add_arc(data, self.id, Target::Unexpanded(()));
+        MutEdge { graph: self.graph, id: arc_id, }
+    }
+
+    /// Appends unexpanded an edge to the vertex's' children and returns a
+    /// mutable handle to it. `self` will be consumed, and the return value's
+    /// lifetime will be equal to that of `self`.
+    ///
+    /// An unexpanded edge is one with known source but unknown target. Unexpanded
+    /// edges may be expanded by resolving their target (which will be a
+    /// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.
+    pub fn to_add(mut self, data: A) -> MutEdge<'a, T, S, A> {
+        let arc_id = ArcId(self.graph.arcs.len());
+        self.graph.add_arc(data, self.id, Target::Unexpanded(()));
+        MutEdge { graph: self.graph, id: arc_id, }
+    }
 }
 
 /// A traversible list of a vertex's incoming edges.
@@ -195,6 +212,25 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
         self.vertex().parents.is_empty()
     }
 
+    /// Returns a node handle for the vertex these edges originate terminate
+    /// on. Its lifetime will be limited to a local borrow of `self`.
+    pub fn get_target_node<'s>(&'s self) -> Node<'s, T, S, A> {
+        make_node(self.graph, self.id)
+    }
+
+    /// Returns a mutable node handle for the vertex these edges terminate
+    /// on. Its lifetime will be limited to a local borrow of `self`.
+    pub fn get_target_node_mut<'s>(&'s mut self) -> MutNode<'s, T, S, A> {
+        MutNode { graph: self.graph, id: self.id, }
+    }
+
+    /// Returns a mutable node handle for the vertex these edges terminate
+    /// on. `self` is consumed, and the return value's lifetime will be the same
+    /// as that of `self`.
+    pub fn to_target_node(self) -> MutNode<'a, T, S, A> {
+        MutNode { graph: self.graph, id: self.id, }
+    }
+
     /// Returns a handle to the `i`th edge. Its lifetime will be limited to a
     /// local borrow of `self`.
     pub fn get_edge<'s>(&'s self, i: usize) -> Edge<'s, T, S, A> {
@@ -214,9 +250,14 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
         let id = self.vertex().parents[i];
         MutEdge { graph: self.graph, id: id, }
     }
+
+    /// Returns an iterator over parent edges.
+    pub fn iter<'s>(&'s self) -> ParentListIter<'s, T, S, A> {
+        self.get_target_node().get_parent_list().iter()
+    }
 }
 
-/// Mutable handle to a graph edge, called an "edge handle."
+/// Mutable handle to a graph edge ("edge handle").
 ///
 /// This zipper-like type enables traversal of a graph along the edge's source
 /// and target vertices.
@@ -376,34 +417,5 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
             }
         }
         MutEdge { graph: self.graph, id: self.id, }
-    }
-}
-
-/// Modifies graph topology by adding an unexpanded edge to a vertex's children.
-///
-/// An unexpanded edge is one with known source but unknown target. Unexpanded
-/// edges may be expanded by resolving their target (which will be a
-/// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.
-pub struct EdgeAdder<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    graph: &'a mut Graph<T, S, A>,
-    id: StateId,
-}
-
-impl<'a, T, S, A> EdgeAdder<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    /// Appends an edge to the vertex's children and returns a mutable handle to
-    /// it. Its lifetime will be limited to a local borrow of `self`.
-    pub fn add<'s>(&'s mut self, data: A) -> MutEdge<'s, T, S, A> {
-        let arc_id = ArcId(self.graph.arcs.len());
-        self.graph.add_arc(data, self.id, Target::Unexpanded(()));
-        MutEdge { graph: self.graph, id: arc_id, }
-    }
-
-    /// Appends an edge to the vertex's' children and returns a mutable handle
-    /// to it. `self` will be consumed, and the return value's lifetime will be
-    /// equal to that of `self`.
-    pub fn to_add(mut self, data: A) -> MutEdge<'a, T, S, A> {
-        let arc_id = ArcId(self.graph.arcs.len());
-        self.graph.add_arc(data, self.id, Target::Unexpanded(()));
-        MutEdge { graph: self.graph, id: arc_id, }
     }
 }
