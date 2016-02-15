@@ -425,7 +425,7 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// also be added, with initial data the value returned by `h`.
     ///
     /// Returns a node handle for the newly expanded edge's target.
-    pub fn expand_to_child<G, H>(self, state: T, g: G, h: H) -> MutNode<'a, T, S, A>
+    pub fn expand_to_target<G, H>(self, state: T, g: G, h: H) -> MutNode<'a, T, S, A>
         where G: FnOnce() -> S, H: FnOnce() -> A {
             let edge = self.expand_to_edge(state, g, h);
             match edge.to_target() {
