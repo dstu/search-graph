@@ -1,8 +1,7 @@
 * Overview
 
-This package provide a rollout-based, DAG-like data structure. Its intended use
-is building game state graphs for general game-playing or similar AI
-tasks.
+This package provide a rollout-based graphical data structure. Its intended use
+is building game state graphs for general game-playing or similar AI tasks.
 
 Vertices correspond to game states. They are addressed by unique game states
 (which may be de-duplicated as if by transposition table by implementing
@@ -13,13 +12,7 @@ be traced up and down the graph.
 
 The structure is /rollout-based/ in that edges are expanded lazily. This should
 make it easy to implement planning algorithms like A* and Monte Carlo tree
-search on top of the DAG structure.
-
-It is /DAG-like/ in that it nominally maintains a cycle-free topology by
-checking for cycles at edge expansion time and noting which edges would create
-cycles when they are expanded. Such edges are added to the graph as half-edges,
-which are only present in one direction. Unfortunately, checking for cycles
-leads to =O(|V|)= running time when adding vertices.
+search on top of the graph structure.
 
 At present, the graph topology may be grown but not pruned. Vertex and edge
 deletion may be supported in a future version.
