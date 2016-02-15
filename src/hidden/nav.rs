@@ -271,7 +271,6 @@ impl<'a, T, S, A> Edge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: '
     /// be available. If it is expanded, a node handle will be available.
     pub fn get_target(&self) -> Target<Node<'a, T, S, A>, ()> {
         match self.arc().target {
-            Target::Cycle(id) => Target::Cycle(Node { graph: self.graph, id: id, }),
             Target::Unexpanded(_) => Target::Unexpanded(()),
             Target::Expanded(id) => Target::Expanded(Node { graph: self.graph, id: id, }),
         }

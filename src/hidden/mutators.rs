@@ -301,7 +301,6 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// its lifetime limited to a local borrow of `self`.
     pub fn get_target<'s>(&'s self) -> Target<Node<'s, T, S, A>, ()> {
         match self.arc().target {
-            Target::Cycle(id) => Target::Cycle(make_node(self.graph, id)),
             Target::Unexpanded(_) => Target::Unexpanded(()),
             Target::Expanded(id) =>
                 Target::Expanded(make_node(self.graph, id)),
@@ -314,7 +313,6 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// local borrow of `self`.
     pub fn get_target_mut<'s>(&'s mut self) -> Target<MutNode<'s, T, S, A>, EdgeExpander<'s, T, S, A>> {
         match self.arc().target {
-            Target::Cycle(id) => Target::Cycle(MutNode { graph: self.graph, id: id, }),
             Target::Unexpanded(_) => Target::Unexpanded(EdgeExpander { graph: self.graph, id: self.id, }),
             Target::Expanded(id) =>
                 Target::Expanded(MutNode { graph: self.graph, id: id, }),
@@ -327,7 +325,6 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// return value's lifetime will be the same as that of `self`.
     pub fn to_target(self) -> Target<MutNode<'a, T, S, A>, EdgeExpander<'a, T, S, A>> {
         match self.arc().target {
-            Target::Cycle(id) => Target::Cycle(MutNode { graph: self.graph, id: id, }),
             Target::Unexpanded(_) => Target::Unexpanded(EdgeExpander { graph: self.graph, id: self.id, }),
             Target::Expanded(id) =>
                 Target::Expanded(MutNode { graph: self.graph, id: id, }),
@@ -398,24 +395,22 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// Expands this expander's edge, by connecting to the vertex associated
     /// with the game state `state`.
     ///
-    /// If `state` corresponds to an extant vertex, cycle detection will be run,
-    /// and the resulting edge may resolve to a `Target::Cycle`. Otherwise, a
-    /// new vertex will be added for `state`, and the vertex data produced by
-    /// `g` will be assigned to it.
-    pub fn expand<G>(mut self, state: T, g: G) -> MutEdge<'a, T, S, A> where G: FnOnce() -> S {
-        match self.graph.state_ids.get_or_insert(state) {
-            NamespaceInsertion::Present(target_id) => {
-                if self.graph.path_exists(target_id, self.arc().source) {
-                    self.arc_mut().target = Target::Cycle(target_id);
-                } else {
-                    self.arc_mut().target = Target::Expanded(target_id);
-                }
-            },
-            NamespaceInsertion::New(target_id) => {
-                self.arc_mut().target = Target::Expanded(target_id);
-                self.graph.add_vertex(g()).parents.push(self.id);
-            }
+    /// If `state` does not correspond to an extant vertex, a new vertex will be
+    /// added for `state`, initialized with the data produced by `g`. A parent
+    /// edge pointing back to the vertex that this edge originates from will
+    /// also be added, with initial data the value returned by `h`.
+    pub fn expand<G, H>(mut self, state: T, g: G, h: H) -> MutEdge<'a, T, S, A>
+        where G: FnOnce() -> S, H: FnOnce() -> A {
+            let target_id = match self.graph.state_ids.get_or_insert(state) {
+                NamespaceInsertion::Present(target_id) => target_id,
+                NamespaceInsertion::New(target_id) => {
+                    self.graph.add_vertex(g());
+                    target_id
+                },
+            };
+            let source_target = Target::Expanded(self.arc().source);
+            self.graph.add_arc(h(), target_id, source_target);
+            self.arc_mut().target = Target::Expanded(target_id);
+            MutEdge { graph: self.graph, id: self.id, }
         }
-        MutEdge { graph: self.graph, id: self.id, }
-    }
 }

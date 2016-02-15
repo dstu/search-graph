@@ -71,40 +71,12 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         self.vertices.last_mut().unwrap()
     }
 
-    /// Adds a new edge with the given data, source, and target.
-    ///
-    /// Iff `target` is `Target::Expanded(id)`, the vertex with `StateId` of
-    /// `id` will have the vertex `source` added as a parent.
+    /// Adds a new edge with the given data, source, and target. A corresponding
+    /// edge in the opposite direction is not automatically added.
     fn add_arc(&mut self, data: A, source: StateId, target: Target<StateId, ()>) {
-        let arc = Arc { data: data, source: source, target: target, };
         let arc_id = ArcId(self.arcs.len());
-        if let Target::Expanded(target_id) = target {
-            self.get_vertex_mut(target_id).parents.push(arc_id);
-        }
         self.get_vertex_mut(source).children.push(arc_id);
-        self.arcs.push(arc);
-    }
-
-    /// Checks whether a path exists from `source` to `target`.
-    ///
-    /// Paths are found using a simple depth-first search. This method only
-    /// follows arcs with destination type `Target::Expanded`, so it does not
-    /// find paths that go through an ancestor of `source`.
-    fn path_exists(&self, source: StateId, target: StateId) -> bool {
-        let mut frontier = vec![source];
-        while !frontier.is_empty() {
-            let state = frontier.pop().unwrap();
-            if target == state {
-                return true
-            }
-            for arc_id in &self.get_vertex(state).children {
-                let arc = self.get_arc(*arc_id);
-                if let Target::Expanded(target_id) = arc.target {
-                    frontier.push(target_id);
-                }
-            }
-        }
-        false
+        self.arcs.push(Arc { data: data, source: source, target: target, });
     }
 
     /// Gets a node handle for the given game state.
@@ -156,12 +128,6 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 pub enum Target<T, R> {
     /// Edge has not yet been expanded.
     Unexpanded(R),
-    /// Edge has been expanded but leads to a cycle. Because cycle detection is
-    /// done at edge expansion time, this usually means that another edge, which
-    /// was expanded previously, has the value `Target::Expanded` and points to
-    /// the same vertex. The target of this edge will not have a backpointer to
-    /// this edge's source in its parent list.
-    Cycle(T),
     /// Edge has been expanded and was the expanded edge that lead to the game
     /// state which it points to. The target of this edge will have a
     /// backpointer to this edge's source in its parent list.
