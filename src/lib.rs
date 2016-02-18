@@ -6,7 +6,7 @@ use self::hidden::base::*;
 use self::hidden::nav::make_node;
 use self::hidden::mutators::make_mut_node;
 
-pub use self::hidden::nav::{ChildList, Edge, Node, ParentList};
+pub use self::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 pub use self::hidden::mutators::{EdgeExpander, MutChildList, MutEdge, MutNode, MutParentList};
 
 /// A search graph.
