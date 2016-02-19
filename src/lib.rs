@@ -71,11 +71,13 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         self.vertices.last_mut().unwrap()
     }
 
-    /// Adds a new edge with the given data, source, and target. A corresponding
-    /// edge in the opposite direction is not automatically added.
+    /// Adds a new edge with the given data, source, and target.
     fn add_arc(&mut self, data: A, source: StateId, target: Target<StateId, ()>) {
         let arc_id = ArcId(self.arcs.len());
         self.get_vertex_mut(source).children.push(arc_id);
+        if let Target::Expanded(target_id) = target {
+            self.get_vertex_mut(target_id).parents.push(arc_id);
+        }
         self.arcs.push(Arc { data: data, source: source, target: target, });
     }
 

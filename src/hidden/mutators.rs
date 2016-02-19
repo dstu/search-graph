@@ -396,13 +396,11 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// with the game state `state`.
     ///
     /// If `state` does not correspond to an extant vertex, a new vertex will be
-    /// added for `state`, initialized with the data produced by `g`. A parent
-    /// edge pointing back to the vertex that this edge originates from will
-    /// also be added, with initial data the value returned by `h`.
+    /// added for `state`, initialized with the data produced by `g`.
     ///
     /// Returns an edge handle for the newly expanded edge.
-    pub fn expand_to_edge<G, H>(mut self, state: T, g: G, h: H) -> MutEdge<'a, T, S, A>
-        where G: FnOnce() -> S, H: FnOnce() -> A {
+    pub fn expand_to_edge<G>(mut self, state: T, g: G) -> MutEdge<'a, T, S, A>
+        where G: FnOnce() -> S {
             let target_id = match self.graph.state_ids.get_or_insert(state) {
                 NamespaceInsertion::Present(target_id) => target_id,
                 NamespaceInsertion::New(target_id) => {
@@ -410,8 +408,6 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
                     target_id
                 },
             };
-            let source_target = Target::Expanded(self.arc().source);
-            self.graph.add_arc(h(), target_id, source_target);
             self.arc_mut().target = Target::Expanded(target_id);
             MutEdge { graph: self.graph, id: self.id, }
         }
@@ -425,9 +421,9 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// also be added, with initial data the value returned by `h`.
     ///
     /// Returns a node handle for the newly expanded edge's target.
-    pub fn expand_to_target<G, H>(self, state: T, g: G, h: H) -> MutNode<'a, T, S, A>
-        where G: FnOnce() -> S, H: FnOnce() -> A {
-            let edge = self.expand_to_edge(state, g, h);
+    pub fn expand_to_target<G>(self, state: T, g: G) -> MutNode<'a, T, S, A>
+        where G: FnOnce() -> S {
+            let edge = self.expand_to_edge(state, g);
             match edge.to_target() {
                 Target::Expanded(n) => n,
                 Target::Unexpanded(_) => panic!("Edge expansion failed"),
