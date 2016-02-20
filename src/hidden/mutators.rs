@@ -404,7 +404,7 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
             let target_id = match self.graph.state_ids.get_or_insert(state) {
                 NamespaceInsertion::Present(target_id) => target_id,
                 NamespaceInsertion::New(target_id) => {
-                    self.graph.add_vertex(g());
+                    self.graph.add_vertex(g()).parents.push(self.id);
                     target_id
                 },
             };
