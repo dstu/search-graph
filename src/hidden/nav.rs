@@ -211,10 +211,12 @@ impl<'a, T, S, A> Iterator for ParentListIter<'a, T, S, A>
 
         fn next(&mut self) -> Option<Edge<'a, T, S, A>> {
             let ps = self.parents();
-            if ps.len() <= self.i {
+            if self.i >= ps.len() {
                 None
             } else {
-                Some(make_edge(self.graph, ps[self.i]))
+                let e = make_edge(self.graph, ps[self.i]);
+                self.i += 1;
+                Some(e)
             }
         }
 
