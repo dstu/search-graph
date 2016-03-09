@@ -99,6 +99,14 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     pub fn to_parent_list(self) -> MutParentList<'a, T, S, A> {
         MutParentList { graph: self.graph, id: self.id, }
     }
+
+    /// Returns a non-mutating node obtained by converting this node. `self` is
+    /// consumed, and the return value's lifetime will be the same as that of
+    /// `self`. The source graph is still considered to have a mutable borrow in
+    /// play, but the resulting node can be cloned freely.
+    pub fn to_node(self) -> Node<'a, T, S, A> {
+        make_node(self.graph, self.id)
+    }
 }
 
 /// A traversible list of a vertex's outgoing edges.
@@ -350,6 +358,14 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     pub fn to_source(self) -> MutNode<'a, T, S, A> {
         let id = self.arc().source;
         MutNode { graph: self.graph, id: id, }
+    }
+
+    /// Returns a non-mutating edge obtained by converting this edge. `self` is
+    /// consumed, and the return value's lifetime will be the same as that of
+    /// `self`. The source graph is still considered to have a mutable borrow in
+    /// play, but the resulting edge can be cloned freely.
+    pub fn to_edge(self) -> Edge<'a, T, S, A> {
+        make_edge(self.graph, self.id)
     }
 }
 
