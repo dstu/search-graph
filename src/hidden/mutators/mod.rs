@@ -7,6 +7,8 @@ use ::hidden::base::*;
 use ::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
 
+pub mod stack;
+
 /// Mutable handle to a graph vertex ("node handle").
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's
