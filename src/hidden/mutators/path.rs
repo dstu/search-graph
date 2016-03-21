@@ -68,8 +68,8 @@ pub enum SearchError<E> where E: Error {
 pub struct SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
     /// The graph that is being searched.
     graph: &'a mut Graph<T, S, A>,
-    /// The (vertex, edge) pairs that have been traversed.
-    path: Vec<(StateId, ArcId)>,
+    /// The edges that have been traversed.
+    path: Vec<ArcId>,
     /// The path head.
     head: Head,
 }
@@ -91,16 +91,13 @@ pub struct SearchPathIter<'a, 's, T, S, A> where T: 'a + Hash + Eq + Clone, S: '
     path: &'s SearchPath<'a, T, S, A>,
     /// The position through path.
     position: usize,
-    /// Whether we have traversed the head element (the count for which is not
-    /// included in position).
-    exhausted: bool,
 }
 
 /// Sum type for path elements. All elements except the head are represented
 /// with the `PathItem::Item` variant.
 pub enum PathItem<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
     /// Non-head item, a (vertex, edge) pair.
-    Item(Node<'a, T, S, A>, Edge<'a, T, S, A>),
+    Item(Edge<'a, T, S, A>),
     /// The path head, which may resolve to a vertex or an unexpanded edge.
     Head(Target<Node<'a, T, S, A>, Edge<'a, T, S, A>>),
 }
@@ -122,8 +119,8 @@ impl<E> Error for SearchError<E> where E: Error {
     fn description(&self) -> &str {
         match *self {
             SearchError::Unexpanded => "unexpanded",
-            SearchError::ChildBounds { requested_index, child_count } => "child out of bounds",
-            SearchError::ParentBounds { requested_index, parent_count } => "parent out of bounds",
+            SearchError::ChildBounds { requested_index: _, child_count: _ } => "child out of bounds",
+            SearchError::ParentBounds { requested_index: _, parent_count: _ } => "parent out of bounds",
             SearchError::SelectionError(ref e) => e.description(),
         }
     }
@@ -149,15 +146,18 @@ impl<'a, T, S, A> SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a
     /// Returns the number of elements in the path. Since a path always has a
     /// head, there is always at least 1 element.
     pub fn len(&self) -> usize {
-        self.path.len() + 1
+        match self.head {
+            Head::Vertex(_) => self.path.len() + 1,
+            Head::Unexpanded(_) => self.path.len() + 2,
+        }
     }
 
     /// Removes the most recently traversed element from the path, if
     /// any. Returns `true` iff an element was removed.
     pub fn pop(&mut self) -> bool {
         match self.path.pop() {
-            Some((new_head, _)) => {
-                self.head = Head::Vertex(new_head);
+            Some(edge_id) => {
+                self.head = Head::Vertex(self.graph.get_arc(edge_id).source);
                 true
             },
             None => false,
@@ -213,10 +213,13 @@ impl<'a, T, S, A> SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a
                                     requested_index: i, child_count: children.len() })
                             } else {
                                 let child = children.get_edge(i);
-                                self.path.push((head_id, ArcId(child.get_id())));
-                                self.head = match child.get_target() {
-                                    Target::Expanded(n) => Head::Vertex(StateId(n.get_id())),
-                                    Target::Unexpanded(()) => Head::Unexpanded(ArcId(child.get_id())),
+                                match child.get_target() {
+                                    Target::Expanded(n) => {
+                                        self.path.push(ArcId(child.get_id()));
+                                        self.head = Head::Vertex(StateId(n.get_id()));
+                                    },
+                                    Target::Unexpanded(()) =>
+                                        self.head = Head::Unexpanded(ArcId(child.get_id())),
                                 };
                                 Ok(Some(child))
                             }
@@ -228,7 +231,7 @@ impl<'a, T, S, A> SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a
                                     requested_index: i, parent_count: parents.len() })
                             } else {
                                 let parent = parents.get_edge(i);
-                                self.path.push((head_id, ArcId(parent.get_id())));
+                                self.path.push(ArcId(parent.get_id()));
                                 self.head = Head::Vertex(StateId(parent.get_source().get_id()));
                                 Ok(Some(parent))
                             }
@@ -254,9 +257,8 @@ impl<'a, T, S, A> SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a
             Some(PathItem::Head(self.head()))
         } else {
             match self.path.get(i) {
-                Some(&(state_id, edge_id)) =>
-                    Some(PathItem::Item(
-                        make_node(self.graph, state_id), make_edge(self.graph, edge_id))),
+                Some(edge_id) =>
+                    Some(PathItem::Item(make_edge(self.graph, *edge_id))),
                 None => None,
             }
         }
@@ -269,7 +271,6 @@ impl<'a, 's, T, S, A> SearchPathIter<'a, 's, T, S, A> where T: 'a + Hash + Eq + 
         SearchPathIter {
             path: path,
             position: 0,
-            exhausted: false,
         }
     }
 }
@@ -279,26 +280,13 @@ impl<'a, 's, T, S, A> Iterator for SearchPathIter<'a, 's, T, S, A>
         type Item = PathItem<'s, T, S, A>;
 
         fn next(&mut self) -> Option<PathItem<'s, T, S, A>> {
-            if self.position >= self.path.path.len() {
-                if self.exhausted {
-                    None
-                } else {
-                    self.exhausted = true;
-                    Some(PathItem::Head(match self.path.head {
-                        Head::Vertex(id) => Target::Expanded(make_node(self.path.graph, id)),
-                        Head::Unexpanded(id) => Target::Unexpanded(make_edge(self.path.graph, id)),
-                    }))
-                }
-            } else {
-                let (state_id, edge_id) = self.path.path[self.position];
-                self.position += 1;
-                Some(PathItem::Item(make_node(self.path.graph, state_id),
-                                     make_edge(self.path.graph, edge_id)))
-            }
+            let i = self.position;
+            self.position += 1;
+            self.path.item(i)
         }
 
         fn size_hint(&self) -> (usize, Option<usize>) {
-            let len = self.path.len() - self.position - (if self.exhausted { 1 } else { 0 });
+            let len = self.path.len() - self.position;
             (len, Some(len))
         }
     }
@@ -487,7 +475,7 @@ mod test {
         assert!(path.is_head_expanded());
 
         match path.push(traverse_err) {
-            Err(SearchError::SelectionError(e)) => (),
+            Err(SearchError::SelectionError(_)) => (),
             _ => panic!(),
         }
         assert_eq!(1, path.len());
@@ -507,6 +495,8 @@ mod test {
         }
 
         fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+            assert_eq!("root", *n.get_data());
+            assert_eq!(1, n.get_child_list().len());
             Ok(Some(Traversal::Child(0)))
         }
 
@@ -723,7 +713,7 @@ mod test {
         assert!(path.is_head_expanded());
 
         match path.push(traverse_err) {
-            Err(SearchError::SelectionError(e)) => (),
+            Err(SearchError::SelectionError(_)) => (),
             _ => panic!(),
         }
         assert_eq!(1, path.len());
@@ -769,7 +759,7 @@ mod test {
             _ => panic!(),
         }
 
-        fn traverse_first_parent<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+        fn traverse_first_parent<'a>(_: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             panic!()
         }
 
@@ -785,11 +775,94 @@ mod test {
         }
     }
 
-    // TODO: test SearchPathIter
+    #[test]
+    fn search_path_iter_empty_ok() {
+        let mut g = Graph::new();
+        g.add_root("root", "root");
+
+        let path = SearchPath::new(g.add_root("root", "root"));
+        assert_eq!(1, path.len());
+        match path.head() {
+            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
+            _ => panic!(),
+        }
+
+        let mut iter_items = path.iter();
+        assert_eq!((1, Some(1)), iter_items.size_hint());
+        match iter_items.next() {
+            Some(super::PathItem::Head(Target::Expanded(n))) => assert_eq!("root", *n.get_data()),
+            _ => panic!(),
+        }
+        assert!(iter_items.next().is_none());
+    }
+
+    #[test]
+    fn search_path_iter_items_ok() {
+        let mut g = Graph::new();
+        g.add_root("root", "root");
+        add_edge(&mut g, "root", "A");
+        add_edge(&mut g, "A", "B");
+        g.get_node_mut(&"B").unwrap().get_child_list_mut().add_child(());
+
+        fn traverse_first_child<'a>(_: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+            Ok(Some(Traversal::Child(0)))
+        }
+
+        let mut path = SearchPath::new(g.get_node_mut(&"root").unwrap());
+        match path.push(traverse_first_child) {
+            Ok(Some(e)) => assert_eq!("root", *e.get_source().get_data()),
+            _ => panic!(),
+        }
+        match path.push(traverse_first_child) {
+            Ok(Some(e)) => assert_eq!("A", *e.get_source().get_data()),
+            _ => panic!(),
+        }
+        match path.push(traverse_first_child) {
+            Ok(Some(e)) => assert_eq!("B", *e.get_source().get_data()),
+            _ => panic!(),
+        }
+        assert!(!path.is_head_expanded());
+        match path.head() {
+            Target::Unexpanded(e) => assert_eq!("B", *e.get_source().get_data()),
+            _ => panic!(),
+        }
+
+        let mut iter_items = path.iter();
+        assert_eq!((4, Some(4)), iter_items.size_hint());
+        match iter_items.next() {
+            Some(super::PathItem::Item(e)) => {
+                assert_eq!("root", *e.get_source().get_data());
+                match e.get_target() {
+                    Target::Expanded(n) => assert_eq!("A", *n.get_data()),
+                    _ => panic!(),
+                }
+            },
+            _ => panic!(),
+        }
+        match iter_items.next() {
+            Some(super::PathItem::Item(e)) => {
+                assert_eq!("A", *e.get_source().get_data());
+                match e.get_target() {
+                    Target::Expanded(n) => assert_eq!("B", *n.get_data()),
+                    _ => panic!(),
+                }
+            },
+            _ => panic!(),
+        }
+        match iter_items.next() {
+            Some(super::PathItem::Head(Target::Unexpanded(e))) => {
+                assert_eq!("B", *e.get_source().get_data());
+                match e.get_target() {
+                    Target::Unexpanded(()) => (),
+                    _ => panic!(),
+                }
+            },
+            _ => panic!(),
+        }
+        assert!(iter_items.next().is_none());
+    }
 
     // TODO: test SearchPath::pop
 
     // TODO: test SearchPath::to_head
-
-    // TODO: test SearchPath::item
 }
