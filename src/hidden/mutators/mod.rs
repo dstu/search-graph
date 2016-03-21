@@ -7,7 +7,7 @@ use ::hidden::base::*;
 use ::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
 
-pub mod stack;
+pub mod path;
 
 /// Mutable handle to a graph vertex ("node handle").
 ///
@@ -383,10 +383,6 @@ pub struct EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 
 }
 
 impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn arc(&self) -> &Arc<A> {
-        self.graph.get_arc(self.id)
-    }
-
     fn arc_mut(&mut self) -> &mut Arc<A> {
         self.graph.get_arc_mut(self.id)
     }
