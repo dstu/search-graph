@@ -109,6 +109,7 @@ impl<'a, T, S, A> ChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
     }
 }
 
+/// Iterator over a vertex's child edges.
 pub struct ChildListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
     id: StateId,
@@ -193,6 +194,7 @@ impl<'a, T, S, A> ParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a
     }
 }
 
+/// Iterator over a vertex's parent edges.
 pub struct ParentListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
     id: StateId,
