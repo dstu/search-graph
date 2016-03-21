@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["SearchError","Errors that may arise during search."]],"struct":[["SearchPath","Tracks the path through a graph that is followed when performing local search."],["SearchPathIter","Iterates over elements of a search path, in the order in which they were traversed, ending with the head."]]});
