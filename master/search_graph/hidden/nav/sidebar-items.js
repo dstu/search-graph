@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ChildList","A traversible list of a vertex's outgoing edges."],["ChildListIter",""],["Edge","Immutable handle to a graph edge (\"edge handle\")."],["Node","Immutable handle to a graph vertex (\"node handle\")."],["ParentList","A traversible list of a vertex's incoming edges."],["ParentListIter",""]]});
