@@ -7,6 +7,8 @@ use ::hidden::base::*;
 use ::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
 
+pub mod path;
+
 /// Mutable handle to a graph vertex ("node handle").
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's
@@ -279,6 +281,14 @@ pub struct MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     id: ArcId,
 }
 
+/// Creates a new `MutEdge` for the given graph and gamestate. This method is
+/// not exported by the crate because it exposes implementation details. It is
+/// used to provide a public cross-module interface for creating new `MutNode`s.
+pub fn make_mut_edge<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: ArcId) -> MutEdge<'a, T, S, A>
+    where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+        MutEdge { graph: graph, id: id, }
+    }
+
 impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     fn arc(&self) -> &Arc<A> {
         self.graph.get_arc(self.id)
@@ -381,10 +391,6 @@ pub struct EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 
 }
 
 impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn arc(&self) -> &Arc<A> {
-        self.graph.get_arc(self.id)
-    }
-
     fn arc_mut(&mut self) -> &mut Arc<A> {
         self.graph.get_arc_mut(self.id)
     }
