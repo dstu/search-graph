@@ -305,3 +305,203 @@ impl<'a, 's, T, S, A> Iterator for SearchPathIter<'a, 's, T, S, A>
             (len, Some(len))
         }
     }
+
+#[cfg(test)]
+mod test {
+    use ::Target;
+    use std::error::Error;
+    use std::fmt;
+    use super::{SearchError, Traversal};
+
+    type Graph = ::Graph<&'static str, &'static str, ()>;
+    type Node<'a> = ::Node<'a, &'static str, &'static str, ()>;
+    type SearchPath<'a> = super::SearchPath<'a, &'static str, &'static str, ()>;
+
+    fn add_edge(g: &mut Graph, source: &'static str, dest: &'static str) {
+        g.add_edge(source, |_| source, dest, |_| dest, ());
+    }
+
+    #[derive(Debug)]
+    struct MockError(());
+
+    impl Error for MockError {
+        fn description(&self) -> &str { "toy error" }
+    }
+
+    impl fmt::Display for MockError {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "toy error")
+        }
+    }
+
+    #[test]
+    fn instantiation_ok() {
+        let mut g = Graph::new();
+        let root = g.add_root("root", "root");
+
+        let path = SearchPath::new(root);
+        assert_eq!(1, path.len());
+        assert!(path.is_head_expanded());
+        match path.head() {
+            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn push_no_children_ok() {
+        let mut g = Graph::new();
+        let root = g.add_root("root", "root");
+
+        let mut path = SearchPath::new(root);
+        assert_eq!(1, path.len());
+        assert!(path.is_head_expanded());
+
+        fn no_traversal<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+            assert_eq!("root", *n.get_data());
+            Ok(None)
+        }
+
+        match path.push(no_traversal) {
+            Ok(None) => (),
+            _ => panic!(),
+        }
+
+        assert_eq!(1, path.len());
+        assert!(path.is_head_expanded());
+        match path.head() {
+            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn push_no_children_err() {
+        let mut g = Graph::new();
+        let root = g.add_root("root", "root");
+
+        let mut path = SearchPath::new(root);
+        assert_eq!(1, path.len());
+        assert!(path.is_head_expanded());
+
+        fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+            assert_eq!("root", *n.get_data());
+            assert!(n.get_child_list().is_empty());
+            Ok(Some(Traversal::Child(0)))
+        }
+
+        match path.push(traverse_first_child) {
+            Err(SearchError::ChildBounds { requested_index, child_count }) => {
+                assert_eq!(0, requested_index);
+                assert_eq!(0, child_count);
+            },
+            _ => panic!(),
+        }
+
+        assert_eq!(1, path.len());
+        assert!(path.is_head_expanded());
+        match path.head() {
+            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn push_to_child_ok() {
+        let mut g = Graph::new();
+        add_edge(&mut g, "A", "B1");
+        add_edge(&mut g, "A", "B2");
+        add_edge(&mut g, "B1", "C");
+        add_edge(&mut g, "B2", "D");
+
+        fn traverse_second_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+            assert_eq!("A", *n.get_data());
+            let children = n.get_child_list();
+            assert_eq!(2, children.len());
+            match children.get_edge(0).get_target() {
+                Target::Expanded(n) => assert_eq!("B1", *n.get_data()),
+                _ => panic!(),
+            }
+            match children.get_edge(1).get_target() {
+                Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
+                _ => panic!(),
+            }
+            Ok(Some(Traversal::Child(1)))
+        }
+
+        let mut path = SearchPath::new(g.get_node_mut(&"A").unwrap());
+        assert_eq!(1, path.len());
+        assert!(path.is_head_expanded());
+
+        match path.push(traverse_second_child) {
+            Ok(Some(e)) => {
+                assert_eq!("A", *e.get_source().get_data());
+                match e.get_target() {
+                    Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
+                    _ => panic!(),
+                }
+            },
+            _ => panic!(),
+        }
+
+        assert_eq!(2, path.len());
+        assert!(path.is_head_expanded());
+
+        fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+            assert_eq!("B2", *n.get_data());
+            assert_eq!(1, n.get_child_list().len());
+            Ok(Some(Traversal::Child(0)))
+        }
+
+        match path.push(traverse_first_child) {
+            Ok(Some(e)) => {
+                assert_eq!("B2", *e.get_source().get_data());
+                match e.get_target() {
+                    Target::Expanded(n) => assert_eq!("D", *n.get_data()),
+                    _ => panic!(),
+                }
+            },
+            _ => panic!(),
+        }
+
+        assert_eq!(3, path.len());
+        assert!(path.is_head_expanded());
+        match path.head() {
+            Target::Expanded(n) => assert_eq!("D", *n.get_data()),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn push_to_child_err_ok() {
+        let mut g = Graph::new();
+        add_edge(&mut g, "A", "B1");
+        add_edge(&mut g, "A", "B2");
+        add_edge(&mut g, "B1", "C");
+        add_edge(&mut g, "B2", "D");
+
+        fn traverse_err<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
+            assert_eq!("A", *n.get_data());
+            Err(MockError(()))
+        }
+
+        let mut path = SearchPath::new(g.get_node_mut(&"A").unwrap());
+        assert_eq!(1, path.len());
+        assert!(path.is_head_expanded());
+
+        match path.push(traverse_err) {
+            Err(SearchError::SelectionError(e)) => (),
+            _ => panic!(),
+        }
+    }
+
+    // TODO: forall child, s/child/parent/g
+
+    // TODO: test SearchPathIter
+
+    // TODO: test SearchPath::pop
+
+    // TODO: test SearchPath::to_head
+
+    // TODO: test SearchPath::item
+}

@@ -4,7 +4,7 @@ use std::hash::Hash;
 
 use self::hidden::base::*;
 use self::hidden::nav::make_node;
-use self::hidden::mutators::make_mut_node;
+use self::hidden::mutators::{make_mut_edge, make_mut_node};
 
 pub use self::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 pub use self::hidden::mutators::{EdgeExpander, MutChildList, MutEdge, MutNode, MutParentList};
@@ -72,14 +72,16 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         self.vertices.last_mut().unwrap()
     }
 
-    /// Adds a new edge with the given data, source, and target.
-    fn add_arc(&mut self, data: A, source: StateId, target: Target<StateId, ()>) {
+    /// Adds a new edge with the given data, source, and target. Returns the
+    /// internal ID for the new edge.
+    fn add_arc(&mut self, data: A, source: StateId, target: Target<StateId, ()>) -> ArcId {
         let arc_id = ArcId(self.arcs.len());
         self.get_vertex_mut(source).children.push(arc_id);
         if let Target::Expanded(target_id) = target {
             self.get_vertex_mut(target_id).parents.push(arc_id);
         }
         self.arcs.push(Arc { data: data, source: source, target: target, });
+        arc_id
     }
 
     /// Gets a node handle for the given game state.
@@ -119,6 +121,36 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         };
         make_mut_node(self, node_id)
     }
+
+    /// Adds an edge from the vertex with state data `source` to the vertex with
+    /// state data `dest`. If vertices are not found for `source` or `dest`,
+    /// they are added, with the data provided by `source_data` and `dest_data`
+    /// callbacks.
+    ///
+    /// The edge that is created will have the data `edge_data`. Returns a
+    /// mutable edge handle for that edge.
+    pub fn add_edge<'s, F, G>(&'s mut self, source: T, source_data: F, dest: T, dest_data: G,
+                              edge_data: A) -> MutEdge<'s, T, S, A>
+        where F: for<'b> FnOnce(Node<'b, T, S, A>) -> S, G: for<'b> FnOnce(Node<'b, T, S, A>) -> S {
+            let source_id = match self.state_ids.get_or_insert(source) {
+                NamespaceInsertion::Present(id) => id,
+                NamespaceInsertion::New(id) => {
+                    let data = source_data(make_node(self, id));
+                    self.add_vertex(data);
+                    id
+                },
+            };
+            let dest_id = match self.state_ids.get_or_insert(dest) {
+                NamespaceInsertion::Present(id) => id,
+                NamespaceInsertion::New(id) => {
+                    let data = dest_data(make_node(self, id));
+                    self.add_vertex(data);
+                    id
+                },
+            };
+            let arc_id = self.add_arc(edge_data, source_id, Target::Expanded(dest_id));
+            make_mut_edge(self, arc_id)
+        }
 }
 
 /// The target of an outgoing graph edge.
