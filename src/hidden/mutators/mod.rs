@@ -267,7 +267,8 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
     }
 }
 
-/// Mutable handle to a graph edge ("edge handle").
+/// Mutable handle to a graph edge ("edge handle") when edge expansion state is
+/// unknown.
 ///
 /// This zipper-like type enables traversal of a graph along the edge's source
 /// and target vertices.
@@ -320,8 +321,7 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     pub fn get_target<'s>(&'s self) -> Target<Node<'s, T, S, A>, ()> {
         match self.arc().target {
             Target::Unexpanded(_) => Target::Unexpanded(()),
-            Target::Expanded(id) =>
-                Target::Expanded(make_node(self.graph, id)),
+            Target::Expanded(id) => Target::Expanded(make_node(self.graph, id)),
         }
     }
 
@@ -332,8 +332,7 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     pub fn get_target_mut<'s>(&'s mut self) -> Target<MutNode<'s, T, S, A>, EdgeExpander<'s, T, S, A>> {
         match self.arc().target {
             Target::Unexpanded(_) => Target::Unexpanded(EdgeExpander { graph: self.graph, id: self.id, }),
-            Target::Expanded(id) =>
-                Target::Expanded(MutNode { graph: self.graph, id: id, }),
+            Target::Expanded(id) => Target::Expanded(MutNode { graph: self.graph, id: id, }),
         }
     }
 
@@ -431,7 +430,7 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// added for `state`, initialized with the data produced by `g`.
     ///
     /// Returns an edge handle for the newly expanded edge.
-    pub fn expand_to_edge<G>(mut self, state: T, g: G) -> Expanded<MutEdge<'a, T, S, A>>
+    pub fn expand_to_edge<G>(mut self, state: T, g: G) -> Expanded<MutExpandedEdge<'a, T, S, A>>
         where G: FnOnce() -> S {
             let (target_id, new_vertex) = match self.graph.state_ids.get_or_insert(state) {
                 NamespaceInsertion::Present(target_id) => (target_id, false),
@@ -442,9 +441,9 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
             };
             self.arc_mut().target = Target::Expanded(target_id);
             if new_vertex {
-                Expanded::New(MutEdge { graph: self.graph, id: self.id, })
+                Expanded::New(MutExpandedEdge { graph: self.graph, id: self.id, })
             } else {
-                Expanded::Extant(MutEdge { graph: self.graph, id: self.id, })
+                Expanded::Extant(MutExpandedEdge { graph: self.graph, id: self.id, })
             }
         }
 
@@ -460,16 +459,105 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     pub fn expand_to_target<G>(self, state: T, g: G) -> Expanded<MutNode<'a, T, S, A>>
         where G: FnOnce() -> S {
             match self.expand_to_edge(state, g) {
-                Expanded::New(edge) =>
-                    match edge.to_target() {
-                        Target::Expanded(n) => Expanded::New(n),
-                        _ => panic!("edge expansion failed"),
-                    },
-                Expanded::Extant(edge) =>
-                    match edge.to_target() {
-                        Target::Expanded(n) => Expanded::Extant(n),
-                        _ => panic!("edge expansion failed"),
-                    },
+                Expanded::New(edge) => Expanded::New(edge.to_target()),
+                Expanded::Extant(edge) => Expanded::Extant(edge.to_target()),
             }
         }
+}
+
+/// Mutable handle to a graph edge ("edge handle") when edge expansion state is
+/// known.
+///
+/// This zipper-like type enables traversal of a graph along the edge's source
+/// and target vertices.
+///
+/// It enables local graph mutation, whether via mutation of edge data or
+/// mutation of graph topology (adding vertices). Vertices may be added to
+/// unexpanded edges using the handle returned by `get_target_mut` or
+/// `to_target`.
+pub struct MutExpandedEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    graph: &'a mut Graph<T, S, A>,
+    id: ArcId,
+}
+
+impl<'a, T, S, A> MutExpandedEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    fn arc(&self) -> &Arc<A> {
+        self.graph.get_arc(self.id)
+    }
+
+    fn arc_mut(&mut self) -> &mut Arc<A> {
+        self.graph.get_arc_mut(self.id)
+    }
+
+    /// Returns an immutable ID that is guaranteed to identify this vertex
+    /// uniquely within its graph. This ID may change when the graph is mutated.
+    pub fn get_id(&self) -> usize {
+        self.id.as_usize()
+    }
+
+    /// Returns the data at this edge.
+    pub fn get_data(&self) -> &A {
+        &self.arc().data
+    }
+
+    /// Returns the data at this edge, mutably.
+    pub fn get_data_mut(&mut self) -> &mut A {
+        &mut self.arc_mut().data
+    }
+
+    /// Returns the target of this edge. Its lifetime limited to a local borrow
+    /// of `self`.
+    pub fn get_target<'s>(&'s self) -> Node<'s, T, S, A> {
+        match self.arc().target {
+            Target::Unexpanded(_) => panic!("expanded edge isn't"),
+            Target::Expanded(id) => make_node(self.graph, id),
+        }
+    }
+
+    /// Returns the target of this edge. Its lifetime will be limited to a local
+    /// borrow of `self`.
+    pub fn get_target_mut<'s>(&'s mut self) -> MutNode<'s, T, S, A> {
+        match self.arc().target {
+            Target::Unexpanded(_) => panic!("expanded edge isn't"),
+            Target::Expanded(id) => MutNode { graph: self.graph, id: id, },
+        }
+    }
+
+    /// Returns the target of this edge. `self` is consumed, and the return
+    /// value's lifetime will be the same as that of `self`.
+    pub fn to_target(self) -> MutNode<'a, T, S, A> {
+        match self.arc().target {
+            Target::Unexpanded(_) => panic!("expanded edge isn't"),
+            Target::Expanded(id) => MutNode { graph: self.graph, id: id, },
+        }
+    }
+
+    /// Returns a node handle for the source of this edge. Its lifetime will be
+    /// limited to a local borrow of `self`.
+    pub fn get_source<'s>(&'s self) -> Node<'s, T, S, A> {
+        make_node(self.graph, self.arc().source)
+    }
+
+    /// Returns a mutable node handle for the source of this edge. Its lifetime
+    /// will be limited to a local borrow of `self`.
+    pub fn get_source_mut<'s>(&'s mut self) -> MutNode<'s, T, S, A> {
+        let id = self.arc().source;
+        MutNode { graph: self.graph, id: id, }
+    }
+
+    /// Returns a mutable node handle for the source of this edge. `self` is
+    /// consumed, and the return value's lifetime will be equal to that of
+    /// `self`.
+    pub fn to_source(self) -> MutNode<'a, T, S, A> {
+        let id = self.arc().source;
+        MutNode { graph: self.graph, id: id, }
+    }
+
+    /// Returns a non-mutating edge obtained by converting this edge. `self` is
+    /// consumed, and the return value's lifetime will be the same as that of
+    /// `self`. The source graph is still considered to have a mutable borrow in
+    /// play, but the resulting edge can be cloned freely.
+    pub fn to_edge(self) -> Edge<'a, T, S, A> {
+        make_edge(self.graph, self.id)
+    }
 }
