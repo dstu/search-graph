@@ -65,7 +65,7 @@ expand. Its lifetime will be limited to a local borrow of <code>self</code>.</p>
 <div class='docblock'><p>Returns a mutable edge handle for the edge that this expander would
 expand. <code>self</code> is consumed, and the return value&#39;s lifetime will be the
 same as that of <code>self</code>.</p>
-</div><h4 id='method.expand_to_edge' class='method'><code>fn <a href='#method.expand_to_edge' class='fnname'>expand_to_edge</a>&lt;G&gt;(self, state: T, g: G) -&gt; <a class='struct' href='../search_graph/struct.MutEdge.html' title='search_graph::MutEdge'>MutEdge</a>&lt;'a, T, S, A&gt; <span class='where'>where G: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></h4>
+</div><h4 id='method.expand_to_edge' class='method'><code>fn <a href='#method.expand_to_edge' class='fnname'>expand_to_edge</a>&lt;G&gt;(self, state: T, g: G) -&gt; <a class='enum' href='../search_graph/enum.Expanded.html' title='search_graph::Expanded'>Expanded</a>&lt;<a class='struct' href='../search_graph/struct.MutEdge.html' title='search_graph::MutEdge'>MutEdge</a>&lt;'a, T, S, A&gt;&gt; <span class='where'>where G: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></h4>
 <div class='docblock'><p>Expands this expander&#39;s edge, by connecting to the vertex associated
 with the game state <code>state</code>.</p>
 
@@ -73,7 +73,7 @@ with the game state <code>state</code>.</p>
 added for <code>state</code>, initialized with the data produced by <code>g</code>.</p>
 
 <p>Returns an edge handle for the newly expanded edge.</p>
-</div><h4 id='method.expand_to_target' class='method'><code>fn <a href='#method.expand_to_target' class='fnname'>expand_to_target</a>&lt;G&gt;(self, state: T, g: G) -&gt; <a class='struct' href='../search_graph/struct.MutNode.html' title='search_graph::MutNode'>MutNode</a>&lt;'a, T, S, A&gt; <span class='where'>where G: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></h4>
+</div><h4 id='method.expand_to_target' class='method'><code>fn <a href='#method.expand_to_target' class='fnname'>expand_to_target</a>&lt;G&gt;(self, state: T, g: G) -&gt; <a class='enum' href='../search_graph/enum.Expanded.html' title='search_graph::Expanded'>Expanded</a>&lt;<a class='struct' href='../search_graph/struct.MutNode.html' title='search_graph::MutNode'>MutNode</a>&lt;'a, T, S, A&gt;&gt; <span class='where'>where G: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></h4>
 <div class='docblock'><p>Expands this expander&#39;s edge, by connecting to the vertex associated
 with the game state <code>state</code>.</p>
 
