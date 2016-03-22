@@ -200,7 +200,7 @@ impl<'a, T, S, A> SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a
     ///
     /// Returns an `Ok(Option(e))` for any edge `e` that is traversed, or
     /// `Err(e)` if an error was encountered.
-    pub fn push<'s, F, E>(&'s mut self, f: F) -> Result<Option<Edge<'s, T, S, A>>, SearchError<E>>
+    pub fn push<'s, F, E>(&'s mut self, mut f: F) -> Result<Option<Edge<'s, T, S, A>>, SearchError<E>>
         where F: FnMut(&Node<'s, T, S, A>) -> Result<Option<Traversal>, E>, E: Error {
             match self.head {
                 Head::Vertex(head_id) => {
