@@ -211,6 +211,7 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
+<span id="171">171</span>
 </pre><pre class='rust '>
 <span class='kw'>mod</span> <span class='ident'>hidden</span>;
 
@@ -221,7 +222,8 @@
 <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>make_mut_edge</span>, <span class='ident'>make_mut_node</span>};
 
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>nav</span>::{<span class='ident'>ChildList</span>, <span class='ident'>ChildListIter</span>, <span class='ident'>Edge</span>, <span class='ident'>Node</span>, <span class='ident'>ParentList</span>, <span class='ident'>ParentListIter</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>EdgeExpander</span>, <span class='ident'>Expanded</span>, <span class='ident'>MutChildList</span>, <span class='ident'>MutEdge</span>, <span class='ident'>MutNode</span>, <span class='ident'>MutParentList</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>EdgeExpander</span>, <span class='ident'>Expanded</span>, <span class='ident'>MutChildList</span>, <span class='ident'>MutEdge</span>, <span class='ident'>MutExpandedEdge</span>,
+                                 <span class='ident'>MutNode</span>, <span class='ident'>MutParentList</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::<span class='ident'>path</span>::{<span class='ident'>SearchError</span>, <span class='ident'>SearchPath</span>, <span class='ident'>SearchPathIter</span>, <span class='ident'>PathItem</span>, <span class='ident'>Traversal</span>};
 
 <span class='doccomment'>/// A search graph.</span>

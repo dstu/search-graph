@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-750' class='srclink' href='../src/search_graph/src/hidden/mutators/mod.rs.html#388-391' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-750' class='srclink' href='../src/search_graph/src/hidden/mutators/mod.rs.html#387-390' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct EdgeExpander&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span> {
     // some fields omitted
 }</pre><div class='docblock'><p>Modifies graph topology by connecting an unexpanded edge to its target
@@ -65,7 +65,7 @@ expand. Its lifetime will be limited to a local borrow of <code>self</code>.</p>
 <div class='docblock'><p>Returns a mutable edge handle for the edge that this expander would
 expand. <code>self</code> is consumed, and the return value&#39;s lifetime will be the
 same as that of <code>self</code>.</p>
-</div><h4 id='method.expand_to_edge' class='method'><code>fn <a href='#method.expand_to_edge' class='fnname'>expand_to_edge</a>&lt;G&gt;(self, state: T, g: G) -&gt; <a class='enum' href='../search_graph/enum.Expanded.html' title='search_graph::Expanded'>Expanded</a>&lt;<a class='struct' href='../search_graph/struct.MutEdge.html' title='search_graph::MutEdge'>MutEdge</a>&lt;'a, T, S, A&gt;&gt; <span class='where'>where G: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></h4>
+</div><h4 id='method.expand_to_edge' class='method'><code>fn <a href='#method.expand_to_edge' class='fnname'>expand_to_edge</a>&lt;G&gt;(self, state: T, g: G) -&gt; <a class='enum' href='../search_graph/enum.Expanded.html' title='search_graph::Expanded'>Expanded</a>&lt;<a class='struct' href='../search_graph/struct.MutExpandedEdge.html' title='search_graph::MutExpandedEdge'>MutExpandedEdge</a>&lt;'a, T, S, A&gt;&gt; <span class='where'>where G: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></h4>
 <div class='docblock'><p>Expands this expander&#39;s edge, by connecting to the vertex associated
 with the game state <code>state</code>.</p>
 
