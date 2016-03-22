@@ -165,6 +165,15 @@ traversed, ending with the head.</p>
                 </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
                     <tr class=' module-item'>
+                        <td><a class='enum' href='enum.PathItem.html'
+                               title='search_graph::PathItem'>PathItem</a></td>
+                        <td class='docblock short'>
+                             <p>Sum type for path elements. All elements except the head are represented
+with the <code>PathItem::Item</code> variant.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
                         <td><a class='enum' href='enum.SearchError.html'
                                title='search_graph::SearchError'>SearchError</a></td>
                         <td class='docblock short'>
@@ -177,6 +186,16 @@ traversed, ending with the head.</p>
                                title='search_graph::Target'>Target</a></td>
                         <td class='docblock short'>
                              <p>The target of an outgoing graph edge.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.Traversal.html'
+                               title='search_graph::Traversal'>Traversal</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates which edge of a vertex to traverse. Edges are denoted by a 0-based
+index. This type is used by functions provided during graph search to
+indicate which child or parent edges to traverse.</p>
                         </td>
                     </tr>
                 </table></section>
