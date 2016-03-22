@@ -8,7 +8,7 @@ use self::hidden::mutators::{make_mut_edge, make_mut_node};
 
 pub use self::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 pub use self::hidden::mutators::{EdgeExpander, MutChildList, MutEdge, MutNode, MutParentList};
-pub use self::hidden::mutators::path::{SearchError, SearchPath, SearchPathIter};
+pub use self::hidden::mutators::path::{SearchError, SearchPath, SearchPathIter, PathItem, Traversal};
 
 /// A search graph.
 ///
