@@ -390,6 +390,16 @@ pub struct EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 
     id: ArcId,
 }
 
+/// The result of edge expansion. This wraps the resulting handle to the graph
+/// component, with each variant indicating whether the expansion created a new
+/// vertex or connected an edge to an existing one.
+pub enum Expanded<T> {
+    /// Edge expansion created a new vertex.
+    New(T),
+    /// Edge expansion connected to an existing vertex.
+    Extant(T),
+}
+
 impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     fn arc_mut(&mut self) -> &mut Arc<A> {
         self.graph.get_arc_mut(self.id)
@@ -421,17 +431,21 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// added for `state`, initialized with the data produced by `g`.
     ///
     /// Returns an edge handle for the newly expanded edge.
-    pub fn expand_to_edge<G>(mut self, state: T, g: G) -> MutEdge<'a, T, S, A>
+    pub fn expand_to_edge<G>(mut self, state: T, g: G) -> Expanded<MutEdge<'a, T, S, A>>
         where G: FnOnce() -> S {
-            let target_id = match self.graph.state_ids.get_or_insert(state) {
-                NamespaceInsertion::Present(target_id) => target_id,
+            let (target_id, new_vertex) = match self.graph.state_ids.get_or_insert(state) {
+                NamespaceInsertion::Present(target_id) => (target_id, false),
                 NamespaceInsertion::New(target_id) => {
                     self.graph.add_vertex(g()).parents.push(self.id);
-                    target_id
+                    (target_id, true)
                 },
             };
             self.arc_mut().target = Target::Expanded(target_id);
-            MutEdge { graph: self.graph, id: self.id, }
+            if new_vertex {
+                Expanded::New(MutEdge { graph: self.graph, id: self.id, })
+            } else {
+                Expanded::Extant(MutEdge { graph: self.graph, id: self.id, })
+            }
         }
 
     /// Expands this expander's edge, by connecting to the vertex associated
@@ -443,12 +457,19 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// also be added, with initial data the value returned by `h`.
     ///
     /// Returns a node handle for the newly expanded edge's target.
-    pub fn expand_to_target<G>(self, state: T, g: G) -> MutNode<'a, T, S, A>
+    pub fn expand_to_target<G>(self, state: T, g: G) -> Expanded<MutNode<'a, T, S, A>>
         where G: FnOnce() -> S {
-            let edge = self.expand_to_edge(state, g);
-            match edge.to_target() {
-                Target::Expanded(n) => n,
-                Target::Unexpanded(_) => panic!("Edge expansion failed"),
+            match self.expand_to_edge(state, g) {
+                Expanded::New(edge) =>
+                    match edge.to_target() {
+                        Target::Expanded(n) => Expanded::New(n),
+                        _ => panic!("edge expansion failed"),
+                    },
+                Expanded::Extant(edge) =>
+                    match edge.to_target() {
+                        Target::Expanded(n) => Expanded::Extant(n),
+                        _ => panic!("edge expansion failed"),
+                    },
             }
         }
 }
