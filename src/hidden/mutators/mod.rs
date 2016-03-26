@@ -433,7 +433,10 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     pub fn expand_to_edge<G>(mut self, state: T, g: G) -> Expanded<MutExpandedEdge<'a, T, S, A>>
         where G: FnOnce() -> S {
             let (target_id, new_vertex) = match self.graph.state_ids.get_or_insert(state) {
-                NamespaceInsertion::Present(target_id) => (target_id, false),
+                NamespaceInsertion::Present(target_id) => {
+                    self.graph.get_vertex_mut(target_id).parents.push(self.id);
+                    (target_id, false)
+                },
                 NamespaceInsertion::New(target_id) => {
                     self.graph.add_vertex(g()).parents.push(self.id);
                     (target_id, true)
