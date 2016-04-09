@@ -69,7 +69,12 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// not). That must be done by calling `add_arc` with the new vertex
     /// `StateId`.
     fn add_vertex(&mut self, data: S) -> &mut Vertex<S> {
-        self.vertices.push(Vertex { data: data, parents: Vec::new(), children: Vec::new(), });
+        self.vertices.push(Vertex {
+            data: data,
+            parents: Vec::new(),
+            children: Vec::new(),
+            mark: false,
+        });
         self.vertices.last_mut().unwrap()
     }
 
@@ -81,7 +86,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         if let Target::Expanded(target_id) = target {
             self.get_vertex_mut(target_id).parents.push(arc_id);
         }
-        self.arcs.push(Arc { data: data, source: source, target: target, });
+        self.arcs.push(Arc { data: data, source: source, target: target, mark: false, });
         arc_id
     }
 
@@ -152,6 +157,20 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
             let arc_id = self.add_arc(edge_data, source_id, Target::Expanded(dest_id));
             make_mut_edge(self, arc_id)
         }
+
+    pub fn retain_reachable_from(&mut self, roots: &[T]) {
+        let mut root_ids = Vec::with_capacity(roots.len());
+        for state in roots.iter() {
+            if let Some(id) = self.state_ids.get(state) {
+                root_ids.push(id);
+            }
+        }
+        self.retain_reachable_from_ids(&root_ids);
+    }
+
+    fn retain_reachable_from_ids(&mut self, root_ids: &[StateId]) {
+        self::hidden::mutators::mark_sweep::Collector::retain_reachable(self, root_ids);
+    }
 }
 
 /// The target of an outgoing graph edge.

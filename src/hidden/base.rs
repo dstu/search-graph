@@ -59,9 +59,7 @@ pub enum NamespaceInsertion {
 impl<T> StateNamespace<T> where T: Hash + Eq + Clone {
     /// Creates a new, empty `StateNamespace`.
     pub fn new() -> Self {
-        StateNamespace {
-            states: HashMap::new(),
-        }
+        StateNamespace { states: HashMap::new(), }
     }
 
     /// Retrieves a `StateId` for `state`, creating a new one if necessary.
@@ -82,6 +80,26 @@ impl<T> StateNamespace<T> where T: Hash + Eq + Clone {
     pub fn get(&self, state: &T) -> Option<StateId> {
         self.states.get(state).map(|x| *x)
     }
+
+    /// Changes associations between states and `StateId`s.
+    ///
+    /// `(T, StateId)` associations for which `f` returns `Some(new_id)` will be
+    /// remapped to use `new_id`.
+    ///
+    /// `(T, StateId)` associations for which `f` returns `None` will be dropped.
+    ///
+    /// It is the responsibility of the caller to ensure that states map to
+    /// unique `StateId`s.
+    pub fn remap<F>(&mut self, mut f: F) where F: FnMut(&T, StateId) -> Option<StateId> {
+        let mut new_states = HashMap::with_capacity(self.states.len());
+        for (state, old_state_id) in self.states.drain() {
+            if let Some(new_state_id) = f(&state, old_state_id) {
+                new_states.insert(state, new_state_id);
+            }
+        }
+        new_states.shrink_to_fit();
+        self.states = new_states;
+    }
 }
 
 /// Internal type for graph edges.
@@ -95,6 +113,8 @@ pub struct Arc<A> {
     /// `Target::Unexpanded(())`; otherwise, it is either `Target::Cycle(id)` or
     /// `Target::Expanded(id)` for target vertex with a `StateId` of `id`.
     pub target: Target<StateId, ()>,
+    /// Used for mark-and-sweep garbage collection.
+    pub mark: bool,
 }
 
 /// Internal type for graph vertices.
@@ -106,4 +126,6 @@ pub struct Vertex<S> {
     pub parents: Vec<ArcId>,
     /// Child edges pointing out of this vertex.
     pub children: Vec<ArcId>,
+    /// Used for mark-and-sweep garbage collection.
+    pub mark: bool,
 }

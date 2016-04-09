@@ -8,6 +8,7 @@ use ::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentList
 use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
 
 pub mod path;
+pub mod mark_sweep;
 
 /// Mutable handle to a graph vertex ("node handle").
 ///
@@ -108,6 +109,12 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// play, but the resulting node can be cloned freely.
     pub fn to_node(self) -> Node<'a, T, S, A> {
         make_node(self.graph, self.id)
+    }
+
+    /// Prunes the underlying graph by removing components not reachable from
+    /// this node.
+    pub fn retain_reachable(&mut self) {
+        self.graph.retain_reachable_from_ids(&[self.id]);
     }
 }
 
