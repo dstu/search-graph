@@ -73,7 +73,6 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
             data: data,
             parents: Vec::new(),
             children: Vec::new(),
-            mark: false,
         });
         self.vertices.last_mut().unwrap()
     }
@@ -86,7 +85,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         if let Target::Expanded(target_id) = target {
             self.get_vertex_mut(target_id).parents.push(arc_id);
         }
-        self.arcs.push(Arc { data: data, source: source, target: target, mark: false, });
+        self.arcs.push(Arc { data: data, source: source, target: target, });
         arc_id
     }
 
@@ -158,6 +157,14 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
             make_mut_edge(self, arc_id)
         }
 
+    pub fn vertex_count(&self) -> usize {
+        self.vertices.len()
+    }
+
+    pub fn edge_count(&self) -> usize {
+        self.arcs.len()
+    }
+
     pub fn retain_reachable_from(&mut self, roots: &[T]) {
         let mut root_ids = Vec::with_capacity(roots.len());
         for state in roots.iter() {
@@ -169,7 +176,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     }
 
     fn retain_reachable_from_ids(&mut self, root_ids: &[StateId]) {
-        self::hidden::mutators::mark_sweep::Collector::retain_reachable(self, root_ids);
+        self::hidden::mutators::mark_compact::Collector::retain_reachable(self, root_ids);
     }
 }
 
@@ -179,7 +186,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 /// with all of their edges in the unexpanded state. Graph-modifying operations
 /// which are executed while exploring the game state topology will expand these
 /// edges. Cycle detection is done at edge expansion time.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Target<T, R> {
     /// Edge has not yet been expanded.
     Unexpanded(R),

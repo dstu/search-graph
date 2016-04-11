@@ -1,3 +1,4 @@
+use std::cmp::{Eq, PartialEq};
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::hash::Hash;
@@ -113,9 +114,18 @@ pub struct Arc<A> {
     /// `Target::Unexpanded(())`; otherwise, it is either `Target::Cycle(id)` or
     /// `Target::Expanded(id)` for target vertex with a `StateId` of `id`.
     pub target: Target<StateId, ()>,
-    /// Used for mark-and-sweep garbage collection.
-    pub mark: bool,
 }
+
+/// This implementation will conflate parallel edges with identical statistics.
+impl<A> PartialEq for Arc<A> where A: PartialEq {
+    fn eq(&self, other: &Arc<A>) -> bool {
+        self.source == other.source
+            && self.target == other.target
+            && self.data == other.data
+    }
+}
+
+impl<A> Eq for Arc<A> where A: Eq { }
 
 /// Internal type for graph vertices.
 #[derive(Debug)]
@@ -126,6 +136,14 @@ pub struct Vertex<S> {
     pub parents: Vec<ArcId>,
     /// Child edges pointing out of this vertex.
     pub children: Vec<ArcId>,
-    /// Used for mark-and-sweep garbage collection.
-    pub mark: bool,
 }
+
+impl<S> PartialEq for Vertex<S> where S: PartialEq {
+    fn eq(&self, other: &Vertex<S>) -> bool {
+        self.parents == other.parents
+            && self.children == other.children
+            && self.data == other.data
+    }
+}
+
+impl<S> Eq for Vertex<S> where S: Eq { }
