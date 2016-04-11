@@ -25,6 +25,12 @@ fn permute_compact<T, F>(data: &mut Vec<T>, f: F) where F: Fn(usize) -> Option<u
 
     // TODO: We should benchmark doing this in-place vs. via moving.
     let mut new_data: Vec<T> = Vec::with_capacity(data.len());
+    // TODO: This relies on an implementation detail of Vec (namely, that
+    // Vec::with_capacity gives us a block that we can read into with
+    // get_unchecked_mut, even if the index we're accessing is beyond the length
+    // of the Vec). This seems unlikely to change, but it may ultimately be more
+    // future-proof to allocate a block of memory, do writes into it manually,
+    // and pass it to Vec::from_raw_parts.
     let mut retained_count = 0;
     {
         let compacted = data.drain(0..).enumerate()
@@ -35,7 +41,7 @@ fn permute_compact<T, F>(data: &mut Vec<T>, f: F) where F: Fn(usize) -> Option<u
             retained_count += 1;
         }
     }
-    unsafe { new_data.set_len(retained_count) };  // Maybe do this after each swap?
+    unsafe { new_data.set_len(retained_count) };  // TODO: Maybe do this after each swap?
     mem::replace(data, new_data);
 }
 
