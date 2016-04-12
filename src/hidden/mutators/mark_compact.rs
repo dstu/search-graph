@@ -13,11 +13,12 @@ use std::cmp::Eq;
 use std::collections::VecDeque;
 use std::hash::Hash;
 use std::mem;
+use std::ptr;
 
 /// Permutes `data` so that element `i` of data is reassigned to be at index
-/// `f(id_map[i])`.
+/// `f(i)`.
 ///
-/// Elements `j` of `data` for which `id_map[j]` is `None` are discarded.
+/// Elements `j` of `data` for which `f(j)` is `None` are discarded.
 fn permute_compact<T, F>(data: &mut Vec<T>, f: F) where F: Fn(usize) -> Option<usize> {
     if data.is_empty() {
         return
@@ -33,11 +34,10 @@ fn permute_compact<T, F>(data: &mut Vec<T>, f: F) where F: Fn(usize) -> Option<u
     // and pass it to Vec::from_raw_parts.
     let mut retained_count = 0;
     {
-        let compacted = data.drain(0..).enumerate()
+        let compacted = data.drain(..).enumerate()
             .filter_map(|(old_index, t)| f(old_index).map(|new_index| (new_index, t)));
-        for (new_index, mut t) in compacted {
-            mem::swap(unsafe { new_data.get_unchecked_mut(new_index) }, &mut t);
-            mem::forget(t);
+        for (new_index, t) in compacted {
+            unsafe { ptr::write(new_data.get_unchecked_mut(new_index), t) };
             retained_count += 1;
         }
     }
