@@ -173,7 +173,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     ///
     /// Game states in `roots` which do not have a corresponding vertex are
     /// ignored.
-    pub fn retain_reachable_from(&mut self, roots: &[T]) {
+    pub fn retain_reachable_from(&mut self, roots: &[&T]) {
         let mut root_ids = Vec::with_capacity(roots.len());
         for state in roots.iter() {
             if let Some(id) = self.state_ids.get(state) {
