@@ -531,11 +531,59 @@ mod test {
                    vec!(make_arc("0_00_data_1", StateId(0), Target::Expanded(StateId(1))),
                         make_arc("0_00_data_2", StateId(0), Target::Expanded(StateId(1))),
                         make_arc("0_01_data", StateId(0), Target::Expanded(StateId(2)))));
-        // TODO check g.state_ids.
+
+        let mut state_associations = HashMap::new();
+        state_associations.insert("0", StateId(0));
+        state_associations.insert("00", StateId(1));
+        state_associations.insert("01", StateId(2));
+        let mut state_ids = StateNamespace::new();
+        mem::swap(&mut state_ids, &mut g.state_ids);
+        assert_eq!(state_ids.to_hash_map(), state_associations);
     }
 
     #[test]
     fn cycles_ok() {
-        let mut g = empty_graph();        
+        let mut g = empty_graph();
+        g.add_edge("0", |_| "0_data", "00", |_| "00_data", "0_00_data");
+        g.add_edge("00", |_| "00_data", "00", |_| "00_data", "00_00_data");
+        g.add_edge("00", |_| "00_data", "0", |_| "0_data", "00_0_data");
+        g.add_edge("0", |_| "0_data", "01", |_| "01_data", "0_01_data");
+        g.add_edge("01", |_| "01_data", "010", |_| "010_data", "01_010_data");
+        g.add_edge("root", |_| "root_data", "0", |_| "0_data", "root_0_data");
+        assert_eq!(g.vertices,
+                   vec!(make_vertex("0_data", vec!(ArcId(2), ArcId(5)), vec!(ArcId(0), ArcId(3))),
+                        make_vertex("00_data", vec!(ArcId(0), ArcId(1)), vec!(ArcId(1), ArcId(2))),
+                        make_vertex("01_data", vec!(ArcId(3)), vec!(ArcId(4))),
+                        make_vertex("010_data", vec!(ArcId(4)), vec!()),
+                        make_vertex("root_data", vec!(), vec!(ArcId(5)))));
+        assert_eq!(g.arcs,
+                   vec!(make_arc("0_00_data", StateId(0), Target::Expanded(StateId(1))),
+                        make_arc("00_00_data", StateId(1), Target::Expanded(StateId(1))),
+                        make_arc("00_0_data", StateId(1), Target::Expanded(StateId(0))),
+                        make_arc("0_01_data", StateId(0), Target::Expanded(StateId(2))),
+                        make_arc("01_010_data", StateId(2), Target::Expanded(StateId(3))),
+                        make_arc("root_0_data", StateId(4), Target::Expanded(StateId(0)))));
+
+        Collector::retain_reachable(&mut g, &[StateId(1)]);
+        assert_eq!(g.vertices,
+                   vec!(make_vertex("00_data", vec!(ArcId(2), ArcId(0)), vec!(ArcId(0), ArcId(1))),
+                        make_vertex("0_data", vec!(ArcId(1)), vec!(ArcId(2), ArcId(3))),
+                        make_vertex("01_data", vec!(ArcId(3)), vec!(ArcId(4))),
+                        make_vertex("010_data", vec!(ArcId(4)), vec!())));
+        assert_eq!(g.arcs,
+                   vec!(make_arc("00_00_data", StateId(0), Target::Expanded(StateId(0))),
+                        make_arc("00_0_data", StateId(0), Target::Expanded(StateId(1))),
+                        make_arc("0_00_data", StateId(1), Target::Expanded(StateId(0))),
+                        make_arc("0_01_data", StateId(1), Target::Expanded(StateId(2))),
+                        make_arc("01_010_data", StateId(2), Target::Expanded(StateId(3)))));
+
+        let mut state_associations = HashMap::new();
+        state_associations.insert("00", StateId(0));
+        state_associations.insert("0", StateId(1));
+        state_associations.insert("01", StateId(2));
+        state_associations.insert("010", StateId(3));
+        let mut state_ids = StateNamespace::new();
+        mem::swap(&mut state_ids, &mut g.state_ids);
+        assert_eq!(state_ids.to_hash_map(), state_associations);
     }
 }
