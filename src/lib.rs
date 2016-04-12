@@ -1,20 +1,19 @@
 mod hidden;
+pub mod mutators;
+pub mod nav;
+pub mod search;
 
 use std::hash::Hash;
 
 use self::hidden::base::*;
-use self::hidden::nav::make_node;
-use self::hidden::mutators::{make_mut_edge, make_mut_node};
-
-pub use self::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
-pub use self::hidden::mutators::{EdgeExpander, Expanded, MutChildList, MutEdge, MutExpandedEdge,
-                                 MutNode, MutParentList};
-pub use self::hidden::mutators::path::{SearchError, SearchPath, SearchPathIter, PathItem, Traversal};
+use self::hidden::nav::{Node, make_node};
+use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
 
 /// A search graph.
 ///
-/// Supports incremental rollout of game state topology, vertex de-duplication
-/// with transposition tables, and cycle detection. Does not support deletion.
+/// Supports incremental rollout of game state topology and vertex
+/// de-duplication with transposition tables. Limited support is provided for
+/// deletion of components and compaction in memory after deletion.
 ///
 /// - `T`: The type of game states. It is required to derive `Hash` and `Eq` to
 ///   so that it may be stored in a hashtable, where game states are looked up to
@@ -157,14 +156,23 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
             make_mut_edge(self, arc_id)
         }
 
+    /// Returns the number of vertices in the graph.
     pub fn vertex_count(&self) -> usize {
+        // TODO: This is actually the number of vertices we have allocated.
         self.vertices.len()
     }
 
+    /// Returns the number of edges in the graph.
     pub fn edge_count(&self) -> usize {
+        // TODO: This is actually the number of edges we have allocated.
         self.arcs.len()
     }
 
+    /// Deletes all graph components that are not reachable by traversal
+    /// starting from each vertex corresponding to the game states in `roots`.
+    ///
+    /// Game states in `roots` which do not have a corresponding vertex are
+    /// ignored.
     pub fn retain_reachable_from(&mut self, roots: &[T]) {
         let mut root_ids = Vec::with_capacity(roots.len());
         for state in roots.iter() {
@@ -175,6 +183,8 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         self.retain_reachable_from_ids(&root_ids);
     }
 
+    /// As `retain_reachable_from`, but working over raw `StateId`s instead of
+    /// root data.
     fn retain_reachable_from_ids(&mut self, root_ids: &[StateId]) {
         self::hidden::mutators::mark_compact::Collector::retain_reachable(self, root_ids);
     }
@@ -182,16 +192,15 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 
 /// The target of an outgoing graph edge.
 ///
-/// A search graph is built up incrementally. Any vertices are typically added
-/// with all of their edges in the unexpanded state. Graph-modifying operations
-/// which are executed while exploring the game state topology will expand these
-/// edges. Cycle detection is done at edge expansion time.
+/// A search graph is built up incrementally, and this type is used to represent
+/// an edge whose destination vertex isn't yet known. Graph-modifying operations
+/// which are executed while exploring the graph topology may expand such edges.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Target<T, R> {
-    /// Edge has not yet been expanded.
+    /// Edge has not yet been expanded. Associated data may be used to perform
+    /// expansion.
     Unexpanded(R),
-    /// Edge has been expanded and was the expanded edge that lead to the game
-    /// state which it points to. The target of this edge will have a
-    /// backpointer to this edge's source in its parent list.
+    /// Edge has been expanded. Associated data indicates the target vertex. The
+    /// target will have a backpointer to this edge's source in its parent list.
     Expanded(T),
 }

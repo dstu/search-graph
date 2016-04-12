@@ -390,8 +390,7 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
 /// vertex.
 ///
 /// An unexpanded edge is one with known source but unknown target. Expanding an
-/// edge may connect it to an existing vertex (in which case `O(|V|)` cycle
-/// detection is done) or to a new one.
+/// edge may connect it to an existing vertex or create a new one.
 pub struct EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
     id: ArcId,

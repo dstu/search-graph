@@ -1,6 +1,6 @@
 //! Data structures for tracking graph position during local search.
 //!
-//! The main data structure in this module is `SearchPath`, which provides
+//! The main data structure in this module is `Stack`, which provides
 //! memory-safe construction of the path that was traversed when performing
 //! local search on a graph.
 
@@ -53,10 +53,10 @@ pub enum SearchError<E> where E: Error {
 /// In this case, "local search" is a process that starts focused on a single
 /// vertex and incrementally updates which vertex is the focus by traversing
 /// parent or child edges. The history of such operations can be described as a
-/// series of (vertex, edge) pairs, and a `SearchPath` encapsulates this
+/// series of (vertex, edge) pairs, and a `Stack` encapsulates this
 /// history.
 ///
-/// A `SearchPath` points to a head, which is either a graph vertex (whose
+/// A `Stack` points to a head, which is either a graph vertex (whose
 /// incidental edges can then be traversed) or an unexpanded edge (if a
 /// traversal operation chose to follow an unexpanded edge). Operations which
 /// modify graph topology (such as expanding edges) may cause the search path's
@@ -65,7 +65,7 @@ pub enum SearchError<E> where E: Error {
 ///
 /// A path may be consumed to yield a read-write view of the underlying graph
 /// with the `to_head` method.
-pub struct SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
+pub struct Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
     /// The graph that is being searched.
     graph: &'a mut Graph<T, S, A>,
     /// The edges that have been traversed.
@@ -86,16 +86,16 @@ pub enum Traversal {
 
 /// Iterates over elements of a search path, in the order in which they were
 /// traversed, ending with the head.
-pub struct SearchPathIter<'a, 's, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a, 'a: 's {
+pub struct StackIter<'a, 's, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a, 'a: 's {
     /// The path being iterated over.
-    path: &'s SearchPath<'a, T, S, A>,
+    path: &'s Stack<'a, T, S, A>,
     /// The position through path.
     position: usize,
 }
 
 /// Sum type for path elements. All elements except the head are represented
-/// with the `PathItem::Item` variant.
-pub enum PathItem<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
+/// with the `StackItem::Item` variant.
+pub enum StackItem<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
     /// Non-head item, a (vertex, edge) pair.
     Item(Edge<'a, T, S, A>),
     /// The path head, which may resolve to a vertex or an unexpanded edge.
@@ -133,10 +133,10 @@ impl<E> Error for SearchError<E> where E: Error {
     }
 }
 
-impl<'a, T, S, A> SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
-    /// Creates a new `SearchPath` from a mutable reference into a graph.
+impl<'a, T, S, A> Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
+    /// Creates a new `Stack` from a mutable reference into a graph.
     pub fn new(node: MutNode<'a, T, S, A>) -> Self {
-        SearchPath {
+        Stack {
             graph: node.graph,
             path: Vec::new(),
             head: Head::Vertex(node.id),
@@ -246,40 +246,40 @@ impl<'a, T, S, A> SearchPath<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a
 
     /// Returns an iterator over path elements. Iteration is in order of
     /// traversal (i.e., the last element of the iteration is the path head).
-    pub fn iter<'s>(&'s self) -> SearchPathIter<'a, 's, T, S, A> {
-        SearchPathIter::new(self)
+    pub fn iter<'s>(&'s self) -> StackIter<'a, 's, T, S, A> {
+        StackIter::new(self)
     }
 
     /// Returns the `i`th item of the path. Path items are indexed in order of
     /// traversal (i.e., the last element is the path head).
-    pub fn item<'s>(&'s self, i: usize) -> Option<PathItem<'s, T, S, A>> {
+    pub fn item<'s>(&'s self, i: usize) -> Option<StackItem<'s, T, S, A>> {
         if i == self.path.len() {
-            Some(PathItem::Head(self.head()))
+            Some(StackItem::Head(self.head()))
         } else {
             match self.path.get(i) {
                 Some(edge_id) =>
-                    Some(PathItem::Item(make_edge(self.graph, *edge_id))),
+                    Some(StackItem::Item(make_edge(self.graph, *edge_id))),
                 None => None,
             }
         }
     }
 }
 
-impl<'a, 's, T, S, A> SearchPathIter<'a, 's, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a, 'a: 's {
+impl<'a, 's, T, S, A> StackIter<'a, 's, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a, 'a: 's {
     /// Creates a new path iterator from a borrow of a path.
-    fn new(path: &'s SearchPath<'a, T, S, A>) -> Self {
-        SearchPathIter {
+    fn new(path: &'s Stack<'a, T, S, A>) -> Self {
+        StackIter {
             path: path,
             position: 0,
         }
     }
 }
 
-impl<'a, 's, T, S, A> Iterator for SearchPathIter<'a, 's, T, S, A>
+impl<'a, 's, T, S, A> Iterator for StackIter<'a, 's, T, S, A>
     where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a, 'a: 's {
-        type Item = PathItem<'s, T, S, A>;
+        type Item = StackItem<'s, T, S, A>;
 
-        fn next(&mut self) -> Option<PathItem<'s, T, S, A>> {
+        fn next(&mut self) -> Option<StackItem<'s, T, S, A>> {
             let i = self.position;
             self.position += 1;
             self.path.item(i)
@@ -299,8 +299,8 @@ mod test {
     use super::{SearchError, Traversal};
 
     type Graph = ::Graph<&'static str, &'static str, ()>;
-    type Node<'a> = ::Node<'a, &'static str, &'static str, ()>;
-    type SearchPath<'a> = super::SearchPath<'a, &'static str, &'static str, ()>;
+    type Node<'a> = ::nav::Node<'a, &'static str, &'static str, ()>;
+    type Stack<'a> = super::Stack<'a, &'static str, &'static str, ()>;
 
     fn add_edge(g: &mut Graph, source: &'static str, dest: &'static str) {
         g.add_edge(source, |_| source, dest, |_| dest, ());
@@ -324,7 +324,7 @@ mod test {
         let mut g = Graph::new();
         let root = g.add_root("root", "root");
 
-        let path = SearchPath::new(root);
+        let path = Stack::new(root);
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
         match path.head() {
@@ -338,7 +338,7 @@ mod test {
         let mut g = Graph::new();
         let root = g.add_root("root", "root");
 
-        let mut path = SearchPath::new(root);
+        let mut path = Stack::new(root);
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -365,7 +365,7 @@ mod test {
         let mut g = Graph::new();
         let root = g.add_root("root", "root");
 
-        let mut path = SearchPath::new(root);
+        let mut path = Stack::new(root);
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -414,7 +414,7 @@ mod test {
             Ok(Some(Traversal::Child(1)))
         }
 
-        let mut path = SearchPath::new(g.get_node_mut(&"A").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -470,7 +470,7 @@ mod test {
             Err(MockError(()))
         }
 
-        let mut path = SearchPath::new(g.get_node_mut(&"A").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -500,7 +500,7 @@ mod test {
             Ok(Some(Traversal::Child(0)))
         }
 
-        let mut path = SearchPath::new(g.get_node_mut(&"root").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -527,7 +527,7 @@ mod test {
         let mut g = Graph::new();
         let root = g.add_root("root", "root");
 
-        let mut path = SearchPath::new(root);
+        let mut path = Stack::new(root);
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -554,7 +554,7 @@ mod test {
         let mut g = Graph::new();
         let root = g.add_root("root", "root");
 
-        let mut path = SearchPath::new(root);
+        let mut path = Stack::new(root);
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -604,7 +604,7 @@ mod test {
             Ok(Some(Traversal::Child(1)))
         }
 
-        let mut path = SearchPath::new(g.get_node_mut(&"A").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -708,7 +708,7 @@ mod test {
             Err(MockError(()))
         }
 
-        let mut path = SearchPath::new(g.get_node_mut(&"A").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -738,7 +738,7 @@ mod test {
             Ok(Some(Traversal::Child(0)))
         }
 
-        let mut path = SearchPath::new(g.get_node_mut(&"root").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -780,7 +780,7 @@ mod test {
         let mut g = Graph::new();
         g.add_root("root", "root");
 
-        let path = SearchPath::new(g.add_root("root", "root"));
+        let path = Stack::new(g.add_root("root", "root"));
         assert_eq!(1, path.len());
         match path.head() {
             Target::Expanded(n) => assert_eq!("root", *n.get_data()),
@@ -790,7 +790,7 @@ mod test {
         let mut iter_items = path.iter();
         assert_eq!((1, Some(1)), iter_items.size_hint());
         match iter_items.next() {
-            Some(super::PathItem::Head(Target::Expanded(n))) => assert_eq!("root", *n.get_data()),
+            Some(super::StackItem::Head(Target::Expanded(n))) => assert_eq!("root", *n.get_data()),
             _ => panic!(),
         }
         assert!(iter_items.next().is_none());
@@ -808,7 +808,7 @@ mod test {
             Ok(Some(Traversal::Child(0)))
         }
 
-        let mut path = SearchPath::new(g.get_node_mut(&"root").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
         match path.push(traverse_first_child) {
             Ok(Some(e)) => assert_eq!("root", *e.get_source().get_data()),
             _ => panic!(),
@@ -830,7 +830,7 @@ mod test {
         let mut iter_items = path.iter();
         assert_eq!((4, Some(4)), iter_items.size_hint());
         match iter_items.next() {
-            Some(super::PathItem::Item(e)) => {
+            Some(super::StackItem::Item(e)) => {
                 assert_eq!("root", *e.get_source().get_data());
                 match e.get_target() {
                     Target::Expanded(n) => assert_eq!("A", *n.get_data()),
@@ -840,7 +840,7 @@ mod test {
             _ => panic!(),
         }
         match iter_items.next() {
-            Some(super::PathItem::Item(e)) => {
+            Some(super::StackItem::Item(e)) => {
                 assert_eq!("A", *e.get_source().get_data());
                 match e.get_target() {
                     Target::Expanded(n) => assert_eq!("B", *n.get_data()),
@@ -850,7 +850,7 @@ mod test {
             _ => panic!(),
         }
         match iter_items.next() {
-            Some(super::PathItem::Head(Target::Unexpanded(e))) => {
+            Some(super::StackItem::Head(Target::Unexpanded(e))) => {
                 assert_eq!("B", *e.get_source().get_data());
                 match e.get_target() {
                     Target::Unexpanded(()) => (),
@@ -866,7 +866,7 @@ mod test {
     fn pop_empty_is_none_ok() {
         let mut g = Graph::new();
 
-        let mut path = SearchPath::new(g.add_root("root", "root"));
+        let mut path = Stack::new(g.add_root("root", "root"));
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
         assert!(path.pop().is_none());
@@ -877,7 +877,7 @@ mod test {
         let mut g = Graph::new();
         add_edge(&mut g, "root", "A");
 
-        let mut path = SearchPath::new(g.get_node_mut(&"root").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -916,7 +916,7 @@ mod test {
         let mut g = Graph::new();
         add_edge(&mut g, "root", "A");
 
-        let path = SearchPath::new(g.get_node_mut(&"root").unwrap());
+        let path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -931,7 +931,7 @@ mod test {
         let mut g = Graph::new();
         add_edge(&mut g, "root", "A");
 
-        let mut path = SearchPath::new(g.get_node_mut(&"root").unwrap());
+        let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 
@@ -960,7 +960,7 @@ mod test {
         let mut n = g.get_node_mut(&"root").unwrap();
         n.get_child_list_mut().add_child(());
 
-        let mut path = SearchPath::new(n);
+        let mut path = Stack::new(n);
         assert_eq!(1, path.len());
         assert!(path.is_head_expanded());
 

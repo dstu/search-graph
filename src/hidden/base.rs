@@ -118,8 +118,8 @@ pub struct Arc<A> {
     /// Source vertex.
     pub source: StateId,
     /// Target vertex. If this arc is unexpanded, it is
-    /// `Target::Unexpanded(())`; otherwise, it is either `Target::Cycle(id)` or
-    /// `Target::Expanded(id)` for target vertex with a `StateId` of `id`.
+    /// `Target::Unexpanded(())`; otherwise, it is `Target::Expanded(id)` for
+    /// target vertex with a `StateId` of `id`.
     pub target: Target<StateId, ()>,
 }
 
