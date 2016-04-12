@@ -604,6 +604,16 @@
 <span id="561">561</span>
 <span id="562">562</span>
 <span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>clone</span>::<span class='ident'>Clone</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Eq</span>;
@@ -615,6 +625,7 @@
 <span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>nav</span>::{<span class='ident'>make_child_list</span>, <span class='ident'>make_edge</span>, <span class='ident'>make_node</span>, <span class='ident'>make_parent_list</span>};
 
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>path</span>;
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>mark_compact</span>;
 
 <span class='doccomment'>/// Mutable handle to a graph vertex (&quot;node handle&quot;).</span>
 <span class='doccomment'>///</span>
@@ -715,6 +726,13 @@
     <span class='doccomment'>/// play, but the resulting node can be cloned freely.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_node</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
         <span class='ident'>make_node</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='self'>self</span>.<span class='ident'>id</span>)
+    }
+
+    <span class='doccomment'>/// Prunes the underlying graph by removing components not reachable from</span>
+    <span class='doccomment'>/// this node.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>retain_reachable</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
+        <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>retain_reachable_from_ids</span>(<span class='kw-2'>&amp;</span>[<span class='self'>self</span>.<span class='ident'>id</span>]);
+        <span class='self'>self</span>.<span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>StateId</span>(<span class='number'>0</span>);
     }
 }
 
@@ -989,8 +1007,7 @@
 <span class='doccomment'>/// vertex.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// An unexpanded edge is one with known source but unknown target. Expanding an</span>
-<span class='doccomment'>/// edge may connect it to an existing vertex (in which case `O(|V|)` cycle</span>
-<span class='doccomment'>/// detection is done) or to a new one.</span>
+<span class='doccomment'>/// edge may connect it to an existing vertex or create a new one.</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>EdgeExpander</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
     <span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
     <span class='ident'>id</span>: <span class='ident'>ArcId</span>,
@@ -1040,7 +1057,10 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>expand_to_edge</span><span class='op'>&lt;</span><span class='ident'>G</span><span class='op'>&gt;</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>state</span>: <span class='ident'>T</span>, <span class='ident'>g</span>: <span class='ident'>G</span>) <span class='op'>-&gt;</span> <span class='ident'>Expanded</span><span class='op'>&lt;</span><span class='ident'>MutExpandedEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span>
         <span class='kw'>where</span> <span class='ident'>G</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>S</span> {
             <span class='kw'>let</span> (<span class='ident'>target_id</span>, <span class='ident'>new_vertex</span>) <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>state_ids</span>.<span class='ident'>get_or_insert</span>(<span class='ident'>state</span>) {
-                <span class='ident'>NamespaceInsertion</span>::<span class='ident'>Present</span>(<span class='ident'>target_id</span>) <span class='op'>=&gt;</span> (<span class='ident'>target_id</span>, <span class='boolval'>false</span>),
+                <span class='ident'>NamespaceInsertion</span>::<span class='ident'>Present</span>(<span class='ident'>target_id</span>) <span class='op'>=&gt;</span> {
+                    <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_vertex_mut</span>(<span class='ident'>target_id</span>).<span class='ident'>parents</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>id</span>);
+                    (<span class='ident'>target_id</span>, <span class='boolval'>false</span>)
+                },
                 <span class='ident'>NamespaceInsertion</span>::<span class='ident'>New</span>(<span class='ident'>target_id</span>) <span class='op'>=&gt;</span> {
                     <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_vertex</span>(<span class='ident'>g</span>()).<span class='ident'>parents</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>id</span>);
                     (<span class='ident'>target_id</span>, <span class='boolval'>true</span>)

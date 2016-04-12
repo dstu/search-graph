@@ -212,24 +212,58 @@
 <span id="169">169</span>
 <span id="170">170</span>
 <span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
 </pre><pre class='rust '>
 <span class='kw'>mod</span> <span class='ident'>hidden</span>;
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>mutators</span>;
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>nav</span>;
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>search</span>;
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>hash</span>::<span class='ident'>Hash</span>;
 
 <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>base</span>::<span class='op'>*</span>;
-<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>nav</span>::<span class='ident'>make_node</span>;
-<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>make_mut_edge</span>, <span class='ident'>make_mut_node</span>};
-
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>nav</span>::{<span class='ident'>ChildList</span>, <span class='ident'>ChildListIter</span>, <span class='ident'>Edge</span>, <span class='ident'>Node</span>, <span class='ident'>ParentList</span>, <span class='ident'>ParentListIter</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>EdgeExpander</span>, <span class='ident'>Expanded</span>, <span class='ident'>MutChildList</span>, <span class='ident'>MutEdge</span>, <span class='ident'>MutExpandedEdge</span>,
-                                 <span class='ident'>MutNode</span>, <span class='ident'>MutParentList</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::<span class='ident'>path</span>::{<span class='ident'>SearchError</span>, <span class='ident'>SearchPath</span>, <span class='ident'>SearchPathIter</span>, <span class='ident'>PathItem</span>, <span class='ident'>Traversal</span>};
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>nav</span>::{<span class='ident'>Node</span>, <span class='ident'>make_node</span>};
+<span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>MutEdge</span>, <span class='ident'>MutNode</span>, <span class='ident'>make_mut_edge</span>, <span class='ident'>make_mut_node</span>};
 
 <span class='doccomment'>/// A search graph.</span>
 <span class='doccomment'>///</span>
-<span class='doccomment'>/// Supports incremental rollout of game state topology, vertex de-duplication</span>
-<span class='doccomment'>/// with transposition tables, and cycle detection. Does not support deletion.</span>
+<span class='doccomment'>/// Supports incremental rollout of game state topology and vertex</span>
+<span class='doccomment'>/// de-duplication with transposition tables. Limited support is provided for</span>
+<span class='doccomment'>/// deletion of components and compaction in memory after deletion.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// - `T`: The type of game states. It is required to derive `Hash` and `Eq` to</span>
 <span class='doccomment'>///   so that it may be stored in a hashtable, where game states are looked up to</span>
@@ -284,7 +318,11 @@
     <span class='doccomment'>/// not). That must be done by calling `add_arc` with the new vertex</span>
     <span class='doccomment'>/// `StateId`.</span>
     <span class='kw'>fn</span> <span class='ident'>add_vertex</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>S</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Vertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>vertices</span>.<span class='ident'>push</span>(<span class='ident'>Vertex</span> { <span class='ident'>data</span>: <span class='ident'>data</span>, <span class='ident'>parents</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(), <span class='ident'>children</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(), });
+        <span class='self'>self</span>.<span class='ident'>vertices</span>.<span class='ident'>push</span>(<span class='ident'>Vertex</span> {
+            <span class='ident'>data</span>: <span class='ident'>data</span>,
+            <span class='ident'>parents</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
+            <span class='ident'>children</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
+        });
         <span class='self'>self</span>.<span class='ident'>vertices</span>.<span class='ident'>last_mut</span>().<span class='ident'>unwrap</span>()
     }
 
@@ -367,21 +405,53 @@
             <span class='kw'>let</span> <span class='ident'>arc_id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>add_arc</span>(<span class='ident'>edge_data</span>, <span class='ident'>source_id</span>, <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>dest_id</span>));
             <span class='ident'>make_mut_edge</span>(<span class='self'>self</span>, <span class='ident'>arc_id</span>)
         }
+
+    <span class='doccomment'>/// Returns the number of vertices in the graph.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>vertex_count</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+        <span class='comment'>// TODO: This is actually the number of vertices we have allocated.</span>
+        <span class='self'>self</span>.<span class='ident'>vertices</span>.<span class='ident'>len</span>()
+    }
+
+    <span class='doccomment'>/// Returns the number of edges in the graph.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>edge_count</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+        <span class='comment'>// TODO: This is actually the number of edges we have allocated.</span>
+        <span class='self'>self</span>.<span class='ident'>arcs</span>.<span class='ident'>len</span>()
+    }
+
+    <span class='doccomment'>/// Deletes all graph components that are not reachable by traversal</span>
+    <span class='doccomment'>/// starting from each vertex corresponding to the game states in `roots`.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Game states in `roots` which do not have a corresponding vertex are</span>
+    <span class='doccomment'>/// ignored.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>retain_reachable_from</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>roots</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>T</span>]) {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>root_ids</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>roots</span>.<span class='ident'>len</span>());
+        <span class='kw'>for</span> <span class='ident'>state</span> <span class='kw'>in</span> <span class='ident'>roots</span>.<span class='ident'>iter</span>() {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>id</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>state_ids</span>.<span class='ident'>get</span>(<span class='ident'>state</span>) {
+                <span class='ident'>root_ids</span>.<span class='ident'>push</span>(<span class='ident'>id</span>);
+            }
+        }
+        <span class='self'>self</span>.<span class='ident'>retain_reachable_from_ids</span>(<span class='kw-2'>&amp;</span><span class='ident'>root_ids</span>);
+    }
+
+    <span class='doccomment'>/// As `retain_reachable_from`, but working over raw `StateId`s instead of</span>
+    <span class='doccomment'>/// root data.</span>
+    <span class='kw'>fn</span> <span class='ident'>retain_reachable_from_ids</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>root_ids</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>StateId</span>]) {
+        <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::<span class='ident'>mark_compact</span>::<span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='self'>self</span>, <span class='ident'>root_ids</span>);
+    }
 }
 
 <span class='doccomment'>/// The target of an outgoing graph edge.</span>
 <span class='doccomment'>///</span>
-<span class='doccomment'>/// A search graph is built up incrementally. Any vertices are typically added</span>
-<span class='doccomment'>/// with all of their edges in the unexpanded state. Graph-modifying operations</span>
-<span class='doccomment'>/// which are executed while exploring the game state topology will expand these</span>
-<span class='doccomment'>/// edges. Cycle detection is done at edge expansion time.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>Debug</span>)]</span>
+<span class='doccomment'>/// A search graph is built up incrementally, and this type is used to represent</span>
+<span class='doccomment'>/// an edge whose destination vertex isn&#39;t yet known. Graph-modifying operations</span>
+<span class='doccomment'>/// which are executed while exploring the graph topology may expand such edges.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>Debug</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>R</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Edge has not yet been expanded.</span>
+    <span class='doccomment'>/// Edge has not yet been expanded. Associated data may be used to perform</span>
+    <span class='doccomment'>/// expansion.</span>
     <span class='ident'>Unexpanded</span>(<span class='ident'>R</span>),
-    <span class='doccomment'>/// Edge has been expanded and was the expanded edge that lead to the game</span>
-    <span class='doccomment'>/// state which it points to. The target of this edge will have a</span>
-    <span class='doccomment'>/// backpointer to this edge&#39;s source in its parent list.</span>
+    <span class='doccomment'>/// Edge has been expanded. Associated data indicates the target vertex. The</span>
+    <span class='doccomment'>/// target will have a backpointer to this edge&#39;s source in its parent list.</span>
     <span class='ident'>Expanded</span>(<span class='ident'>T</span>),
 }
 </pre>

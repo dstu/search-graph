@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `search_graph` crate.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, search_graph">
+    <meta name="description" content="API documentation for the Rust `search` mod in crate `search_graph`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, search">
 
-    <title>search_graph - Rust</title>
+    <title>search_graph::search - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
     
@@ -27,7 +27,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'></p><script>window.sidebarCurrent = {name: 'search_graph', ty: 'mod', relpath: '../'};</script>
+        <p class='location'><a href='../index.html'>search_graph</a></p><script>window.sidebarCurrent = {name: 'search', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,54 +42,56 @@
     </nav>
 
     <section id='main' class="content mod">
-<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>search_graph</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>search_graph</a>::<wbr><a class='mod' href=''>search</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/search_graph/src/lib.rs.html#1-206' title='goto source code'>[src]</a></span></h1>
-<h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+        </span><a id='src-988' class='srclink' href='../../src/search_graph/src/search.rs.html#1-3' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Data structures and algorithms for local graph search.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
                     <tr class=' module-item'>
-                        <td><a class='mod' href='mutators/index.html'
-                               title='search_graph::mutators'>mutators</a></td>
+                        <td><a class='struct' href='struct.Stack.html'
+                               title='search_graph::search::Stack'>Stack</a></td>
                         <td class='docblock short'>
-                             <p>Support for navigation of a graph that allows modifications to graph
-topology and full read-write access to graph data.</p>
+                             <p>Tracks the path through a graph that is followed when performing local search.</p>
                         </td>
                     </tr>
                 
                     <tr class=' module-item'>
-                        <td><a class='mod' href='nav/index.html'
-                               title='search_graph::nav'>nav</a></td>
+                        <td><a class='struct' href='struct.StackIter.html'
+                               title='search_graph::search::StackIter'>StackIter</a></td>
                         <td class='docblock short'>
-                             <p>Support for navigation of a graph without allowing modifications to graph
-topology.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='mod' href='search/index.html'
-                               title='search_graph::search'>search</a></td>
-                        <td class='docblock short'>
-                             <p>Data structures and algorithms for local graph search.</p>
-                        </td>
-                    </tr>
-                </table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
-<table>
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.Graph.html'
-                               title='search_graph::Graph'>Graph</a></td>
-                        <td class='docblock short'>
-                             <p>A search graph.</p>
+                             <p>Iterates over elements of a search path, in the order in which they were
+traversed, ending with the head.</p>
                         </td>
                     </tr>
                 </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
                     <tr class=' module-item'>
-                        <td><a class='enum' href='enum.Target.html'
-                               title='search_graph::Target'>Target</a></td>
+                        <td><a class='enum' href='enum.SearchError.html'
+                               title='search_graph::search::SearchError'>SearchError</a></td>
                         <td class='docblock short'>
-                             <p>The target of an outgoing graph edge.</p>
+                             <p>Errors that may arise during search.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.StackItem.html'
+                               title='search_graph::search::StackItem'>StackItem</a></td>
+                        <td class='docblock short'>
+                             <p>Sum type for path elements. All elements except the head are represented
+with the <code>StackItem::Item</code> variant.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.Traversal.html'
+                               title='search_graph::search::Traversal'>Traversal</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates which edge of a vertex to traverse. Edges are denoted by a 0-based
+index. This type is used by functions provided during graph search to
+indicate which child or parent edges to traverse.</p>
                         </td>
                     </tr>
                 </table></section>
@@ -144,13 +146,13 @@ topology.</p>
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../";
         window.currentCrate = "search_graph";
         window.playgroundUrl = "";
     </script>
-    <script src="../jquery.js"></script>
-    <script src="../main.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
     
-    <script defer src="../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

@@ -1028,7 +1028,7 @@
 </pre><pre class='rust '>
 <span class='doccomment'>//! Data structures for tracking graph position during local search.</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! The main data structure in this module is `SearchPath`, which provides</span>
+<span class='doccomment'>//! The main data structure in this module is `Stack`, which provides</span>
 <span class='doccomment'>//! memory-safe construction of the path that was traversed when performing</span>
 <span class='doccomment'>//! local search on a graph.</span>
 
@@ -1081,10 +1081,10 @@
 <span class='doccomment'>/// In this case, &quot;local search&quot; is a process that starts focused on a single</span>
 <span class='doccomment'>/// vertex and incrementally updates which vertex is the focus by traversing</span>
 <span class='doccomment'>/// parent or child edges. The history of such operations can be described as a</span>
-<span class='doccomment'>/// series of (vertex, edge) pairs, and a `SearchPath` encapsulates this</span>
+<span class='doccomment'>/// series of (vertex, edge) pairs, and a `Stack` encapsulates this</span>
 <span class='doccomment'>/// history.</span>
 <span class='doccomment'>///</span>
-<span class='doccomment'>/// A `SearchPath` points to a head, which is either a graph vertex (whose</span>
+<span class='doccomment'>/// A `Stack` points to a head, which is either a graph vertex (whose</span>
 <span class='doccomment'>/// incidental edges can then be traversed) or an unexpanded edge (if a</span>
 <span class='doccomment'>/// traversal operation chose to follow an unexpanded edge). Operations which</span>
 <span class='doccomment'>/// modify graph topology (such as expanding edges) may cause the search path&#39;s</span>
@@ -1093,7 +1093,7 @@
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// A path may be consumed to yield a read-write view of the underlying graph</span>
 <span class='doccomment'>/// with the `to_head` method.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>SearchPath</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Stack</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
     <span class='doccomment'>/// The graph that is being searched.</span>
     <span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
     <span class='doccomment'>/// The edges that have been traversed.</span>
@@ -1114,16 +1114,16 @@
 
 <span class='doccomment'>/// Iterates over elements of a search path, in the order in which they were</span>
 <span class='doccomment'>/// traversed, ending with the head.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>SearchPathIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;a</span>: <span class='lifetime'>&#39;s</span> {
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>StackIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;a</span>: <span class='lifetime'>&#39;s</span> {
     <span class='doccomment'>/// The path being iterated over.</span>
-    <span class='ident'>path</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>SearchPath</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
+    <span class='ident'>path</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Stack</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
     <span class='doccomment'>/// The position through path.</span>
     <span class='ident'>position</span>: <span class='ident'>usize</span>,
 }
 
 <span class='doccomment'>/// Sum type for path elements. All elements except the head are represented</span>
-<span class='doccomment'>/// with the `PathItem::Item` variant.</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>PathItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
+<span class='doccomment'>/// with the `StackItem::Item` variant.</span>
+<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>StackItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
     <span class='doccomment'>/// Non-head item, a (vertex, edge) pair.</span>
     <span class='ident'>Item</span>(<span class='ident'>Edge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>),
     <span class='doccomment'>/// The path head, which may resolve to a vertex or an unexpanded edge.</span>
@@ -1161,10 +1161,10 @@
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>SearchPath</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
-    <span class='doccomment'>/// Creates a new `SearchPath` from a mutable reference into a graph.</span>
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>Stack</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
+    <span class='doccomment'>/// Creates a new `Stack` from a mutable reference into a graph.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>node</span>: <span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
-        <span class='ident'>SearchPath</span> {
+        <span class='ident'>Stack</span> {
             <span class='ident'>graph</span>: <span class='ident'>node</span>.<span class='ident'>graph</span>,
             <span class='ident'>path</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
             <span class='ident'>head</span>: <span class='ident'>Head</span>::<span class='ident'>Vertex</span>(<span class='ident'>node</span>.<span class='ident'>id</span>),
@@ -1274,40 +1274,40 @@
 
     <span class='doccomment'>/// Returns an iterator over path elements. Iteration is in order of</span>
     <span class='doccomment'>/// traversal (i.e., the last element of the iteration is the path head).</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>SearchPathIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='ident'>SearchPathIter</span>::<span class='ident'>new</span>(<span class='self'>self</span>)
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>StackIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
+        <span class='ident'>StackIter</span>::<span class='ident'>new</span>(<span class='self'>self</span>)
     }
 
     <span class='doccomment'>/// Returns the `i`th item of the path. Path items are indexed in order of</span>
     <span class='doccomment'>/// traversal (i.e., the last element is the path head).</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>item</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>, <span class='ident'>i</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>PathItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>item</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>, <span class='ident'>i</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>StackItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span> {
         <span class='kw'>if</span> <span class='ident'>i</span> <span class='op'>==</span> <span class='self'>self</span>.<span class='ident'>path</span>.<span class='ident'>len</span>() {
-            <span class='prelude-val'>Some</span>(<span class='ident'>PathItem</span>::<span class='ident'>Head</span>(<span class='self'>self</span>.<span class='ident'>head</span>()))
+            <span class='prelude-val'>Some</span>(<span class='ident'>StackItem</span>::<span class='ident'>Head</span>(<span class='self'>self</span>.<span class='ident'>head</span>()))
         } <span class='kw'>else</span> {
             <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>path</span>.<span class='ident'>get</span>(<span class='ident'>i</span>) {
                 <span class='prelude-val'>Some</span>(<span class='ident'>edge_id</span>) <span class='op'>=&gt;</span>
-                    <span class='prelude-val'>Some</span>(<span class='ident'>PathItem</span>::<span class='ident'>Item</span>(<span class='ident'>make_edge</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='op'>*</span><span class='ident'>edge_id</span>))),
+                    <span class='prelude-val'>Some</span>(<span class='ident'>StackItem</span>::<span class='ident'>Item</span>(<span class='ident'>make_edge</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='op'>*</span><span class='ident'>edge_id</span>))),
                 <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
             }
         }
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>SearchPathIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;a</span>: <span class='lifetime'>&#39;s</span> {
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>StackIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;a</span>: <span class='lifetime'>&#39;s</span> {
     <span class='doccomment'>/// Creates a new path iterator from a borrow of a path.</span>
-    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>path</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>SearchPath</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
-        <span class='ident'>SearchPathIter</span> {
+    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>path</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Stack</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
+        <span class='ident'>StackIter</span> {
             <span class='ident'>path</span>: <span class='ident'>path</span>,
             <span class='ident'>position</span>: <span class='number'>0</span>,
         }
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>SearchPathIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>StackIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>
     <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;a</span>: <span class='lifetime'>&#39;s</span> {
-        <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>PathItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>;
+        <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>StackItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>;
 
-        <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>PathItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span> {
+        <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>StackItem</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span> {
             <span class='kw'>let</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>position</span>;
             <span class='self'>self</span>.<span class='ident'>position</span> <span class='op'>+=</span> <span class='number'>1</span>;
             <span class='self'>self</span>.<span class='ident'>path</span>.<span class='ident'>item</span>(<span class='ident'>i</span>)
@@ -1327,8 +1327,8 @@
     <span class='kw'>use</span> <span class='ident'>super</span>::{<span class='ident'>SearchError</span>, <span class='ident'>Traversal</span>};
 
     <span class='kw'>type</span> <span class='ident'>Graph</span> <span class='op'>=</span> ::<span class='ident'>Graph</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, ()<span class='op'>&gt;</span>;
-    <span class='kw'>type</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='op'>=</span> ::<span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, ()<span class='op'>&gt;</span>;
-    <span class='kw'>type</span> <span class='ident'>SearchPath</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>super</span>::<span class='ident'>SearchPath</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, ()<span class='op'>&gt;</span>;
+    <span class='kw'>type</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='op'>=</span> ::<span class='ident'>nav</span>::<span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, ()<span class='op'>&gt;</span>;
+    <span class='kw'>type</span> <span class='ident'>Stack</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>super</span>::<span class='ident'>Stack</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, ()<span class='op'>&gt;</span>;
 
     <span class='kw'>fn</span> <span class='ident'>add_edge</span>(<span class='ident'>g</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Graph</span>, <span class='ident'>source</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>dest</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>) {
         <span class='ident'>g</span>.<span class='ident'>add_edge</span>(<span class='ident'>source</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>source</span>, <span class='ident'>dest</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>dest</span>, ());
@@ -1352,7 +1352,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='kw'>let</span> <span class='ident'>root</span> <span class='op'>=</span> <span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>);
 
-        <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
+        <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
         <span class='kw'>match</span> <span class='ident'>path</span>.<span class='ident'>head</span>() {
@@ -1366,7 +1366,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='kw'>let</span> <span class='ident'>root</span> <span class='op'>=</span> <span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>);
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1393,7 +1393,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='kw'>let</span> <span class='ident'>root</span> <span class='op'>=</span> <span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>);
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1442,7 +1442,7 @@
             <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>Traversal</span>::<span class='ident'>Child</span>(<span class='number'>1</span>)))
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1498,7 +1498,7 @@
             <span class='prelude-val'>Err</span>(<span class='ident'>MockError</span>(()))
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1528,7 +1528,7 @@
             <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>Traversal</span>::<span class='ident'>Child</span>(<span class='number'>0</span>)))
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1555,7 +1555,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='kw'>let</span> <span class='ident'>root</span> <span class='op'>=</span> <span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>);
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1582,7 +1582,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='kw'>let</span> <span class='ident'>root</span> <span class='op'>=</span> <span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>);
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>root</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1632,7 +1632,7 @@
             <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>Traversal</span>::<span class='ident'>Child</span>(<span class='number'>1</span>)))
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1736,7 +1736,7 @@
             <span class='prelude-val'>Err</span>(<span class='ident'>MockError</span>(()))
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;A&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1766,7 +1766,7 @@
             <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>Traversal</span>::<span class='ident'>Child</span>(<span class='number'>0</span>)))
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1808,7 +1808,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>);
 
-        <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>));
+        <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='kw'>match</span> <span class='ident'>path</span>.<span class='ident'>head</span>() {
             <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>n</span>) <span class='op'>=&gt;</span> <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;root&quot;</span>, <span class='op'>*</span><span class='ident'>n</span>.<span class='ident'>get_data</span>()),
@@ -1818,7 +1818,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>iter_items</span> <span class='op'>=</span> <span class='ident'>path</span>.<span class='ident'>iter</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>((<span class='number'>1</span>, <span class='prelude-val'>Some</span>(<span class='number'>1</span>)), <span class='ident'>iter_items</span>.<span class='ident'>size_hint</span>());
         <span class='kw'>match</span> <span class='ident'>iter_items</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>PathItem</span>::<span class='ident'>Head</span>(<span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>n</span>))) <span class='op'>=&gt;</span> <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;root&quot;</span>, <span class='op'>*</span><span class='ident'>n</span>.<span class='ident'>get_data</span>()),
+            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>StackItem</span>::<span class='ident'>Head</span>(<span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>n</span>))) <span class='op'>=&gt;</span> <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;root&quot;</span>, <span class='op'>*</span><span class='ident'>n</span>.<span class='ident'>get_data</span>()),
             _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
         }
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>iter_items</span>.<span class='ident'>next</span>().<span class='ident'>is_none</span>());
@@ -1836,7 +1836,7 @@
             <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>Traversal</span>::<span class='ident'>Child</span>(<span class='number'>0</span>)))
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='kw'>match</span> <span class='ident'>path</span>.<span class='ident'>push</span>(<span class='ident'>traverse_first_child</span>) {
             <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;root&quot;</span>, <span class='op'>*</span><span class='ident'>e</span>.<span class='ident'>get_source</span>().<span class='ident'>get_data</span>()),
             _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
@@ -1858,7 +1858,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>iter_items</span> <span class='op'>=</span> <span class='ident'>path</span>.<span class='ident'>iter</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>((<span class='number'>4</span>, <span class='prelude-val'>Some</span>(<span class='number'>4</span>)), <span class='ident'>iter_items</span>.<span class='ident'>size_hint</span>());
         <span class='kw'>match</span> <span class='ident'>iter_items</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>PathItem</span>::<span class='ident'>Item</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> {
+            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>StackItem</span>::<span class='ident'>Item</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> {
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;root&quot;</span>, <span class='op'>*</span><span class='ident'>e</span>.<span class='ident'>get_source</span>().<span class='ident'>get_data</span>());
                 <span class='kw'>match</span> <span class='ident'>e</span>.<span class='ident'>get_target</span>() {
                     <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>n</span>) <span class='op'>=&gt;</span> <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;A&quot;</span>, <span class='op'>*</span><span class='ident'>n</span>.<span class='ident'>get_data</span>()),
@@ -1868,7 +1868,7 @@
             _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
         }
         <span class='kw'>match</span> <span class='ident'>iter_items</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>PathItem</span>::<span class='ident'>Item</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> {
+            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>StackItem</span>::<span class='ident'>Item</span>(<span class='ident'>e</span>)) <span class='op'>=&gt;</span> {
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;A&quot;</span>, <span class='op'>*</span><span class='ident'>e</span>.<span class='ident'>get_source</span>().<span class='ident'>get_data</span>());
                 <span class='kw'>match</span> <span class='ident'>e</span>.<span class='ident'>get_target</span>() {
                     <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>n</span>) <span class='op'>=&gt;</span> <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;B&quot;</span>, <span class='op'>*</span><span class='ident'>n</span>.<span class='ident'>get_data</span>()),
@@ -1878,7 +1878,7 @@
             _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
         }
         <span class='kw'>match</span> <span class='ident'>iter_items</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>PathItem</span>::<span class='ident'>Head</span>(<span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(<span class='ident'>e</span>))) <span class='op'>=&gt;</span> {
+            <span class='prelude-val'>Some</span>(<span class='ident'>super</span>::<span class='ident'>StackItem</span>::<span class='ident'>Head</span>(<span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(<span class='ident'>e</span>))) <span class='op'>=&gt;</span> {
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;B&quot;</span>, <span class='op'>*</span><span class='ident'>e</span>.<span class='ident'>get_source</span>().<span class='ident'>get_data</span>());
                 <span class='kw'>match</span> <span class='ident'>e</span>.<span class='ident'>get_target</span>() {
                     <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(()) <span class='op'>=&gt;</span> (),
@@ -1894,7 +1894,7 @@
     <span class='kw'>fn</span> <span class='ident'>pop_empty_is_none_ok</span>() {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>));
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;root&quot;</span>));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>pop</span>().<span class='ident'>is_none</span>());
@@ -1905,7 +1905,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='ident'>add_edge</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;A&quot;</span>);
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1944,7 +1944,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='ident'>add_edge</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;A&quot;</span>);
 
-        <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1959,7 +1959,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Graph</span>::<span class='ident'>new</span>();
         <span class='ident'>add_edge</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='string'>&quot;root&quot;</span>, <span class='string'>&quot;A&quot;</span>);
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 
@@ -1988,7 +1988,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>n</span> <span class='op'>=</span> <span class='ident'>g</span>.<span class='ident'>get_node_mut</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;root&quot;</span>).<span class='ident'>unwrap</span>();
         <span class='ident'>n</span>.<span class='ident'>get_child_list_mut</span>().<span class='ident'>add_child</span>(());
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>SearchPath</span>::<span class='ident'>new</span>(<span class='ident'>n</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>path</span> <span class='op'>=</span> <span class='ident'>Stack</span>::<span class='ident'>new</span>(<span class='ident'>n</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>path</span>.<span class='ident'>len</span>());
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>path</span>.<span class='ident'>is_head_expanded</span>());
 

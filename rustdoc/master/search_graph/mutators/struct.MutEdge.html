@@ -7,10 +7,10 @@
     <meta name="description" content="API documentation for the Rust `MutEdge` struct in crate `search_graph`.">
     <meta name="keywords" content="rust, rustlang, rust-lang, MutEdge">
 
-    <title>search_graph::MutEdge - Rust</title>
+    <title>search_graph::mutators::MutEdge - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
     
@@ -27,7 +27,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>search_graph</a></p><script>window.sidebarCurrent = {name: 'MutEdge', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>mutators</a></p><script>window.sidebarCurrent = {name: 'MutEdge', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,11 +42,11 @@
     </nav>
 
     <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>search_graph</a>::<wbr><a class='struct' href=''>MutEdge</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>mutators</a>::<wbr><a class='struct' href=''>MutEdge</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-698' class='srclink' href='../src/search_graph/src/hidden/mutators/mod.rs.html#280-283' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-838' class='srclink' href='../../src/search_graph/src/hidden/mutators/mod.rs.html#288-291' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct MutEdge&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span> {
     // some fields omitted
 }</pre><div class='docblock'><p>Mutable handle to a graph edge (&quot;edge handle&quot;) when edge expansion state is
@@ -59,38 +59,38 @@ and target vertices.</p>
 mutation of graph topology (adding vertices). Vertices may be added to
 unexpanded edges using the handle returned by <code>get_target_mut</code> or
 <code>to_target</code>.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T, S, A&gt; <a class='struct' href='../search_graph/struct.MutEdge.html' title='search_graph::MutEdge'>MutEdge</a>&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></h3><div class='impl-items'><h4 id='method.get_id' class='method'><code>fn <a href='#method.get_id' class='fnname'>get_id</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T, S, A&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></h3><div class='impl-items'><h4 id='method.get_id' class='method'><code>fn <a href='#method.get_id' class='fnname'>get_id</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Returns an immutable ID that is guaranteed to identify this vertex
 uniquely within its graph. This ID may change when the graph is mutated.</p>
 </div><h4 id='method.get_data' class='method'><code>fn <a href='#method.get_data' class='fnname'>get_data</a>(&amp;self) -&gt; &amp;A</code></h4>
 <div class='docblock'><p>Returns the data at this edge.</p>
 </div><h4 id='method.get_data_mut' class='method'><code>fn <a href='#method.get_data_mut' class='fnname'>get_data_mut</a>(&amp;mut self) -&gt; &amp;mut A</code></h4>
 <div class='docblock'><p>Returns the data at this edge, mutably.</p>
-</div><h4 id='method.get_target' class='method'><code>fn <a href='#method.get_target' class='fnname'>get_target</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='enum' href='../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../search_graph/struct.Node.html' title='search_graph::Node'>Node</a>&lt;'s, T, S, A&gt;, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h4 id='method.get_target' class='method'><code>fn <a href='#method.get_target' class='fnname'>get_target</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='enum' href='../../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'s, T, S, A&gt;, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
 <div class='docblock'><p>Returns the target of this edge. If the edge is unexpanded, no data will
 be available. If it is expanded, a node handle will be available, with
 its lifetime limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.get_target_mut' class='method'><code>fn <a href='#method.get_target_mut' class='fnname'>get_target_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='enum' href='../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../search_graph/struct.MutNode.html' title='search_graph::MutNode'>MutNode</a>&lt;'s, T, S, A&gt;, <a class='struct' href='../search_graph/struct.EdgeExpander.html' title='search_graph::EdgeExpander'>EdgeExpander</a>&lt;'s, T, S, A&gt;&gt;</code></h4>
+</div><h4 id='method.get_target_mut' class='method'><code>fn <a href='#method.get_target_mut' class='fnname'>get_target_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='enum' href='../../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'s, T, S, A&gt;, <a class='struct' href='../../search_graph/mutators/struct.EdgeExpander.html' title='search_graph::mutators::EdgeExpander'>EdgeExpander</a>&lt;'s, T, S, A&gt;&gt;</code></h4>
 <div class='docblock'><p>Returns the target of this edge. If the edge is unexpanded, an
 <code>EdgeExpander</code> will be provided. If it is expanded, a mutable node
 handle will be available. In both cases, lifetimes will be limited to a
 local borrow of <code>self</code>.</p>
-</div><h4 id='method.to_target' class='method'><code>fn <a href='#method.to_target' class='fnname'>to_target</a>(self) -&gt; <a class='enum' href='../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../search_graph/struct.MutNode.html' title='search_graph::MutNode'>MutNode</a>&lt;'a, T, S, A&gt;, <a class='struct' href='../search_graph/struct.EdgeExpander.html' title='search_graph::EdgeExpander'>EdgeExpander</a>&lt;'a, T, S, A&gt;&gt;</code></h4>
+</div><h4 id='method.to_target' class='method'><code>fn <a href='#method.to_target' class='fnname'>to_target</a>(self) -&gt; <a class='enum' href='../../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'a, T, S, A&gt;, <a class='struct' href='../../search_graph/mutators/struct.EdgeExpander.html' title='search_graph::mutators::EdgeExpander'>EdgeExpander</a>&lt;'a, T, S, A&gt;&gt;</code></h4>
 <div class='docblock'><p>Returns the target of this edge. If the edge is unexpanded, an
 <code>EdgeExpander</code> will be provided. If it is expanded, a mutable node
 handle will be available. In both cases <code>self</code> is consumed, and the
 return value&#39;s lifetime will be the same as that of <code>self</code>.</p>
-</div><h4 id='method.get_source' class='method'><code>fn <a href='#method.get_source' class='fnname'>get_source</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../search_graph/struct.Node.html' title='search_graph::Node'>Node</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_source' class='method'><code>fn <a href='#method.get_source' class='fnname'>get_source</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'s, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a node handle for the source of this edge. Its lifetime will be
 limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.get_source_mut' class='method'><code>fn <a href='#method.get_source_mut' class='fnname'>get_source_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../search_graph/struct.MutNode.html' title='search_graph::MutNode'>MutNode</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_source_mut' class='method'><code>fn <a href='#method.get_source_mut' class='fnname'>get_source_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'s, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a mutable node handle for the source of this edge. Its lifetime
 will be limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.to_source' class='method'><code>fn <a href='#method.to_source' class='fnname'>to_source</a>(self) -&gt; <a class='struct' href='../search_graph/struct.MutNode.html' title='search_graph::MutNode'>MutNode</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.to_source' class='method'><code>fn <a href='#method.to_source' class='fnname'>to_source</a>(self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'a, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a mutable node handle for the source of this edge. <code>self</code> is
 consumed, and the return value&#39;s lifetime will be equal to that of
 <code>self</code>.</p>
-</div><h4 id='method.to_edge' class='method'><code>fn <a href='#method.to_edge' class='fnname'>to_edge</a>(self) -&gt; <a class='struct' href='../search_graph/struct.Edge.html' title='search_graph::Edge'>Edge</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.to_edge' class='method'><code>fn <a href='#method.to_edge' class='fnname'>to_edge</a>(self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Edge.html' title='search_graph::nav::Edge'>Edge</a>&lt;'a, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a non-mutating edge obtained by converting this edge. <code>self</code> is
 consumed, and the return value&#39;s lifetime will be the same as that of
 <code>self</code>. The source graph is still considered to have a mutable borrow in
@@ -147,13 +147,13 @@ play, but the resulting edge can be cloned freely.</p>
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../";
         window.currentCrate = "search_graph";
         window.playgroundUrl = "";
     </script>
-    <script src="../jquery.js"></script>
-    <script src="../main.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
     
-    <script defer src="../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

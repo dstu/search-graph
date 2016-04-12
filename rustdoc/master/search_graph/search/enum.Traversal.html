@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `PathItem` enum in crate `search_graph`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, PathItem">
+    <meta name="description" content="API documentation for the Rust `Traversal` enum in crate `search_graph`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Traversal">
 
-    <title>search_graph::PathItem - Rust</title>
+    <title>search_graph::search::Traversal - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
     
@@ -27,7 +27,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>search_graph</a></p><script>window.sidebarCurrent = {name: 'PathItem', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>search</a></p><script>window.sidebarCurrent = {name: 'Traversal', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,19 +42,20 @@
     </nav>
 
     <section id='main' class="content enum">
-<h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>search_graph</a>::<wbr><a class='enum' href=''>PathItem</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Enum <a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>search</a>::<wbr><a class='enum' href=''>Traversal</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-440' class='srclink' href='../src/search_graph/src/hidden/mutators/path.rs.html#98-103' title='goto source code'>[src]</a></span></h1>
-<pre class='rust enum'>pub enum PathItem&lt;'a, T, S, A&gt; <span class='where'>where T: 'a + <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>, S: 'a, A: 'a</span> {
-    Item(<a class='struct' href='../search_graph/struct.Edge.html' title='search_graph::Edge'>Edge</a>&lt;'a, T, S, A&gt;),
-    Head(<a class='enum' href='../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../search_graph/struct.Node.html' title='search_graph::Node'>Node</a>&lt;'a, T, S, A&gt;, <a class='struct' href='../search_graph/struct.Edge.html' title='search_graph::Edge'>Edge</a>&lt;'a, T, S, A&gt;&gt;),
-}</pre><div class='docblock'><p>Sum type for path elements. All elements except the head are represented
-with the <code>PathItem::Item</code> variant.</p>
+        </span><a id='src-452' class='srclink' href='../../src/search_graph/src/hidden/mutators/path.rs.html#80-85' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'>pub enum Traversal {
+    Child(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>),
+    Parent(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>),
+}</pre><div class='docblock'><p>Indicates which edge of a vertex to traverse. Edges are denoted by a 0-based
+index. This type is used by functions provided during graph search to
+indicate which child or parent edges to traverse.</p>
 </div><h2 class='variants'>Variants</h2>
-<table class='variants_table'><tr><td id='variant.Item'><code>Item</code></td><td><div class='docblock'><p>Non-head item, a (vertex, edge) pair.</p>
-</div></td><td></td></tr><tr><td id='variant.Head'><code>Head</code></td><td><div class='docblock'><p>The path head, which may resolve to a vertex or an unexpanded edge.</p>
+<table class='variants_table'><tr><td id='variant.Child'><code>Child</code></td><td><div class='docblock'><p>Traverse the given child.</p>
+</div></td><td></td></tr><tr><td id='variant.Parent'><code>Parent</code></td><td><div class='docblock'><p>Traverse the given parent.</p>
 </div></td><td></td></tr></table></section>
     <section id='search' class="content hidden"></section>
 
@@ -107,13 +108,13 @@ with the <code>PathItem::Item</code> variant.</p>
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../";
         window.currentCrate = "search_graph";
         window.playgroundUrl = "";
     </script>
-    <script src="../jquery.js"></script>
-    <script src="../main.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
     
-    <script defer src="../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

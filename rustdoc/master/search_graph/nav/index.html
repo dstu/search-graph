@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `search_graph` crate.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, search_graph">
+    <meta name="description" content="API documentation for the Rust `nav` mod in crate `search_graph`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, nav">
 
-    <title>search_graph - Rust</title>
+    <title>search_graph::nav - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
     
@@ -27,7 +27,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'></p><script>window.sidebarCurrent = {name: 'search_graph', ty: 'mod', relpath: '../'};</script>
+        <p class='location'><a href='../index.html'>search_graph</a></p><script>window.sidebarCurrent = {name: 'nav', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,54 +42,66 @@
     </nav>
 
     <section id='main' class="content mod">
-<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>search_graph</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>search_graph</a>::<wbr><a class='mod' href=''>nav</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/search_graph/src/lib.rs.html#1-206' title='goto source code'>[src]</a></span></h1>
-<h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
-<table>
-                    <tr class=' module-item'>
-                        <td><a class='mod' href='mutators/index.html'
-                               title='search_graph::mutators'>mutators</a></td>
-                        <td class='docblock short'>
-                             <p>Support for navigation of a graph that allows modifications to graph
-topology and full read-write access to graph data.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='mod' href='nav/index.html'
-                               title='search_graph::nav'>nav</a></td>
-                        <td class='docblock short'>
-                             <p>Support for navigation of a graph without allowing modifications to graph
+        </span><a id='src-985' class='srclink' href='../../src/search_graph/src/nav.rs.html#1-10' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Support for navigation of a graph without allowing modifications to graph
 topology.</p>
+
+<p>The data structures in this module require a read-only borrow of an
+underlying graph. It is safe to navigate through a graph with such multiple
+structures pointing into it. Graph data that may be updated safely through
+read-only references (such as atomic types and <code>std::cell::RefCell</code>) may be
+modified through these structures.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ChildList.html'
+                               title='search_graph::nav::ChildList'>ChildList</a></td>
+                        <td class='docblock short'>
+                             <p>A traversible list of a vertex&#39;s outgoing edges.</p>
                         </td>
                     </tr>
                 
                     <tr class=' module-item'>
-                        <td><a class='mod' href='search/index.html'
-                               title='search_graph::search'>search</a></td>
+                        <td><a class='struct' href='struct.ChildListIter.html'
+                               title='search_graph::nav::ChildListIter'>ChildListIter</a></td>
                         <td class='docblock short'>
-                             <p>Data structures and algorithms for local graph search.</p>
+                             <p>Iterator over a vertex&#39;s child edges.</p>
                         </td>
                     </tr>
-                </table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
-<table>
+                
                     <tr class=' module-item'>
-                        <td><a class='struct' href='struct.Graph.html'
-                               title='search_graph::Graph'>Graph</a></td>
+                        <td><a class='struct' href='struct.Edge.html'
+                               title='search_graph::nav::Edge'>Edge</a></td>
                         <td class='docblock short'>
-                             <p>A search graph.</p>
+                             <p>Immutable handle to a graph edge (&quot;edge handle&quot;).</p>
                         </td>
                     </tr>
-                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
-<table>
+                
                     <tr class=' module-item'>
-                        <td><a class='enum' href='enum.Target.html'
-                               title='search_graph::Target'>Target</a></td>
+                        <td><a class='struct' href='struct.Node.html'
+                               title='search_graph::nav::Node'>Node</a></td>
                         <td class='docblock short'>
-                             <p>The target of an outgoing graph edge.</p>
+                             <p>Immutable handle to a graph vertex (&quot;node handle&quot;).</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ParentList.html'
+                               title='search_graph::nav::ParentList'>ParentList</a></td>
+                        <td class='docblock short'>
+                             <p>A traversible list of a vertex&#39;s incoming edges.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ParentListIter.html'
+                               title='search_graph::nav::ParentListIter'>ParentListIter</a></td>
+                        <td class='docblock short'>
+                             <p>Iterator over a vertex&#39;s parent edges.</p>
                         </td>
                     </tr>
                 </table></section>
@@ -144,13 +156,13 @@ topology.</p>
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../";
         window.currentCrate = "search_graph";
         window.playgroundUrl = "";
     </script>
-    <script src="../jquery.js"></script>
-    <script src="../main.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
     
-    <script defer src="../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

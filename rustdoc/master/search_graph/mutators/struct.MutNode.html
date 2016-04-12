@@ -7,10 +7,10 @@
     <meta name="description" content="API documentation for the Rust `MutNode` struct in crate `search_graph`.">
     <meta name="keywords" content="rust, rustlang, rust-lang, MutNode">
 
-    <title>search_graph::MutNode - Rust</title>
+    <title>search_graph::mutators::MutNode - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
     
@@ -27,7 +27,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>search_graph</a></p><script>window.sidebarCurrent = {name: 'MutNode', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>mutators</a></p><script>window.sidebarCurrent = {name: 'MutNode', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,11 +42,11 @@
     </nav>
 
     <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>search_graph</a>::<wbr><a class='struct' href=''>MutNode</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>mutators</a>::<wbr><a class='struct' href=''>MutNode</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-548' class='srclink' href='../src/search_graph/src/hidden/mutators/mod.rs.html#20-23' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-686' class='srclink' href='../../src/search_graph/src/hidden/mutators/mod.rs.html#21-24' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct MutNode&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span> {
     // some fields omitted
 }</pre><div class='docblock'><p>Mutable handle to a graph vertex (&quot;node handle&quot;).</p>
@@ -57,7 +57,7 @@ incoming and outgoing edges.</p>
 <p>It enables local graph mutation, whether via mutation of vertex data or
 mutation of graph topology (adding edges). Edges may be added
 using the handle returned by <code>get_child_adder</code> or <code>to_child_adder</code>.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T, S, A&gt; <a class='struct' href='../search_graph/struct.MutNode.html' title='search_graph::MutNode'>MutNode</a>&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></h3><div class='impl-items'><h4 id='method.get_id' class='method'><code>fn <a href='#method.get_id' class='fnname'>get_id</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T, S, A&gt; <a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></h3><div class='impl-items'><h4 id='method.get_id' class='method'><code>fn <a href='#method.get_id' class='fnname'>get_id</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Returns an immutable ID that is guaranteed to identify this vertex
 uniquely within its graph. This ID may change when the graph is mutated.</p>
 </div><h4 id='method.get_data' class='method'><code>fn <a href='#method.get_data' class='fnname'>get_data</a>&lt;'s&gt;(&amp;'s self) -&gt; &amp;'s S</code></h4>
@@ -69,29 +69,32 @@ uniquely within its graph. This ID may change when the graph is mutated.</p>
 whether they are expanded).</p>
 </div><h4 id='method.is_root' class='method'><code>fn <a href='#method.is_root' class='fnname'>is_root</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
 <div class='docblock'><p>Returns true iff this vertex has no incoming edges.</p>
-</div><h4 id='method.get_child_list' class='method'><code>fn <a href='#method.get_child_list' class='fnname'>get_child_list</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../search_graph/struct.ChildList.html' title='search_graph::ChildList'>ChildList</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_child_list' class='method'><code>fn <a href='#method.get_child_list' class='fnname'>get_child_list</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../../search_graph/nav/struct.ChildList.html' title='search_graph::nav::ChildList'>ChildList</a>&lt;'s, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a traversible list of outgoing edges. Its lifetime will be
 limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.get_child_list_mut' class='method'><code>fn <a href='#method.get_child_list_mut' class='fnname'>get_child_list_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../search_graph/struct.MutChildList.html' title='search_graph::MutChildList'>MutChildList</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_child_list_mut' class='method'><code>fn <a href='#method.get_child_list_mut' class='fnname'>get_child_list_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutChildList.html' title='search_graph::mutators::MutChildList'>MutChildList</a>&lt;'s, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a traversible list of outgoing edges. Its lifetime will be
 limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.to_child_list' class='method'><code>fn <a href='#method.to_child_list' class='fnname'>to_child_list</a>(self) -&gt; <a class='struct' href='../search_graph/struct.MutChildList.html' title='search_graph::MutChildList'>MutChildList</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.to_child_list' class='method'><code>fn <a href='#method.to_child_list' class='fnname'>to_child_list</a>(self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutChildList.html' title='search_graph::mutators::MutChildList'>MutChildList</a>&lt;'a, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a traversible list of outgoing edges. <code>self</code> is consumed, and
 the return value&#39;s lifetime will be the same as that of <code>self</code>.</p>
-</div><h4 id='method.get_parent_list' class='method'><code>fn <a href='#method.get_parent_list' class='fnname'>get_parent_list</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../search_graph/struct.ParentList.html' title='search_graph::ParentList'>ParentList</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_parent_list' class='method'><code>fn <a href='#method.get_parent_list' class='fnname'>get_parent_list</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../../search_graph/nav/struct.ParentList.html' title='search_graph::nav::ParentList'>ParentList</a>&lt;'s, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a traversible list of incoming edges. Its lifetime will be
 limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.get_parent_list_mut' class='method'><code>fn <a href='#method.get_parent_list_mut' class='fnname'>get_parent_list_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../search_graph/struct.MutParentList.html' title='search_graph::MutParentList'>MutParentList</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_parent_list_mut' class='method'><code>fn <a href='#method.get_parent_list_mut' class='fnname'>get_parent_list_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutParentList.html' title='search_graph::mutators::MutParentList'>MutParentList</a>&lt;'s, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a traversible list of incoming edges. Its lifetime will be
 limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.to_parent_list' class='method'><code>fn <a href='#method.to_parent_list' class='fnname'>to_parent_list</a>(self) -&gt; <a class='struct' href='../search_graph/struct.MutParentList.html' title='search_graph::MutParentList'>MutParentList</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.to_parent_list' class='method'><code>fn <a href='#method.to_parent_list' class='fnname'>to_parent_list</a>(self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutParentList.html' title='search_graph::mutators::MutParentList'>MutParentList</a>&lt;'a, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a traversible list of outgoing edges. <code>self</code> is consumed, and
 the return value&#39;s lifetime will be the same as that of <code>self</code>.</p>
-</div><h4 id='method.to_node' class='method'><code>fn <a href='#method.to_node' class='fnname'>to_node</a>(self) -&gt; <a class='struct' href='../search_graph/struct.Node.html' title='search_graph::Node'>Node</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.to_node' class='method'><code>fn <a href='#method.to_node' class='fnname'>to_node</a>(self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'a, T, S, A&gt;</code></h4>
 <div class='docblock'><p>Returns a non-mutating node obtained by converting this node. <code>self</code> is
 consumed, and the return value&#39;s lifetime will be the same as that of
 <code>self</code>. The source graph is still considered to have a mutable borrow in
 play, but the resulting node can be cloned freely.</p>
+</div><h4 id='method.retain_reachable' class='method'><code>fn <a href='#method.retain_reachable' class='fnname'>retain_reachable</a>(&amp;mut self)</code></h4>
+<div class='docblock'><p>Prunes the underlying graph by removing components not reachable from
+this node.</p>
 </div></div></section>
     <section id='search' class="content hidden"></section>
 
@@ -144,13 +147,13 @@ play, but the resulting node can be cloned freely.</p>
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../";
         window.currentCrate = "search_graph";
         window.playgroundUrl = "";
     </script>
-    <script src="../jquery.js"></script>
-    <script src="../main.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
     
-    <script defer src="../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

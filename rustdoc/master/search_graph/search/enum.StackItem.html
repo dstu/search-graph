@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `Expanded` enum in crate `search_graph`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, Expanded">
+    <meta name="description" content="API documentation for the Rust `StackItem` enum in crate `search_graph`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, StackItem">
 
-    <title>search_graph::Expanded - Rust</title>
+    <title>search_graph::search::StackItem - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
     
@@ -27,7 +27,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>search_graph</a></p><script>window.sidebarCurrent = {name: 'Expanded', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>search</a></p><script>window.sidebarCurrent = {name: 'StackItem', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,20 +42,19 @@
     </nav>
 
     <section id='main' class="content enum">
-<h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>search_graph</a>::<wbr><a class='enum' href=''>Expanded</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Enum <a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>search</a>::<wbr><a class='enum' href=''>StackItem</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-757' class='srclink' href='../src/search_graph/src/hidden/mutators/mod.rs.html#395-400' title='goto source code'>[src]</a></span></h1>
-<pre class='rust enum'>pub enum Expanded&lt;T&gt; {
-    New(T),
-    Extant(T),
-}</pre><div class='docblock'><p>The result of edge expansion. This wraps the resulting handle to the graph
-component, with each variant indicating whether the expansion created a new
-vertex or connected an edge to an existing one.</p>
+        </span><a id='src-465' class='srclink' href='../../src/search_graph/src/hidden/mutators/path.rs.html#98-103' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'>pub enum StackItem&lt;'a, T, S, A&gt; <span class='where'>where T: 'a + <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>, S: 'a, A: 'a</span> {
+    Item(<a class='struct' href='../../search_graph/nav/struct.Edge.html' title='search_graph::nav::Edge'>Edge</a>&lt;'a, T, S, A&gt;),
+    Head(<a class='enum' href='../../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'a, T, S, A&gt;, <a class='struct' href='../../search_graph/nav/struct.Edge.html' title='search_graph::nav::Edge'>Edge</a>&lt;'a, T, S, A&gt;&gt;),
+}</pre><div class='docblock'><p>Sum type for path elements. All elements except the head are represented
+with the <code>StackItem::Item</code> variant.</p>
 </div><h2 class='variants'>Variants</h2>
-<table class='variants_table'><tr><td id='variant.New'><code>New</code></td><td><div class='docblock'><p>Edge expansion created a new vertex.</p>
-</div></td><td></td></tr><tr><td id='variant.Extant'><code>Extant</code></td><td><div class='docblock'><p>Edge expansion connected to an existing vertex.</p>
+<table class='variants_table'><tr><td id='variant.Item'><code>Item</code></td><td><div class='docblock'><p>Non-head item, a (vertex, edge) pair.</p>
+</div></td><td></td></tr><tr><td id='variant.Head'><code>Head</code></td><td><div class='docblock'><p>The path head, which may resolve to a vertex or an unexpanded edge.</p>
 </div></td><td></td></tr></table></section>
     <section id='search' class="content hidden"></section>
 
@@ -108,13 +107,13 @@ vertex or connected an edge to an existing one.</p>
     
 
     <script>
-        window.rootPath = "../";
+        window.rootPath = "../../";
         window.currentCrate = "search_graph";
         window.playgroundUrl = "";
     </script>
-    <script src="../jquery.js"></script>
-    <script src="../main.js"></script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
     
-    <script defer src="../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>
