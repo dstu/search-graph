@@ -101,6 +101,13 @@ impl<T> StateNamespace<T> where T: Hash + Eq + Clone {
         new_states.shrink_to_fit();
         self.states = new_states;
     }
+
+    /// Transforms this namespace mapping to a hashtable. This is intended for
+    /// testing purposes only.
+    #[cfg(test)]
+    pub fn to_hash_map(self) -> HashMap<T, StateId> {
+        self.states
+    }
 }
 
 /// Internal type for graph edges.
