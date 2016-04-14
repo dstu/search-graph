@@ -26,10 +26,10 @@ use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
 /// handle with `get_node`. To modify graph contents, add new root vertices with
 /// `add_root` and retrieve extant vertices with `get_node_mut`.
 pub struct Graph<T, S, A> where T: Hash + Eq + Clone {
-    /// Lookup table that maps from game states to `StateId`.
+    /// Lookup table that maps from game states to `VertexId`.
     state_ids: StateNamespace<T>,
-    vertices: Vec<Vertex<S>>,  // Indexed by StateId.
-    arcs: Vec<Arc<A>>,  // Indexed by ArcId.
+    vertices: Vec<Vertex<S>>,  // Indexed by VertexId.
+    arcs: Vec<Arc<A>>,  // Indexed by EdgeId.
 }
 
 impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
@@ -42,23 +42,23 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         }
     }
 
-    /// Returns the vertex for the given `StateId`.
-    fn get_vertex(&self, state: StateId) -> &Vertex<S> {
+    /// Returns the vertex for the given `VertexId`.
+    fn get_vertex(&self, state: VertexId) -> &Vertex<S> {
         &self.vertices[state.as_usize()]
     }
 
-    /// Returns the vertex for the given `StateId`.
-    fn get_vertex_mut(&mut self, state: StateId) -> &mut Vertex<S> {
+    /// Returns the vertex for the given `VertexId`.
+    fn get_vertex_mut(&mut self, state: VertexId) -> &mut Vertex<S> {
         &mut self.vertices[state.as_usize()]
     }
 
-    /// Returns the edge for the given `ArcId`.
-    fn get_arc(&self, arc: ArcId) -> &Arc<A> {
+    /// Returns the edge for the given `EdgeId`.
+    fn get_arc(&self, arc: EdgeId) -> &Arc<A> {
         &self.arcs[arc.as_usize()]
     }
 
-    /// Returns the edge for the given `ArcId`.
-    fn get_arc_mut(&mut self, arc: ArcId) -> &mut Arc<A> {
+    /// Returns the edge for the given `EdgeId`.
+    fn get_arc_mut(&mut self, arc: EdgeId) -> &mut Arc<A> {
         &mut self.arcs[arc.as_usize()]
     }
 
@@ -66,7 +66,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     ///
     /// This method does not add incoming or outgoing edges (expanded or
     /// not). That must be done by calling `add_arc` with the new vertex
-    /// `StateId`.
+    /// `VertexId`.
     fn add_vertex(&mut self, data: S) -> &mut Vertex<S> {
         self.vertices.push(Vertex {
             data: data,
@@ -78,8 +78,8 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 
     /// Adds a new edge with the given data, source, and target. Returns the
     /// internal ID for the new edge.
-    fn add_arc(&mut self, data: A, source: StateId, target: Target<StateId, ()>) -> ArcId {
-        let arc_id = ArcId(self.arcs.len());
+    fn add_arc(&mut self, data: A, source: VertexId, target: Target<VertexId, ()>) -> EdgeId {
+        let arc_id = EdgeId(self.arcs.len());
         self.get_vertex_mut(source).children.push(arc_id);
         if let Target::Expanded(target_id) = target {
             self.get_vertex_mut(target_id).parents.push(arc_id);
@@ -183,9 +183,9 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         self.retain_reachable_from_ids(&root_ids);
     }
 
-    /// As `retain_reachable_from`, but working over raw `StateId`s instead of
+    /// As `retain_reachable_from`, but working over raw `VertexId`s instead of
     /// root data.
-    fn retain_reachable_from_ids(&mut self, root_ids: &[StateId]) {
+    fn retain_reachable_from_ids(&mut self, root_ids: &[VertexId]) {
         self::hidden::mutators::mark_compact::Collector::retain_reachable(self, root_ids);
     }
 }

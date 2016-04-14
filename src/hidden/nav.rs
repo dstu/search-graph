@@ -2,7 +2,7 @@ use std::hash::Hash;
 use std::iter::Iterator;
 
 use ::{Graph, Target};
-use ::hidden::base::{Arc, ArcId, StateId, Vertex};
+use ::hidden::base::{Arc, EdgeId, VertexId, Vertex};
 
 /// Immutable handle to a graph vertex ("node handle").
 ///
@@ -10,19 +10,19 @@ use ::hidden::base::{Arc, ArcId, StateId, Vertex};
 /// incoming and outgoing edges.
 pub struct Node<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
 }
 
 /// Creates a new `Node` for the given graph and gamestate. This method is not
 /// exported by the crate because it exposes implementation details. It is used
 /// to provide a public cross-module interface for creating new `Node`s.
-pub fn make_node<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: StateId) -> Node<'a, T, S, A>
+pub fn make_node<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: VertexId) -> Node<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         Node { graph: graph, id: id, }
     }
 
 impl<'a, T, S, A> Node<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn children(&self) -> &'a [ArcId] {
+    fn children(&self) -> &'a [EdgeId] {
         &self.graph.get_vertex(self.id).children
     }
 
@@ -32,7 +32,7 @@ impl<'a, T, S, A> Node<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: '
         self.id.as_usize()
     }
 
-    fn parents(&self) -> &'a [ArcId] {
+    fn parents(&self) -> &'a [EdgeId] {
         &self.graph.get_vertex(self.id).parents
     }
 
@@ -66,14 +66,14 @@ impl<'a, T, S, A> Node<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: '
 /// A traversible list of a vertex's outgoing edges.
 pub struct ChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
 }
 
 /// Creates a new `ChildList` for the given graph and gamestate. This method is
 /// not exported by the crate because it exposes implementation details. It is
 /// used to provide a public cross-module interface for creating new
 /// `ChildList`s.
-pub fn make_child_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: StateId) -> ChildList<'a, T, S, A>
+pub fn make_child_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: VertexId) -> ChildList<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         ChildList { graph: graph, id: id, }
     }
@@ -112,13 +112,13 @@ impl<'a, T, S, A> ChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
 /// Iterator over a vertex's child edges.
 pub struct ChildListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
     i: usize,
 }
 
 impl <'a, T, S, A> ChildListIter<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-        fn children(&self) -> &'a [ArcId] {
+        fn children(&self) -> &'a [EdgeId] {
             &self.graph.get_vertex(self.id).children
         }
     }
@@ -151,14 +151,14 @@ impl<'a, T, S, A> Iterator for ChildListIter<'a, T, S, A>
 /// A traversible list of a vertex's incoming edges.
 pub struct ParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
 }
 
 /// Creates a new `ParentList` for the given graph and gamestate. This method is
 /// not exported by the crate because it exposes implementation details. It is
 /// used to provide a public cross-module interface for creating new
 /// `ParentList`s.
-pub fn make_parent_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: StateId) -> ParentList<'a, T, S, A>
+pub fn make_parent_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: VertexId) -> ParentList<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         ParentList { graph: graph, id: id, }
     }
@@ -197,12 +197,12 @@ impl<'a, T, S, A> ParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a
 /// Iterator over a vertex's parent edges.
 pub struct ParentListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
     i: usize,
 }
 
 impl<'a, T, S, A> ParentListIter<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn parents(&self) -> &'a [ArcId] {
+    fn parents(&self) -> &'a [EdgeId] {
         &self.graph.get_vertex(self.id).parents
     }
 }
@@ -238,13 +238,13 @@ impl<'a, T, S, A> Iterator for ParentListIter<'a, T, S, A>
 /// and target vertices.
 pub struct Edge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a Graph<T, S, A>,
-    id: ArcId,
+    id: EdgeId,
 }
 
 /// Creates a new `Edge` for the given graph and gamestate. This method is not
 /// exported by the crate because it exposes implementation details. It is used
 /// to provide a public cross-module interface for creating new `Edge`s.
-pub fn make_edge<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: ArcId) -> Edge<'a, T, S, A>
+pub fn make_edge<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: EdgeId) -> Edge<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         Edge { graph: graph, id: id, }
     }

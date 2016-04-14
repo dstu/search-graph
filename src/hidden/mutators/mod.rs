@@ -20,13 +20,13 @@ pub mod mark_compact;
 /// using the handle returned by `get_child_adder` or `to_child_adder`.
 pub struct MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
 }
 
 /// Creates a new `MutNode` for the given graph and gamestate. This method is
 /// not exported by the crate because it exposes implementation details. It is
 /// used to provide a public cross-module interface for creating new `MutNode`s.
-pub fn make_mut_node<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: StateId) -> MutNode<'a, T, S, A>
+pub fn make_mut_node<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: VertexId) -> MutNode<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         MutNode { graph: graph, id: id, }
     }
@@ -115,14 +115,14 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// this node.
     pub fn retain_reachable(&mut self) {
         self.graph.retain_reachable_from_ids(&[self.id]);
-        self.id = StateId(0);
+        self.id = VertexId(0);
     }
 }
 
 /// A traversible list of a vertex's outgoing edges.
 pub struct MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
 }
 
 impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
@@ -190,7 +190,7 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// edges may be expanded by resolving their target (which will be a
     /// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.
     pub fn add_child<'s>(&'s mut self, data: A) -> MutEdge<'s, T, S, A> {
-        let arc_id = ArcId(self.graph.arcs.len());
+        let arc_id = EdgeId(self.graph.arcs.len());
         self.graph.add_arc(data, self.id, Target::Unexpanded(()));
         MutEdge { graph: self.graph, id: arc_id, }
     }
@@ -203,7 +203,7 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// edges may be expanded by resolving their target (which will be a
     /// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.
     pub fn to_add(mut self, data: A) -> MutEdge<'a, T, S, A> {
-        let arc_id = ArcId(self.graph.arcs.len());
+        let arc_id = EdgeId(self.graph.arcs.len());
         self.graph.add_arc(data, self.id, Target::Unexpanded(()));
         MutEdge { graph: self.graph, id: arc_id, }
     }
@@ -212,7 +212,7 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
 /// A traversible list of a vertex's incoming edges.
 pub struct MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
-    id: StateId,
+    id: VertexId,
 }
 
 impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
@@ -287,13 +287,13 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
 /// `to_target`.
 pub struct MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
-    id: ArcId,
+    id: EdgeId,
 }
 
 /// Creates a new `MutEdge` for the given graph and gamestate. This method is
 /// not exported by the crate because it exposes implementation details. It is
 /// used to provide a public cross-module interface for creating new `MutNode`s.
-pub fn make_mut_edge<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: ArcId) -> MutEdge<'a, T, S, A>
+pub fn make_mut_edge<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: EdgeId) -> MutEdge<'a, T, S, A>
     where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
         MutEdge { graph: graph, id: id, }
     }
@@ -393,7 +393,7 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
 /// edge may connect it to an existing vertex or create a new one.
 pub struct EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
-    id: ArcId,
+    id: EdgeId,
 }
 
 /// The result of edge expansion. This wraps the resulting handle to the graph
@@ -487,7 +487,7 @@ impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
 /// `to_target`.
 pub struct MutExpandedEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     graph: &'a mut Graph<T, S, A>,
-    id: ArcId,
+    id: EdgeId,
 }
 
 impl<'a, T, S, A> MutExpandedEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {

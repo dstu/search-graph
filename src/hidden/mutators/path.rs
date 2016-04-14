@@ -19,9 +19,9 @@ use ::hidden::nav::{Edge, Node, make_edge, make_node};
 /// State of search path's head.
 enum Head {
     /// Head resolves to a graph vertex.
-    Vertex(StateId),
+    Vertex(VertexId),
     /// Head resolves to an unexpanded edge.
-    Unexpanded(ArcId),
+    Unexpanded(EdgeId),
 }
 
 /// Errors that may arise during search.
@@ -69,7 +69,7 @@ pub struct Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
     /// The graph that is being searched.
     graph: &'a mut Graph<T, S, A>,
     /// The edges that have been traversed.
-    path: Vec<ArcId>,
+    path: Vec<EdgeId>,
     /// The path head.
     head: Head,
 }
@@ -215,11 +215,11 @@ impl<'a, T, S, A> Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 
                                 let child = children.get_edge(i);
                                 match child.get_target() {
                                     Target::Expanded(n) => {
-                                        self.path.push(ArcId(child.get_id()));
-                                        self.head = Head::Vertex(StateId(n.get_id()));
+                                        self.path.push(EdgeId(child.get_id()));
+                                        self.head = Head::Vertex(VertexId(n.get_id()));
                                     },
                                     Target::Unexpanded(()) =>
-                                        self.head = Head::Unexpanded(ArcId(child.get_id())),
+                                        self.head = Head::Unexpanded(EdgeId(child.get_id())),
                                 };
                                 Ok(Some(child))
                             }
@@ -231,8 +231,8 @@ impl<'a, T, S, A> Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 
                                     requested_index: i, parent_count: parents.len() })
                             } else {
                                 let parent = parents.get_edge(i);
-                                self.path.push(ArcId(parent.get_id()));
-                                self.head = Head::Vertex(StateId(parent.get_source().get_id()));
+                                self.path.push(EdgeId(parent.get_id()));
+                                self.head = Head::Vertex(VertexId(parent.get_source().get_id()));
                                 Ok(Some(parent))
                             }
                         },
