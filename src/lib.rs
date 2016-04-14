@@ -28,7 +28,7 @@ use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
 pub struct Graph<T, S, A> where T: Hash + Eq + Clone {
     /// Lookup table that maps from game states to `VertexId`.
     state_ids: StateNamespace<T>,
-    vertices: Vec<Vertex<S>>,  // Indexed by VertexId.
+    vertices: Vec<RawVertex<S>>,  // Indexed by VertexId.
     arcs: Vec<Arc<A>>,  // Indexed by EdgeId.
 }
 
@@ -43,12 +43,12 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     }
 
     /// Returns the vertex for the given `VertexId`.
-    fn get_vertex(&self, state: VertexId) -> &Vertex<S> {
+    fn get_vertex(&self, state: VertexId) -> &RawVertex<S> {
         &self.vertices[state.as_usize()]
     }
 
     /// Returns the vertex for the given `VertexId`.
-    fn get_vertex_mut(&mut self, state: VertexId) -> &mut Vertex<S> {
+    fn get_vertex_mut(&mut self, state: VertexId) -> &mut RawVertex<S> {
         &mut self.vertices[state.as_usize()]
     }
 
@@ -67,8 +67,8 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// This method does not add incoming or outgoing edges (expanded or
     /// not). That must be done by calling `add_arc` with the new vertex
     /// `VertexId`.
-    fn add_vertex(&mut self, data: S) -> &mut Vertex<S> {
-        self.vertices.push(Vertex {
+    fn add_vertex(&mut self, data: S) -> &mut RawVertex<S> {
+        self.vertices.push(RawVertex {
             data: data,
             parents: Vec::new(),
             children: Vec::new(),

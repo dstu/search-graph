@@ -214,7 +214,7 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
 #[cfg(test)]
 mod test {
     use super::Collector;
-    use ::hidden::base::{EdgeId, Arc, VertexId, StateNamespace, Vertex};
+    use ::hidden::base::{EdgeId, Arc, VertexId, StateNamespace, RawVertex};
     use ::Target;
 
     use std::collections::HashMap;
@@ -230,8 +230,8 @@ mod test {
     }
 
     fn make_vertex(data: &'static str, parents: Vec<EdgeId>, children: Vec<EdgeId>)
-                   -> Vertex<&'static str> {
-        Vertex { data: data, parents: parents, children: children, }
+                   -> RawVertex<&'static str> {
+        RawVertex { data: data, parents: parents, children: children, }
     }
 
     fn make_arc(data: &'static str, source: VertexId, target: Target<VertexId, ()>)

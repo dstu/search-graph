@@ -2,7 +2,7 @@ use std::hash::Hash;
 use std::iter::Iterator;
 
 use ::{Graph, Target};
-use ::hidden::base::{Arc, EdgeId, VertexId, Vertex};
+use ::hidden::base::{Arc, EdgeId, VertexId, RawVertex};
 
 /// Immutable handle to a graph vertex ("node handle").
 ///
@@ -79,7 +79,7 @@ pub fn make_child_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: VertexId) -> 
     }
 
 impl<'a, T, S, A> ChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn vertex(&self) -> &'a Vertex<S> {
+    fn vertex(&self) -> &'a RawVertex<S> {
         self.graph.get_vertex(self.id)
     }
 
@@ -164,7 +164,7 @@ pub fn make_parent_list<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: VertexId) ->
     }
 
 impl<'a, T, S, A> ParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn vertex(&self) -> &'a Vertex<S> {
+    fn vertex(&self) -> &'a RawVertex<S> {
         self.graph.get_vertex(self.id)
     }
 

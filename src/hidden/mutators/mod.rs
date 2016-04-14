@@ -32,11 +32,11 @@ pub fn make_mut_node<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: VertexId) -
     }
 
 impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn vertex<'s>(&'s self) -> &'s Vertex<S> {
+    fn vertex<'s>(&'s self) -> &'s RawVertex<S> {
         self.graph.get_vertex(self.id)
     }
 
-    fn vertex_mut<'s>(&'s mut self) -> &'s mut Vertex<S> {
+    fn vertex_mut<'s>(&'s mut self) -> &'s mut RawVertex<S> {
         self.graph.get_vertex_mut(self.id)
     }
 
@@ -126,7 +126,7 @@ pub struct MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 
 }
 
 impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn vertex<'s>(&'s self) -> &'s Vertex<S> {
+    fn vertex<'s>(&'s self) -> &'s RawVertex<S> {
         self.graph.get_vertex(self.id)
     }
 
@@ -216,7 +216,7 @@ pub struct MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A:
 }
 
 impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn vertex<'s>(&'s self) -> &'s Vertex<S> {
+    fn vertex<'s>(&'s self) -> &'s RawVertex<S> {
         self.graph.get_vertex(self.id)
     }
 

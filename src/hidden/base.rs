@@ -10,7 +10,7 @@ use ::Target;
 /// This type is not exported by the crate because it does not identify the
 /// graph that it belongs to, which makes it only slightly less dangerous than a
 /// pointer with no lifetime.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct EdgeId(pub usize);
 
 impl EdgeId {
@@ -28,7 +28,7 @@ impl EdgeId {
 /// states. This type is not exported by the crate because it does not identify
 /// the graph that it belongs to, which makes it only slightly less dangerous
 /// than a pointer with no lifetime.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct VertexId(pub usize);
 
 impl VertexId {
@@ -135,8 +135,8 @@ impl<A> PartialEq for Arc<A> where A: PartialEq {
 impl<A> Eq for Arc<A> where A: Eq { }
 
 /// Internal type for graph vertices.
-#[derive(Debug)]
-pub struct Vertex<S> {
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub struct RawVertex<S> {
     /// Vertex data.
     pub data: S,
     /// Parent edges pointing into this vertex.
@@ -144,13 +144,3 @@ pub struct Vertex<S> {
     /// Child edges pointing out of this vertex.
     pub children: Vec<EdgeId>,
 }
-
-impl<S> PartialEq for Vertex<S> where S: PartialEq {
-    fn eq(&self, other: &Vertex<S>) -> bool {
-        self.parents == other.parents
-            && self.children == other.children
-            && self.data == other.data
-    }
-}
-
-impl<S> Eq for Vertex<S> where S: Eq { }
