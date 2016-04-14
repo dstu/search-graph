@@ -29,7 +29,7 @@ pub struct Graph<T, S, A> where T: Hash + Eq + Clone {
     /// Lookup table that maps from game states to `VertexId`.
     state_ids: StateNamespace<T>,
     vertices: Vec<RawVertex<S>>,  // Indexed by VertexId.
-    arcs: Vec<Arc<A>>,  // Indexed by EdgeId.
+    arcs: Vec<RawEdge<A>>,  // Indexed by EdgeId.
 }
 
 impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
@@ -53,12 +53,12 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     }
 
     /// Returns the edge for the given `EdgeId`.
-    fn get_arc(&self, arc: EdgeId) -> &Arc<A> {
+    fn get_arc(&self, arc: EdgeId) -> &RawEdge<A> {
         &self.arcs[arc.as_usize()]
     }
 
     /// Returns the edge for the given `EdgeId`.
-    fn get_arc_mut(&mut self, arc: EdgeId) -> &mut Arc<A> {
+    fn get_arc_mut(&mut self, arc: EdgeId) -> &mut RawEdge<A> {
         &mut self.arcs[arc.as_usize()]
     }
 
@@ -84,7 +84,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         if let Target::Expanded(target_id) = target {
             self.get_vertex_mut(target_id).parents.push(arc_id);
         }
-        self.arcs.push(Arc { data: data, source: source, target: target, });
+        self.arcs.push(RawEdge { data: data, source: source, target: target, });
         arc_id
     }
 
@@ -195,7 +195,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 /// A search graph is built up incrementally, and this type is used to represent
 /// an edge whose destination vertex isn't yet known. Graph-modifying operations
 /// which are executed while exploring the graph topology may expand such edges.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Target<T, R> {
     /// Edge has not yet been expanded. Associated data may be used to perform
     /// expansion.

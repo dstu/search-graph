@@ -299,11 +299,11 @@ pub fn make_mut_edge<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: EdgeId) -> 
     }
 
 impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn arc(&self) -> &Arc<A> {
+    fn arc(&self) -> &RawEdge<A> {
         self.graph.get_arc(self.id)
     }
 
-    fn arc_mut(&mut self) -> &mut Arc<A> {
+    fn arc_mut(&mut self) -> &mut RawEdge<A> {
         self.graph.get_arc_mut(self.id)
     }
 
@@ -407,7 +407,7 @@ pub enum Expanded<T> {
 }
 
 impl<'a, T, S, A> EdgeExpander<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn arc_mut(&mut self) -> &mut Arc<A> {
+    fn arc_mut(&mut self) -> &mut RawEdge<A> {
         self.graph.get_arc_mut(self.id)
     }
 
@@ -491,11 +491,11 @@ pub struct MutExpandedEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, 
 }
 
 impl<'a, T, S, A> MutExpandedEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn arc(&self) -> &Arc<A> {
+    fn arc(&self) -> &RawEdge<A> {
         self.graph.get_arc(self.id)
     }
 
-    fn arc_mut(&mut self) -> &mut Arc<A> {
+    fn arc_mut(&mut self) -> &mut RawEdge<A> {
         self.graph.get_arc_mut(self.id)
     }
 

@@ -1,4 +1,4 @@
-use std::cmp::{Eq, PartialEq};
+use std::cmp::Eq;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::hash::Hash;
@@ -111,8 +111,11 @@ impl<T> StateNamespace<T> where T: Hash + Eq + Clone {
 }
 
 /// Internal type for graph edges.
-#[derive(Debug)]
-pub struct Arc<A> {
+///
+/// The Hash, Ord, and Eq implementations will conflate parallel edges with
+/// identical statistics.
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub struct RawEdge<A> {
     /// Edge data.
     pub data: A,
     /// Source vertex.
@@ -122,17 +125,6 @@ pub struct Arc<A> {
     /// target vertex with a `VertexId` of `id`.
     pub target: Target<VertexId, ()>,
 }
-
-/// This implementation will conflate parallel edges with identical statistics.
-impl<A> PartialEq for Arc<A> where A: PartialEq {
-    fn eq(&self, other: &Arc<A>) -> bool {
-        self.source == other.source
-            && self.target == other.target
-            && self.data == other.data
-    }
-}
-
-impl<A> Eq for Arc<A> where A: Eq { }
 
 /// Internal type for graph vertices.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]

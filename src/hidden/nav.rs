@@ -2,7 +2,7 @@ use std::hash::Hash;
 use std::iter::Iterator;
 
 use ::{Graph, Target};
-use ::hidden::base::{Arc, EdgeId, VertexId, RawVertex};
+use ::hidden::base::{EdgeId, VertexId, RawEdge, RawVertex};
 
 /// Immutable handle to a graph vertex ("node handle").
 ///
@@ -250,7 +250,7 @@ pub fn make_edge<'a, T, S, A>(graph: &'a Graph<T, S, A>, id: EdgeId) -> Edge<'a,
     }
 
 impl<'a, T, S, A> Edge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    fn arc(&self) -> &'a Arc<A> {
+    fn arc(&self) -> &'a RawEdge<A> {
         self.graph.get_arc(self.id)
     }
 
