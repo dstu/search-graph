@@ -1047,9 +1047,9 @@
 <span class='doccomment'>/// State of search path&#39;s head.</span>
 <span class='kw'>enum</span> <span class='ident'>Head</span> {
     <span class='doccomment'>/// Head resolves to a graph vertex.</span>
-    <span class='ident'>Vertex</span>(<span class='ident'>StateId</span>),
+    <span class='ident'>Vertex</span>(<span class='ident'>VertexId</span>),
     <span class='doccomment'>/// Head resolves to an unexpanded edge.</span>
-    <span class='ident'>Unexpanded</span>(<span class='ident'>ArcId</span>),
+    <span class='ident'>Unexpanded</span>(<span class='ident'>EdgeId</span>),
 }
 
 <span class='doccomment'>/// Errors that may arise during search.</span>
@@ -1097,7 +1097,7 @@
     <span class='doccomment'>/// The graph that is being searched.</span>
     <span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
     <span class='doccomment'>/// The edges that have been traversed.</span>
-    <span class='ident'>path</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ArcId</span><span class='op'>&gt;</span>,
+    <span class='ident'>path</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>EdgeId</span><span class='op'>&gt;</span>,
     <span class='doccomment'>/// The path head.</span>
     <span class='ident'>head</span>: <span class='ident'>Head</span>,
 }
@@ -1243,11 +1243,11 @@
                                 <span class='kw'>let</span> <span class='ident'>child</span> <span class='op'>=</span> <span class='ident'>children</span>.<span class='ident'>get_edge</span>(<span class='ident'>i</span>);
                                 <span class='kw'>match</span> <span class='ident'>child</span>.<span class='ident'>get_target</span>() {
                                     <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>n</span>) <span class='op'>=&gt;</span> {
-                                        <span class='self'>self</span>.<span class='ident'>path</span>.<span class='ident'>push</span>(<span class='ident'>ArcId</span>(<span class='ident'>child</span>.<span class='ident'>get_id</span>()));
-                                        <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='ident'>Head</span>::<span class='ident'>Vertex</span>(<span class='ident'>StateId</span>(<span class='ident'>n</span>.<span class='ident'>get_id</span>()));
+                                        <span class='self'>self</span>.<span class='ident'>path</span>.<span class='ident'>push</span>(<span class='ident'>EdgeId</span>(<span class='ident'>child</span>.<span class='ident'>get_id</span>()));
+                                        <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='ident'>Head</span>::<span class='ident'>Vertex</span>(<span class='ident'>VertexId</span>(<span class='ident'>n</span>.<span class='ident'>get_id</span>()));
                                     },
                                     <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(()) <span class='op'>=&gt;</span>
-                                        <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='ident'>Head</span>::<span class='ident'>Unexpanded</span>(<span class='ident'>ArcId</span>(<span class='ident'>child</span>.<span class='ident'>get_id</span>())),
+                                        <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='ident'>Head</span>::<span class='ident'>Unexpanded</span>(<span class='ident'>EdgeId</span>(<span class='ident'>child</span>.<span class='ident'>get_id</span>())),
                                 };
                                 <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>child</span>))
                             }
@@ -1259,8 +1259,8 @@
                                     <span class='ident'>requested_index</span>: <span class='ident'>i</span>, <span class='ident'>parent_count</span>: <span class='ident'>parents</span>.<span class='ident'>len</span>() })
                             } <span class='kw'>else</span> {
                                 <span class='kw'>let</span> <span class='ident'>parent</span> <span class='op'>=</span> <span class='ident'>parents</span>.<span class='ident'>get_edge</span>(<span class='ident'>i</span>);
-                                <span class='self'>self</span>.<span class='ident'>path</span>.<span class='ident'>push</span>(<span class='ident'>ArcId</span>(<span class='ident'>parent</span>.<span class='ident'>get_id</span>()));
-                                <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='ident'>Head</span>::<span class='ident'>Vertex</span>(<span class='ident'>StateId</span>(<span class='ident'>parent</span>.<span class='ident'>get_source</span>().<span class='ident'>get_id</span>()));
+                                <span class='self'>self</span>.<span class='ident'>path</span>.<span class='ident'>push</span>(<span class='ident'>EdgeId</span>(<span class='ident'>parent</span>.<span class='ident'>get_id</span>()));
+                                <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='ident'>Head</span>::<span class='ident'>Vertex</span>(<span class='ident'>VertexId</span>(<span class='ident'>parent</span>.<span class='ident'>get_source</span>().<span class='ident'>get_id</span>()));
                                 <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>parent</span>))
                             }
                         },

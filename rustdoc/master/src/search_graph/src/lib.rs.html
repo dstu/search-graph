@@ -276,10 +276,10 @@
 <span class='doccomment'>/// handle with `get_node`. To modify graph contents, add new root vertices with</span>
 <span class='doccomment'>/// `add_root` and retrieve extant vertices with `get_node_mut`.</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> {
-    <span class='doccomment'>/// Lookup table that maps from game states to `StateId`.</span>
+    <span class='doccomment'>/// Lookup table that maps from game states to `VertexId`.</span>
     <span class='ident'>state_ids</span>: <span class='ident'>StateNamespace</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
-    <span class='ident'>vertices</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Vertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;&gt;</span>,  <span class='comment'>// Indexed by StateId.</span>
-    <span class='ident'>arcs</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Arc</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;&gt;</span>,  <span class='comment'>// Indexed by ArcId.</span>
+    <span class='ident'>vertices</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>RawVertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;&gt;</span>,  <span class='comment'>// Indexed by VertexId.</span>
+    <span class='ident'>arcs</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>RawEdge</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;&gt;</span>,  <span class='comment'>// Indexed by EdgeId.</span>
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> {
@@ -292,23 +292,23 @@
         }
     }
 
-    <span class='doccomment'>/// Returns the vertex for the given `StateId`.</span>
-    <span class='kw'>fn</span> <span class='ident'>get_vertex</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>state</span>: <span class='ident'>StateId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>Vertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span> {
+    <span class='doccomment'>/// Returns the vertex for the given `VertexId`.</span>
+    <span class='kw'>fn</span> <span class='ident'>get_vertex</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>state</span>: <span class='ident'>VertexId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>RawVertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span> {
         <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>vertices</span>[<span class='ident'>state</span>.<span class='ident'>as_usize</span>()]
     }
 
-    <span class='doccomment'>/// Returns the vertex for the given `StateId`.</span>
-    <span class='kw'>fn</span> <span class='ident'>get_vertex_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>state</span>: <span class='ident'>StateId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Vertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span> {
+    <span class='doccomment'>/// Returns the vertex for the given `VertexId`.</span>
+    <span class='kw'>fn</span> <span class='ident'>get_vertex_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>state</span>: <span class='ident'>VertexId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>RawVertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span> {
         <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>vertices</span>[<span class='ident'>state</span>.<span class='ident'>as_usize</span>()]
     }
 
-    <span class='doccomment'>/// Returns the edge for the given `ArcId`.</span>
-    <span class='kw'>fn</span> <span class='ident'>get_arc</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>arc</span>: <span class='ident'>ArcId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>Arc</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
+    <span class='doccomment'>/// Returns the edge for the given `EdgeId`.</span>
+    <span class='kw'>fn</span> <span class='ident'>get_arc</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>arc</span>: <span class='ident'>EdgeId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>RawEdge</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
         <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>arcs</span>[<span class='ident'>arc</span>.<span class='ident'>as_usize</span>()]
     }
 
-    <span class='doccomment'>/// Returns the edge for the given `ArcId`.</span>
-    <span class='kw'>fn</span> <span class='ident'>get_arc_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>arc</span>: <span class='ident'>ArcId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Arc</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
+    <span class='doccomment'>/// Returns the edge for the given `EdgeId`.</span>
+    <span class='kw'>fn</span> <span class='ident'>get_arc_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>arc</span>: <span class='ident'>EdgeId</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>RawEdge</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
         <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>arcs</span>[<span class='ident'>arc</span>.<span class='ident'>as_usize</span>()]
     }
 
@@ -316,9 +316,9 @@
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// This method does not add incoming or outgoing edges (expanded or</span>
     <span class='doccomment'>/// not). That must be done by calling `add_arc` with the new vertex</span>
-    <span class='doccomment'>/// `StateId`.</span>
-    <span class='kw'>fn</span> <span class='ident'>add_vertex</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>S</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Vertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>vertices</span>.<span class='ident'>push</span>(<span class='ident'>Vertex</span> {
+    <span class='doccomment'>/// `VertexId`.</span>
+    <span class='kw'>fn</span> <span class='ident'>add_vertex</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>S</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>RawVertex</span><span class='op'>&lt;</span><span class='ident'>S</span><span class='op'>&gt;</span> {
+        <span class='self'>self</span>.<span class='ident'>vertices</span>.<span class='ident'>push</span>(<span class='ident'>RawVertex</span> {
             <span class='ident'>data</span>: <span class='ident'>data</span>,
             <span class='ident'>parents</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
             <span class='ident'>children</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
@@ -328,13 +328,13 @@
 
     <span class='doccomment'>/// Adds a new edge with the given data, source, and target. Returns the</span>
     <span class='doccomment'>/// internal ID for the new edge.</span>
-    <span class='kw'>fn</span> <span class='ident'>add_arc</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>A</span>, <span class='ident'>source</span>: <span class='ident'>StateId</span>, <span class='ident'>target</span>: <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>StateId</span>, ()<span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>ArcId</span> {
-        <span class='kw'>let</span> <span class='ident'>arc_id</span> <span class='op'>=</span> <span class='ident'>ArcId</span>(<span class='self'>self</span>.<span class='ident'>arcs</span>.<span class='ident'>len</span>());
+    <span class='kw'>fn</span> <span class='ident'>add_arc</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>A</span>, <span class='ident'>source</span>: <span class='ident'>VertexId</span>, <span class='ident'>target</span>: <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>VertexId</span>, ()<span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>EdgeId</span> {
+        <span class='kw'>let</span> <span class='ident'>arc_id</span> <span class='op'>=</span> <span class='ident'>EdgeId</span>(<span class='self'>self</span>.<span class='ident'>arcs</span>.<span class='ident'>len</span>());
         <span class='self'>self</span>.<span class='ident'>get_vertex_mut</span>(<span class='ident'>source</span>).<span class='ident'>children</span>.<span class='ident'>push</span>(<span class='ident'>arc_id</span>);
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>target_id</span>) <span class='op'>=</span> <span class='ident'>target</span> {
             <span class='self'>self</span>.<span class='ident'>get_vertex_mut</span>(<span class='ident'>target_id</span>).<span class='ident'>parents</span>.<span class='ident'>push</span>(<span class='ident'>arc_id</span>);
         }
-        <span class='self'>self</span>.<span class='ident'>arcs</span>.<span class='ident'>push</span>(<span class='ident'>Arc</span> { <span class='ident'>data</span>: <span class='ident'>data</span>, <span class='ident'>source</span>: <span class='ident'>source</span>, <span class='ident'>target</span>: <span class='ident'>target</span>, });
+        <span class='self'>self</span>.<span class='ident'>arcs</span>.<span class='ident'>push</span>(<span class='ident'>RawEdge</span> { <span class='ident'>data</span>: <span class='ident'>data</span>, <span class='ident'>source</span>: <span class='ident'>source</span>, <span class='ident'>target</span>: <span class='ident'>target</span>, });
         <span class='ident'>arc_id</span>
     }
 
@@ -433,9 +433,9 @@
         <span class='self'>self</span>.<span class='ident'>retain_reachable_from_ids</span>(<span class='kw-2'>&amp;</span><span class='ident'>root_ids</span>);
     }
 
-    <span class='doccomment'>/// As `retain_reachable_from`, but working over raw `StateId`s instead of</span>
+    <span class='doccomment'>/// As `retain_reachable_from`, but working over raw `VertexId`s instead of</span>
     <span class='doccomment'>/// root data.</span>
-    <span class='kw'>fn</span> <span class='ident'>retain_reachable_from_ids</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>root_ids</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>StateId</span>]) {
+    <span class='kw'>fn</span> <span class='ident'>retain_reachable_from_ids</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>root_ids</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>VertexId</span>]) {
         <span class='self'>self</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::<span class='ident'>mark_compact</span>::<span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='self'>self</span>, <span class='ident'>root_ids</span>);
     }
 }
@@ -445,7 +445,7 @@
 <span class='doccomment'>/// A search graph is built up incrementally, and this type is used to represent</span>
 <span class='doccomment'>/// an edge whose destination vertex isn&#39;t yet known. Graph-modifying operations</span>
 <span class='doccomment'>/// which are executed while exploring the graph topology may expand such edges.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>Debug</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>)]</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>Debug</span>, <span class='ident'>Eq</span>, <span class='ident'>Ord</span>, <span class='ident'>PartialEq</span>, <span class='ident'>PartialOrd</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>R</span><span class='op'>&gt;</span> {
     <span class='doccomment'>/// Edge has not yet been expanded. Associated data may be used to perform</span>
     <span class='doccomment'>/// expansion.</span>

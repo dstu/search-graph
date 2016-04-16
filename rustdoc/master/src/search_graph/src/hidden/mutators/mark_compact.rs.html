@@ -640,7 +640,7 @@
 <span class='doccomment'>//! that maps from game states to their IDs.</span>
 
 <span class='kw'>use</span> ::{<span class='ident'>Graph</span>, <span class='ident'>Target</span>};
-<span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>base</span>::{<span class='ident'>ArcId</span>, <span class='ident'>StateId</span>};
+<span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>base</span>::{<span class='ident'>EdgeId</span>, <span class='ident'>VertexId</span>};
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Eq</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>VecDeque</span>;
@@ -683,9 +683,9 @@
     <span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
     <span class='ident'>marked_state_count</span>: <span class='ident'>usize</span>,
     <span class='ident'>marked_arc_count</span>: <span class='ident'>usize</span>,
-    <span class='ident'>state_id_map</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>StateId</span><span class='op'>&gt;&gt;</span>,
-    <span class='ident'>arc_id_map</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>ArcId</span><span class='op'>&gt;&gt;</span>,
-    <span class='ident'>frontier</span>: <span class='ident'>VecDeque</span><span class='op'>&lt;</span><span class='ident'>StateId</span><span class='op'>&gt;</span>,
+    <span class='ident'>state_id_map</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>VertexId</span><span class='op'>&gt;&gt;</span>,
+    <span class='ident'>arc_id_map</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>EdgeId</span><span class='op'>&gt;&gt;</span>,
+    <span class='ident'>frontier</span>: <span class='ident'>VecDeque</span><span class='op'>&lt;</span><span class='ident'>VertexId</span><span class='op'>&gt;</span>,
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>Collector</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
@@ -696,7 +696,7 @@
     <span class='doccomment'>/// function is not exported by the crate, so you probably want the</span>
     <span class='doccomment'>/// `retain_reachable()` method of `MutNode` or the `retain_reachable_from`</span>
     <span class='doccomment'>/// method of `Graph`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>retain_reachable</span>(<span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>, <span class='ident'>roots</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>StateId</span>]) {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>retain_reachable</span>(<span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>, <span class='ident'>roots</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>VertexId</span>]) {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>Collector</span>::<span class='ident'>new</span>(<span class='ident'>graph</span>);
         <span class='ident'>c</span>.<span class='ident'>mark</span>(<span class='ident'>roots</span>);
         <span class='ident'>c</span>.<span class='ident'>sweep</span>();
@@ -718,11 +718,11 @@
 
     <span class='doccomment'>/// Traverses graph components reachable from `roots` and marks them as</span>
     <span class='doccomment'>/// reachable. Also builds a new graph component addressing scheme that</span>
-    <span class='doccomment'>/// reassigns `StateId` and `ArcId` values.</span>
+    <span class='doccomment'>/// reassigns `VertexId` and `EdgeId` values.</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// As side effects, arc sources and vertex children are updated to use the</span>
     <span class='doccomment'>/// new addressing scheme.</span>
-    <span class='kw'>fn</span> <span class='ident'>mark</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>roots</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>StateId</span>]) {
+    <span class='kw'>fn</span> <span class='ident'>mark</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>roots</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>VertexId</span>]) {
         <span class='kw'>for</span> <span class='ident'>id</span> <span class='kw'>in</span> <span class='ident'>roots</span>.<span class='ident'>iter</span>() {
             <span class='ident'>Self</span>::<span class='ident'>remap_state_id</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>state_id_map</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>marked_state_count</span>, <span class='op'>*</span><span class='ident'>id</span>);
             <span class='self'>self</span>.<span class='ident'>frontier</span>.<span class='ident'>push_back</span>(<span class='op'>*</span><span class='ident'>id</span>);
@@ -730,31 +730,31 @@
         <span class='kw'>while</span> <span class='self'>self</span>.<span class='ident'>mark_next</span>() { }
     }
 
-    <span class='doccomment'>/// Looks up the mapping between old and new StateIds. May update</span>
+    <span class='doccomment'>/// Looks up the mapping between old and new VertexIds. May update</span>
     <span class='doccomment'>/// `state_id_map` with a new mapping, given that we have remapped</span>
-    <span class='doccomment'>/// `marked_state_count` StateIds so far.</span>
-    <span class='kw'>fn</span> <span class='ident'>remap_state_id</span>(<span class='ident'>state_id_map</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>StateId</span><span class='op'>&gt;</span>], <span class='ident'>marked_state_count</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>usize</span>,
-                      <span class='ident'>old_state_id</span>: <span class='ident'>StateId</span>) <span class='op'>-&gt;</span> <span class='ident'>StateId</span> {
+    <span class='doccomment'>/// `marked_state_count` VertexIds so far.</span>
+    <span class='kw'>fn</span> <span class='ident'>remap_state_id</span>(<span class='ident'>state_id_map</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>VertexId</span><span class='op'>&gt;</span>], <span class='ident'>marked_state_count</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>usize</span>,
+                      <span class='ident'>old_state_id</span>: <span class='ident'>VertexId</span>) <span class='op'>-&gt;</span> <span class='ident'>VertexId</span> {
         <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>old_state_id</span>.<span class='ident'>as_usize</span>();
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>new_state_id</span>) <span class='op'>=</span> <span class='ident'>state_id_map</span>[<span class='ident'>index</span>] {
             <span class='kw'>return</span> <span class='ident'>new_state_id</span>
         }
-        <span class='kw'>let</span> <span class='ident'>new_state_id</span> <span class='op'>=</span> <span class='ident'>StateId</span>(<span class='op'>*</span><span class='ident'>marked_state_count</span>);
+        <span class='kw'>let</span> <span class='ident'>new_state_id</span> <span class='op'>=</span> <span class='ident'>VertexId</span>(<span class='op'>*</span><span class='ident'>marked_state_count</span>);
         <span class='ident'>state_id_map</span>[<span class='ident'>index</span>] <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>new_state_id</span>);
         <span class='op'>*</span><span class='ident'>marked_state_count</span> <span class='op'>+=</span> <span class='number'>1</span>;
         <span class='ident'>new_state_id</span>
     }
     
-    <span class='doccomment'>/// Looks up the mapping between old and new ArcIds. May update</span>
+    <span class='doccomment'>/// Looks up the mapping between old and new EdgeIds. May update</span>
     <span class='doccomment'>/// `arc_id_map` with a new mapping, given that we have remapped</span>
-    <span class='doccomment'>/// `marked_arc_count` ArcIds so far.</span>
-    <span class='kw'>fn</span> <span class='ident'>remap_arc_id</span>(<span class='ident'>arc_id_map</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>ArcId</span><span class='op'>&gt;</span>], <span class='ident'>marked_arc_count</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>usize</span>,
-                    <span class='ident'>old_arc_id</span>: <span class='ident'>ArcId</span>) <span class='op'>-&gt;</span> <span class='ident'>ArcId</span> {
+    <span class='doccomment'>/// `marked_arc_count` EdgeIds so far.</span>
+    <span class='kw'>fn</span> <span class='ident'>remap_arc_id</span>(<span class='ident'>arc_id_map</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>EdgeId</span><span class='op'>&gt;</span>], <span class='ident'>marked_arc_count</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>usize</span>,
+                    <span class='ident'>old_arc_id</span>: <span class='ident'>EdgeId</span>) <span class='op'>-&gt;</span> <span class='ident'>EdgeId</span> {
         <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>old_arc_id</span>.<span class='ident'>as_usize</span>();
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>new_arc_id</span>) <span class='op'>=</span> <span class='ident'>arc_id_map</span>[<span class='ident'>index</span>] {
             <span class='kw'>return</span> <span class='ident'>new_arc_id</span>
         }
-        <span class='kw'>let</span> <span class='ident'>new_arc_id</span> <span class='op'>=</span> <span class='ident'>ArcId</span>(<span class='op'>*</span><span class='ident'>marked_arc_count</span>);
+        <span class='kw'>let</span> <span class='ident'>new_arc_id</span> <span class='op'>=</span> <span class='ident'>EdgeId</span>(<span class='op'>*</span><span class='ident'>marked_arc_count</span>);
         <span class='ident'>arc_id_map</span>[<span class='ident'>index</span>] <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>new_arc_id</span>);
         <span class='op'>*</span><span class='ident'>marked_arc_count</span> <span class='op'>+=</span> <span class='number'>1</span>;
         <span class='ident'>new_arc_id</span>
@@ -764,7 +764,7 @@
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>frontier</span>.<span class='ident'>pop_front</span>() {
             <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='boolval'>false</span>,
             <span class='prelude-val'>Some</span>(<span class='ident'>state_id</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>let</span> (<span class='ident'>new_state_id</span>, <span class='kw-2'>mut</span> <span class='ident'>child_arc_ids</span>): (<span class='ident'>StateId</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ArcId</span><span class='op'>&gt;</span>) <span class='op'>=</span> {
+                <span class='kw'>let</span> (<span class='ident'>new_state_id</span>, <span class='kw-2'>mut</span> <span class='ident'>child_arc_ids</span>): (<span class='ident'>VertexId</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>EdgeId</span><span class='op'>&gt;</span>) <span class='op'>=</span> {
                     <span class='kw'>let</span> <span class='ident'>vertex</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_vertex_mut</span>(<span class='ident'>state_id</span>);
                     (<span class='self'>self</span>.<span class='ident'>state_id_map</span>[<span class='ident'>state_id</span>.<span class='ident'>as_usize</span>()].<span class='ident'>unwrap</span>(),
                      <span class='ident'>vertex</span>.<span class='ident'>children</span>.<span class='ident'>drain</span>(<span class='number'>0</span>..).<span class='ident'>collect</span>())
@@ -787,7 +787,7 @@
                     <span class='op'>*</span><span class='ident'>arc_id</span> <span class='op'>=</span> <span class='ident'>new_arc_id</span>;
                 }
 
-                <span class='comment'>// Update vertex children to use new ArcIds.</span>
+                <span class='comment'>// Update vertex children to use new EdgeIds.</span>
                 <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_vertex_mut</span>(<span class='ident'>state_id</span>).<span class='ident'>children</span> <span class='op'>=</span> <span class='ident'>child_arc_ids</span>;
                 <span class='boolval'>true</span>
             },
@@ -797,7 +797,7 @@
     <span class='doccomment'>/// Drops vertices which were not reached in the previous `mark()`. Must be</span>
     <span class='doccomment'>/// run after `mark()`.</span>
     <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Also, updates vertex pointers to parent edges to use the new `ArcId`</span>
+    <span class='doccomment'>/// Also, updates vertex pointers to parent edges to use the new `EdgeId`</span>
     <span class='doccomment'>/// addressing scheme built in the previous call to `mark()`.</span>
     <span class='kw'>fn</span> <span class='ident'>sweep</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
         <span class='kw'>let</span> <span class='ident'>state_id_map</span> <span class='op'>=</span> {
@@ -847,7 +847,7 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>test</span> {
     <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>Collector</span>;
-    <span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>base</span>::{<span class='ident'>ArcId</span>, <span class='ident'>Arc</span>, <span class='ident'>StateId</span>, <span class='ident'>StateNamespace</span>, <span class='ident'>Vertex</span>};
+    <span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>base</span>::{<span class='ident'>EdgeId</span>, <span class='ident'>VertexId</span>, <span class='ident'>StateNamespace</span>, <span class='ident'>RawEdge</span>, <span class='ident'>RawVertex</span>};
     <span class='kw'>use</span> ::<span class='ident'>Target</span>;
 
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
@@ -862,14 +862,14 @@
         <span class='ident'>g</span>
     }
 
-    <span class='kw'>fn</span> <span class='ident'>make_vertex</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>parents</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ArcId</span><span class='op'>&gt;</span>, <span class='ident'>children</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ArcId</span><span class='op'>&gt;</span>)
-                   <span class='op'>-&gt;</span> <span class='ident'>Vertex</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
-        <span class='ident'>Vertex</span> { <span class='ident'>data</span>: <span class='ident'>data</span>, <span class='ident'>parents</span>: <span class='ident'>parents</span>, <span class='ident'>children</span>: <span class='ident'>children</span>, }
+    <span class='kw'>fn</span> <span class='ident'>make_vertex</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>parents</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>EdgeId</span><span class='op'>&gt;</span>, <span class='ident'>children</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>EdgeId</span><span class='op'>&gt;</span>)
+                   <span class='op'>-&gt;</span> <span class='ident'>RawVertex</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
+        <span class='ident'>RawVertex</span> { <span class='ident'>data</span>: <span class='ident'>data</span>, <span class='ident'>parents</span>: <span class='ident'>parents</span>, <span class='ident'>children</span>: <span class='ident'>children</span>, }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>make_arc</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>source</span>: <span class='ident'>StateId</span>, <span class='ident'>target</span>: <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>StateId</span>, ()<span class='op'>&gt;</span>)
-                <span class='op'>-&gt;</span> <span class='ident'>Arc</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
-        <span class='ident'>Arc</span> { <span class='ident'>data</span>: <span class='ident'>data</span>, <span class='ident'>source</span>: <span class='ident'>source</span>, <span class='ident'>target</span>: <span class='ident'>target</span>, }
+    <span class='kw'>fn</span> <span class='ident'>make_arc</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='ident'>source</span>: <span class='ident'>VertexId</span>, <span class='ident'>target</span>: <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>VertexId</span>, ()<span class='op'>&gt;</span>)
+                <span class='op'>-&gt;</span> <span class='ident'>RawEdge</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
+        <span class='ident'>RawEdge</span> { <span class='ident'>data</span>: <span class='ident'>data</span>, <span class='ident'>source</span>: <span class='ident'>source</span>, <span class='ident'>target</span>: <span class='ident'>target</span>, }
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -888,12 +888,12 @@
         <span class='ident'>g</span>.<span class='ident'>add_root</span>(<span class='string'>&quot;2&quot;</span>, <span class='string'>&quot;&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>3</span>, <span class='ident'>g</span>.<span class='ident'>vertex_count</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='ident'>g</span>.<span class='ident'>edge_count</span>());
-        <span class='kw'>let</span> <span class='ident'>root_ids</span> <span class='op'>=</span> [<span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>StateId</span>(<span class='number'>1</span>), <span class='ident'>StateId</span>(<span class='number'>2</span>)];
+        <span class='kw'>let</span> <span class='ident'>root_ids</span> <span class='op'>=</span> [<span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>VertexId</span>(<span class='number'>1</span>), <span class='ident'>VertexId</span>(<span class='number'>2</span>)];
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>Collector</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>);
         <span class='ident'>c</span>.<span class='ident'>mark</span>(<span class='kw-2'>&amp;</span><span class='ident'>root_ids</span>);
         <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='ident'>new_id</span>) <span class='kw'>in</span> <span class='ident'>c</span>.<span class='ident'>state_id_map</span>.<span class='ident'>iter</span>().<span class='ident'>enumerate</span>() {
             <span class='kw'>if</span> <span class='ident'>new_id</span>.<span class='ident'>is_some</span>() {
-                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>root_ids</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>StateId</span>(<span class='ident'>i</span>)));
+                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>root_ids</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>VertexId</span>(<span class='ident'>i</span>)));
             }
         }
     }
@@ -901,7 +901,7 @@
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>reachable_loop_ok</span>() {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>empty_graph</span>();
-        <span class='comment'>// Original StateIds are:</span>
+        <span class='comment'>// Original VertexIds are:</span>
         <span class='comment'>// &quot;0&quot;: 0</span>
         <span class='comment'>// &quot;00&quot;: 1</span>
         <span class='comment'>// &quot;01&quot;: 2</span>
@@ -915,7 +915,7 @@
         <span class='comment'>// &quot;211&quot;: 10</span>
         <span class='comment'>// &quot;2100&quot;: 11</span>
 
-        <span class='comment'>// Original ArcIds are:</span>
+        <span class='comment'>// Original EdgeIds are:</span>
         <span class='comment'>// &quot;0&quot; -&gt; &quot;00&quot;: 0</span>
         <span class='comment'>// &quot;0&quot; -&gt; &quot;01&quot;: 1</span>
         <span class='comment'>// &quot;1&quot; -&gt; &quot;10&quot;: 2</span>
@@ -966,11 +966,11 @@
                    <span class='string'>&quot;0&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;0_data&quot;</span>,
                    <span class='string'>&quot;2100_0_data&quot;</span>);
 
-        <span class='kw'>let</span> <span class='ident'>root_ids</span> <span class='op'>=</span> [<span class='ident'>StateId</span>(<span class='number'>6</span>)];
+        <span class='kw'>let</span> <span class='ident'>root_ids</span> <span class='op'>=</span> [<span class='ident'>VertexId</span>(<span class='number'>6</span>)];
         <span class='kw'>let</span> <span class='ident'>reachable_state_ids</span> <span class='op'>=</span> [
-            <span class='ident'>StateId</span>(<span class='number'>6</span>), <span class='ident'>StateId</span>(<span class='number'>7</span>), <span class='ident'>StateId</span>(<span class='number'>8</span>), <span class='ident'>StateId</span>(<span class='number'>9</span>), <span class='ident'>StateId</span>(<span class='number'>10</span>), <span class='ident'>StateId</span>(<span class='number'>11</span>),
-            <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>StateId</span>(<span class='number'>1</span>), <span class='ident'>StateId</span>(<span class='number'>2</span>)];
-        <span class='kw'>let</span> <span class='ident'>unreachable_state_ids</span> <span class='op'>=</span> [<span class='ident'>StateId</span>(<span class='number'>3</span>), <span class='ident'>StateId</span>(<span class='number'>4</span>), <span class='ident'>StateId</span>(<span class='number'>5</span>)];
+            <span class='ident'>VertexId</span>(<span class='number'>6</span>), <span class='ident'>VertexId</span>(<span class='number'>7</span>), <span class='ident'>VertexId</span>(<span class='number'>8</span>), <span class='ident'>VertexId</span>(<span class='number'>9</span>), <span class='ident'>VertexId</span>(<span class='number'>10</span>), <span class='ident'>VertexId</span>(<span class='number'>11</span>),
+            <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>VertexId</span>(<span class='number'>1</span>), <span class='ident'>VertexId</span>(<span class='number'>2</span>)];
+        <span class='kw'>let</span> <span class='ident'>unreachable_state_ids</span> <span class='op'>=</span> [<span class='ident'>VertexId</span>(<span class='number'>3</span>), <span class='ident'>VertexId</span>(<span class='number'>4</span>), <span class='ident'>VertexId</span>(<span class='number'>5</span>)];
 
         <span class='comment'>// Mark.</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>Collector</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>);
@@ -979,14 +979,14 @@
         <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='ident'>new_id</span>) <span class='kw'>in</span> <span class='ident'>c</span>.<span class='ident'>state_id_map</span>.<span class='ident'>iter</span>().<span class='ident'>enumerate</span>() {
             <span class='kw'>if</span> <span class='ident'>new_id</span>.<span class='ident'>is_some</span>() {
                 <span class='comment'>// Reachable IDs are remapped.</span>
-                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>reachable_state_ids</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>StateId</span>(<span class='ident'>i</span>)));
+                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>reachable_state_ids</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>VertexId</span>(<span class='ident'>i</span>)));
             } <span class='kw'>else</span> {
                 <span class='comment'>// Unreachable IDs aren&#39;t.</span>
-                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>unreachable_state_ids</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>StateId</span>(<span class='ident'>i</span>)));
+                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>unreachable_state_ids</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>VertexId</span>(<span class='ident'>i</span>)));
             }
         }
 
-        <span class='comment'>// New StateIds are:</span>
+        <span class='comment'>// New VertexIds are:</span>
         <span class='comment'>// &quot;2&quot;: 0</span>
         <span class='comment'>// &quot;20&quot;: 1</span>
         <span class='comment'>// &quot;21&quot;: 2</span>
@@ -996,24 +996,24 @@
         <span class='comment'>// &quot;2100&quot;: 6</span>
         <span class='comment'>// &quot;00&quot;: 7</span>
         <span class='comment'>// &quot;01&quot;: 8</span>
-        <span class='comment'>// This is BFS order, as we eagerly remap StateIds when we first</span>
+        <span class='comment'>// This is BFS order, as we eagerly remap VertexIds when we first</span>
         <span class='comment'>// encounter them, not when they are visited. This should help by</span>
         <span class='comment'>// compacting memory so that child vertices are adjacent to one another.</span>
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>c</span>.<span class='ident'>state_id_map</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>5</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>7</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>8</span>)),
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>5</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>7</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>8</span>)),
                         <span class='prelude-val'>None</span>,
                         <span class='prelude-val'>None</span>,
                         <span class='prelude-val'>None</span>,
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>0</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>3</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>4</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>StateId</span>(<span class='number'>6</span>)),));
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>0</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>3</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>4</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>VertexId</span>(<span class='number'>6</span>)),));
 
-        <span class='comment'>// New ArcIds are:</span>
+        <span class='comment'>// New EdgeIds are:</span>
         <span class='comment'>// &quot;2&quot; -&gt; &quot;20&quot;: 0</span>
         <span class='comment'>// &quot;2&quot; -&gt; &quot;21&quot;: 1</span>
         <span class='comment'>// &quot;21&quot; -&gt; &quot;210&quot;: 2</span>
@@ -1025,70 +1025,70 @@
         <span class='comment'>// &quot;2100&quot; -&gt; &quot;0&quot;: 8</span>
         <span class='comment'>// Again, this places child arc data in contiguous segments of memory.</span>
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>c</span>.<span class='ident'>arc_id_map</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>6</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>7</span>)),
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>6</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>7</span>)),
                         <span class='prelude-val'>None</span>,
                         <span class='prelude-val'>None</span>,
                         <span class='prelude-val'>None</span>,
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>1</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>5</span>)),
-                        <span class='prelude-val'>Some</span>(<span class='ident'>ArcId</span>(<span class='number'>8</span>)),));
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>1</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>5</span>)),
+                        <span class='prelude-val'>Some</span>(<span class='ident'>EdgeId</span>(<span class='number'>8</span>)),));
 
         <span class='ident'>c</span>.<span class='ident'>sweep</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>c</span>.<span class='ident'>graph</span>.<span class='ident'>vertices</span>,
                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;2_data&quot;</span>,
                                     <span class='macro'>vec</span><span class='macro'>!</span>(),
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>)),),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>)),),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;20_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>)),
                                     <span class='macro'>vec</span><span class='macro'>!</span>()),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;21_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>1</span>)),
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>), <span class='ident'>ArcId</span>(<span class='number'>3</span>))),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>1</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>), <span class='ident'>EdgeId</span>(<span class='number'>3</span>))),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;210_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>)),
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>), <span class='ident'>ArcId</span>(<span class='number'>5</span>))),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>), <span class='ident'>EdgeId</span>(<span class='number'>5</span>))),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;211_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>)),
                                     <span class='macro'>vec</span><span class='macro'>!</span>()),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>), <span class='ident'>ArcId</span>(<span class='number'>8</span>)),
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>6</span>), <span class='ident'>ArcId</span>(<span class='number'>7</span>))),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>), <span class='ident'>EdgeId</span>(<span class='number'>8</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>6</span>), <span class='ident'>EdgeId</span>(<span class='number'>7</span>))),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;2100_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>5</span>)),
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>8</span>))),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>5</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>8</span>))),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>6</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>6</span>)),
                                     <span class='macro'>vec</span><span class='macro'>!</span>()),
                         <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>,
-                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>7</span>)),
+                                    <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>7</span>)),
                                     <span class='macro'>vec</span><span class='macro'>!</span>()),));
 
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>c</span>.<span class='ident'>graph</span>.<span class='ident'>arcs</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;2_20_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;2_21_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;21_210_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>3</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;21_211_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>4</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;210_0_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>5</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;210_2100_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>6</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>5</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>7</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>5</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>8</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;2100_0_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>6</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>5</span>))),));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;2_20_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;2_21_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;21_210_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>3</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;21_211_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>4</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;210_0_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>5</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;210_2100_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>6</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>5</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>7</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>5</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>8</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;2100_0_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>6</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>5</span>))),));
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_associations</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;2&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;20&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;21&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;210&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>3</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;211&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>4</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>5</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;2100&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>6</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>7</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;01&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>8</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;2&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;20&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;21&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;210&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>3</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;211&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>4</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>5</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;2100&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>6</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>7</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;01&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>8</span>));
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_ids</span> <span class='op'>=</span> <span class='ident'>StateNamespace</span>::<span class='ident'>new</span>();
         <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>state_ids</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>c</span>.<span class='ident'>graph</span>.<span class='ident'>state_ids</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>state_ids</span>.<span class='ident'>to_hash_map</span>(), <span class='ident'>state_associations</span>);
@@ -1102,33 +1102,33 @@
         <span class='ident'>g</span>.<span class='ident'>add_edge</span>(<span class='string'>&quot;0&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;0_data&quot;</span>, <span class='string'>&quot;02&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;02_data&quot;</span>, <span class='string'>&quot;0_02_data&quot;</span>);
         <span class='ident'>g</span>.<span class='ident'>add_edge</span>(<span class='string'>&quot;02&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;02_data&quot;</span>, <span class='string'>&quot;020&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;020_data&quot;</span>, <span class='string'>&quot;02_020_data&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>vertices</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>), <span class='ident'>ArcId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;02_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;020_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>), <span class='ident'>EdgeId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;02_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;020_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>arcs</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_unexpanded_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(())),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_02_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;02_020_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>3</span>)))));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_unexpanded_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(())),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_02_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;02_020_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>3</span>)))));
 
-        <span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='kw-2'>&amp;</span>[<span class='ident'>StateId</span>(<span class='number'>0</span>)]);
+        <span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='kw-2'>&amp;</span>[<span class='ident'>VertexId</span>(<span class='number'>0</span>)]);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>vertices</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>), <span class='ident'>ArcId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;02_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;020_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>), <span class='ident'>EdgeId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;02_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;020_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>arcs</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_unexpanded_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(())),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_02_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;02_020_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>3</span>)))));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_unexpanded_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(())),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_02_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;02_020_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>3</span>)))));
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_associations</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;02&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;020&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>3</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;02&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;020&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>3</span>));
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_ids</span> <span class='op'>=</span> <span class='ident'>StateNamespace</span>::<span class='ident'>new</span>();
         <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>state_ids</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>.<span class='ident'>state_ids</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>state_ids</span>.<span class='ident'>to_hash_map</span>(), <span class='ident'>state_associations</span>);
@@ -1143,32 +1143,32 @@
         <span class='ident'>g</span>.<span class='ident'>add_edge</span>(<span class='string'>&quot;1&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;1_data&quot;</span>, <span class='string'>&quot;10&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;10_data&quot;</span>, <span class='string'>&quot;1_10_data&quot;</span>);
         <span class='ident'>g</span>.<span class='ident'>add_edge</span>(<span class='string'>&quot;1&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;1_data&quot;</span>, <span class='string'>&quot;1&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;1_data&quot;</span>, <span class='string'>&quot;1_1_data&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>vertices</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>), <span class='ident'>ArcId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;1_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>), <span class='ident'>ArcId</span>(<span class='number'>4</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;10_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>), <span class='ident'>EdgeId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;1_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>), <span class='ident'>EdgeId</span>(<span class='number'>4</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;10_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>arcs</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_1&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_2&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;1_10_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>4</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;1_1_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>3</span>)))));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_1&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_2&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;1_10_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>4</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;1_1_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>3</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>3</span>)))));
         
-        <span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='kw-2'>&amp;</span>[<span class='ident'>StateId</span>(<span class='number'>0</span>)]);
+        <span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='kw-2'>&amp;</span>[<span class='ident'>VertexId</span>(<span class='number'>0</span>)]);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>vertices</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>), <span class='ident'>ArcId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>), <span class='ident'>EdgeId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>arcs</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_1&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_2&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>)))));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_1&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data_2&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>)))));
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_associations</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;01&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;01&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>));
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_ids</span> <span class='op'>=</span> <span class='ident'>StateNamespace</span>::<span class='ident'>new</span>();
         <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>state_ids</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>.<span class='ident'>state_ids</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>state_ids</span>.<span class='ident'>to_hash_map</span>(), <span class='ident'>state_associations</span>);
@@ -1184,37 +1184,37 @@
         <span class='ident'>g</span>.<span class='ident'>add_edge</span>(<span class='string'>&quot;01&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;01_data&quot;</span>, <span class='string'>&quot;010&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;010_data&quot;</span>, <span class='string'>&quot;01_010_data&quot;</span>);
         <span class='ident'>g</span>.<span class='ident'>add_edge</span>(<span class='string'>&quot;root&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;root_data&quot;</span>, <span class='string'>&quot;0&quot;</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='string'>&quot;0_data&quot;</span>, <span class='string'>&quot;root_0_data&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>vertices</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>), <span class='ident'>ArcId</span>(<span class='number'>5</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>3</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>1</span>), <span class='ident'>ArcId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;010_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;root_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>5</span>)))));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>), <span class='ident'>EdgeId</span>(<span class='number'>5</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>3</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>1</span>), <span class='ident'>EdgeId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;010_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>)), <span class='macro'>vec</span><span class='macro'>!</span>()),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;root_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>5</span>)))));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>arcs</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;00_00_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;00_0_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>0</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;01_010_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>3</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;root_0_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>4</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>0</span>)))));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;00_00_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;00_0_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>0</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;01_010_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>3</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;root_0_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>4</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>0</span>)))));
 
-        <span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='kw-2'>&amp;</span>[<span class='ident'>StateId</span>(<span class='number'>1</span>)]);
+        <span class='ident'>Collector</span>::<span class='ident'>retain_reachable</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>, <span class='kw-2'>&amp;</span>[<span class='ident'>VertexId</span>(<span class='number'>1</span>)]);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>vertices</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>), <span class='ident'>ArcId</span>(<span class='number'>0</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>0</span>), <span class='ident'>ArcId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>2</span>), <span class='ident'>ArcId</span>(<span class='number'>3</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>))),
-                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;010_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>ArcId</span>(<span class='number'>4</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_vertex</span>(<span class='string'>&quot;00_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>), <span class='ident'>EdgeId</span>(<span class='number'>0</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>0</span>), <span class='ident'>EdgeId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;0_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>1</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>2</span>), <span class='ident'>EdgeId</span>(<span class='number'>3</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;01_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>3</span>)), <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>))),
+                        <span class='ident'>make_vertex</span>(<span class='string'>&quot;010_data&quot;</span>, <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>EdgeId</span>(<span class='number'>4</span>)), <span class='macro'>vec</span><span class='macro'>!</span>())));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>g</span>.<span class='ident'>arcs</span>,
-                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;00_00_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>0</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;00_0_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>1</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>0</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>2</span>))),
-                        <span class='ident'>make_arc</span>(<span class='string'>&quot;01_010_data&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>StateId</span>(<span class='number'>3</span>)))));
+                   <span class='macro'>vec</span><span class='macro'>!</span>(<span class='ident'>make_arc</span>(<span class='string'>&quot;00_00_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>0</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;00_0_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>1</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_00_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>0</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;0_01_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>2</span>))),
+                        <span class='ident'>make_arc</span>(<span class='string'>&quot;01_010_data&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>), <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>VertexId</span>(<span class='number'>3</span>)))));
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_associations</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>0</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>1</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;01&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>2</span>));
-        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;010&quot;</span>, <span class='ident'>StateId</span>(<span class='number'>3</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;00&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>0</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;0&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>1</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;01&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>2</span>));
+        <span class='ident'>state_associations</span>.<span class='ident'>insert</span>(<span class='string'>&quot;010&quot;</span>, <span class='ident'>VertexId</span>(<span class='number'>3</span>));
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state_ids</span> <span class='op'>=</span> <span class='ident'>StateNamespace</span>::<span class='ident'>new</span>();
         <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>state_ids</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>g</span>.<span class='ident'>state_ids</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>state_ids</span>.<span class='ident'>to_hash_map</span>(), <span class='ident'>state_associations</span>);
