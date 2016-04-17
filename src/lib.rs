@@ -1,3 +1,5 @@
+#![feature(map_entry_keys)]
+
 mod hidden;
 pub mod mutators;
 pub mod nav;
@@ -60,6 +62,11 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// Returns the edge for the given `EdgeId`.
     fn get_arc_mut(&mut self, arc: EdgeId) -> &mut RawEdge<A> {
         &mut self.arcs[arc.as_usize()]
+    }
+
+    /// Returns the game state associated with `id`.
+    fn get_state(&self, id: VertexId) -> Option<&T> {
+        self.state_ids.get_state(id.as_usize())
     }
 
     /// Adds a new vertex with the given data, returning a mutable reference to it.

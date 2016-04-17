@@ -54,6 +54,15 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
         self.id.as_usize()
     }
 
+    /// Returns the canonical label that is used to address this `MutNode`.
+    ///
+    /// Graph instances which project multiple labels to the same vertex will
+    /// consistently return a single value, regardless of which value was used
+    /// to obtain this node handle.
+    pub fn get_label(&self) -> &T {
+        &self.graph.get_state(self.id).unwrap()
+    }
+
     /// Returns the data at this vertex.
     pub fn get_data<'s>(&'s self) -> &'s S {
         &self.vertex().data

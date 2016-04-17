@@ -212,6 +212,7 @@ mod test {
 
     use std::collections::HashMap;
     use std::mem;
+    use std::rc::Rc;
 
     type Graph = ::Graph<&'static str, &'static str, &'static str>;
 
@@ -440,15 +441,15 @@ mod test {
                         make_arc("2100_0_data", VertexId(6), VertexId(5)),));
 
         let mut state_associations = HashMap::new();
-        state_associations.insert("2", VertexId(0));
-        state_associations.insert("20", VertexId(1));
-        state_associations.insert("21", VertexId(2));
-        state_associations.insert("210", VertexId(3));
-        state_associations.insert("211", VertexId(4));
-        state_associations.insert("0", VertexId(5));
-        state_associations.insert("2100", VertexId(6));
-        state_associations.insert("00", VertexId(7));
-        state_associations.insert("01", VertexId(8));
+        state_associations.insert(Rc::new("2"), VertexId(0));
+        state_associations.insert(Rc::new("20"), VertexId(1));
+        state_associations.insert(Rc::new("21"), VertexId(2));
+        state_associations.insert(Rc::new("210"), VertexId(3));
+        state_associations.insert(Rc::new("211"), VertexId(4));
+        state_associations.insert(Rc::new("0"), VertexId(5));
+        state_associations.insert(Rc::new("2100"), VertexId(6));
+        state_associations.insert(Rc::new("00"), VertexId(7));
+        state_associations.insert(Rc::new("01"), VertexId(8));
         let mut state_ids = StateNamespace::new();
         mem::swap(&mut state_ids, &mut c.graph.state_ids);
         assert_eq!(state_ids.to_hash_map(), state_associations);
@@ -486,9 +487,9 @@ mod test {
                         make_arc("0_01_data", VertexId(0), VertexId(2))));
 
         let mut state_associations = HashMap::new();
-        state_associations.insert("0", VertexId(0));
-        state_associations.insert("00", VertexId(1));
-        state_associations.insert("01", VertexId(2));
+        state_associations.insert(Rc::new("0"), VertexId(0));
+        state_associations.insert(Rc::new("00"), VertexId(1));
+        state_associations.insert(Rc::new("01"), VertexId(2));
         let mut state_ids = StateNamespace::new();
         mem::swap(&mut state_ids, &mut g.state_ids);
         assert_eq!(state_ids.to_hash_map(), state_associations);
@@ -531,10 +532,10 @@ mod test {
                         make_arc("01_010_data", VertexId(2), VertexId(3))));
 
         let mut state_associations = HashMap::new();
-        state_associations.insert("00", VertexId(0));
-        state_associations.insert("0", VertexId(1));
-        state_associations.insert("01", VertexId(2));
-        state_associations.insert("010", VertexId(3));
+        state_associations.insert(Rc::new("00"), VertexId(0));
+        state_associations.insert(Rc::new("0"), VertexId(1));
+        state_associations.insert(Rc::new("01"), VertexId(2));
+        state_associations.insert(Rc::new("010"), VertexId(3));
         let mut state_ids = StateNamespace::new();
         mem::swap(&mut state_ids, &mut g.state_ids);
         assert_eq!(state_ids.to_hash_map(), state_associations);

@@ -26,6 +26,15 @@ impl<'a, T, S, A> Node<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: '
         &self.graph.get_vertex(self.id).children
     }
 
+    /// Returns the canonical label that is used to address this `Node`.
+    ///
+    /// Graph instances which project multiple labels to the same vertex will
+    /// consistently return a single value, regardless of which value was used
+    /// to obtain this node handle.
+    pub fn get_label(&self) -> &T {
+        &self.graph.get_state(self.id).unwrap()
+    }
+
     /// Returns an immutable ID that is guaranteed to identify this vertex
     /// uniquely within its graph. This ID may change when the graph is mutated.
     pub fn get_id(&self) -> usize {
