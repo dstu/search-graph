@@ -10,6 +10,14 @@ use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
 pub mod path;
 pub mod mark_compact;
 
+/// The result of edge expansion. This wraps the resulting handle to the graph
+/// component, with each variant indicating whether the expansion created a new
+/// vertex or connected an edge to an existing one.
+pub enum Expanded<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    Extant(MutNode<'a, T, S, A>),
+    New(MutNode<'a, T, S, A>),
+}
+
 /// Mutable handle to a graph vertex ("node handle").
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's
@@ -108,6 +116,12 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// `self`. The source graph is still considered to have a mutable borrow in
     /// play, but the resulting node can be cloned freely.
     pub fn to_node(self) -> Node<'a, T, S, A> {
+        make_node(self.graph, self.id)
+    }
+
+    /// Returns a non-mutating node obtained by borrowing this node. Returns a
+    /// value whose lifetime is limited to a borrow of `self`.
+    pub fn get_node<'s>(&'s self) -> Node<'s, T, S, A> {
         make_node(self.graph, self.id)
     }
 
