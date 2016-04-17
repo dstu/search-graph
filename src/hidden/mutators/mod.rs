@@ -182,6 +182,42 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     pub fn iter<'s>(&'s self) -> ChildListIter<'s, T, S, A> {
         self.get_source_node().get_child_list().iter()
     }
+
+    /// Adds a child edge to the vertex labeled by `child_label`. If no such
+    /// vertex exists, it is created and associated with the data returned by
+    /// `f`. Returns a mutable edge handle for the new edge, with a lifetime
+    /// limited to a borrow of `self`.
+    pub fn add_child<'s, F>(&'s mut self, child_label: T, f: F, edge_data: A)
+                            -> MutEdge<'s, T, S, A>
+        where F: FnOnce() -> S {
+            let target_id = match self.graph.state_ids.get_or_insert(child_label) {
+                NamespaceInsertion::Present(id) => id,
+                NamespaceInsertion::New(id) => {
+                    self.graph.add_raw_vertex(f());
+                    id
+                },
+            };
+            let edge_id =
+                EdgeId(self.graph.add_edge_from_raw(self.id, target_id, edge_data).get_id());
+            MutEdge { graph: self.graph, id: edge_id, }
+        }
+
+    /// Adds a child edge to the vertex labeled by `child_label`. If no such
+    /// vertex exists, it is created and associated with the data returned by
+    /// `f`. Returns a mutable edge handle for the new edge.
+    pub fn to_add_child<F>(self, child_label: T, f: F, edge_data: A) -> MutEdge<'a, T, S, A>
+        where F: FnOnce() -> S {
+            let target_id = match self.graph.state_ids.get_or_insert(child_label) {
+                NamespaceInsertion::Present(id) => id,
+                NamespaceInsertion::New(id) => {
+                    self.graph.add_raw_vertex(f());
+                    id
+                },
+            };
+            let edge_id =
+                EdgeId(self.graph.add_edge_from_raw(self.id, target_id, edge_data).get_id());
+            MutEdge { graph: self.graph, id: edge_id, }
+        }
 }
 
 /// A traversible list of a vertex's incoming edges.
