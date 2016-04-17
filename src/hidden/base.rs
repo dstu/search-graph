@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::hash::Hash;
 
-use ::Target;
-
 /// Internal edge identifier.
 ///
 /// This type is not exported by the crate because it does not identify the
@@ -120,10 +118,8 @@ pub struct RawEdge<A> {
     pub data: A,
     /// Source vertex.
     pub source: VertexId,
-    /// Target vertex. If this arc is unexpanded, it is
-    /// `Target::Unexpanded(())`; otherwise, it is `Target::Expanded(id)` for
-    /// target vertex with a `VertexId` of `id`.
-    pub target: Target<VertexId, ()>,
+    /// Target vertex.
+    pub target: VertexId,
 }
 
 /// Internal type for graph vertices.

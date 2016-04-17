@@ -6,7 +6,7 @@
 //! although there is a potential for a high cost when rebuilding the hashtable
 //! that maps from game states to their IDs.
 
-use ::{Graph, Target};
+use ::Graph;
 use ::hidden::base::{EdgeId, VertexId};
 
 use std::cmp::Eq;
@@ -141,12 +141,10 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
                     let arc = self.graph.get_arc_mut(*arc_id);
                     // Update arc sources to use new state IDs.
                     arc.source = new_state_id;
-                    if let Target::Expanded(child_vertex_id) = arc.target {
-                        if self.state_id_map[child_vertex_id.as_usize()].is_none() {
-                            Self::remap_state_id(
-                                &mut self.state_id_map, &mut self.marked_state_count, child_vertex_id);
-                            self.frontier.push_back(child_vertex_id);
-                        }
+                    if self.state_id_map[arc.target.as_usize()].is_none() {
+                        Self::remap_state_id(
+                            &mut self.state_id_map, &mut self.marked_state_count, arc.target);
+                        self.frontier.push_back(arc.target);
                     }
                     let new_arc_id =
                         Self::remap_arc_id(&mut self.arc_id_map, &mut self.marked_arc_count, *arc_id);
@@ -199,11 +197,7 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
         permute_compact(&mut self.graph.arcs, |i| arc_id_map[i].map(|id| id.as_usize()));
         // Reassign arc targets.
         for mut arc in self.graph.arcs.iter_mut() {
-            arc.target = match arc.target {
-                Target::Expanded(old_state_id) =>
-                    Target::Expanded(state_id_map[old_state_id.as_usize()].unwrap()),
-                x @ _ => x,
-            };
+            arc.target = state_id_map[arc.target.as_usize()].unwrap();
         }
 
         // Update state namespace to use new mapping.
@@ -215,7 +209,6 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
 mod test {
     use super::Collector;
     use ::hidden::base::{EdgeId, VertexId, StateNamespace, RawEdge, RawVertex};
-    use ::Target;
 
     use std::collections::HashMap;
     use std::mem;
@@ -234,7 +227,7 @@ mod test {
         RawVertex { data: data, parents: parents, children: children, }
     }
 
-    fn make_arc(data: &'static str, source: VertexId, target: Target<VertexId, ()>)
+    fn make_arc(data: &'static str, source: VertexId, target: VertexId)
                 -> RawEdge<&'static str> {
         RawEdge { data: data, source: source, target: target, }
     }
@@ -436,15 +429,15 @@ mod test {
                                     vec!()),));
 
         assert_eq!(c.graph.arcs,
-                   vec!(make_arc("2_20_data", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("2_21_data", VertexId(0), Target::Expanded(VertexId(2))),
-                        make_arc("21_210_data", VertexId(2), Target::Expanded(VertexId(3))),
-                        make_arc("21_211_data", VertexId(2), Target::Expanded(VertexId(4))),
-                        make_arc("210_0_data", VertexId(3), Target::Expanded(VertexId(5))),
-                        make_arc("210_2100_data", VertexId(3), Target::Expanded(VertexId(6))),
-                        make_arc("0_00_data", VertexId(5), Target::Expanded(VertexId(7))),
-                        make_arc("0_01_data", VertexId(5), Target::Expanded(VertexId(8))),
-                        make_arc("2100_0_data", VertexId(6), Target::Expanded(VertexId(5))),));
+                   vec!(make_arc("2_20_data", VertexId(0), VertexId(1)),
+                        make_arc("2_21_data", VertexId(0), VertexId(2)),
+                        make_arc("21_210_data", VertexId(2), VertexId(3)),
+                        make_arc("21_211_data", VertexId(2), VertexId(4)),
+                        make_arc("210_0_data", VertexId(3), VertexId(5)),
+                        make_arc("210_2100_data", VertexId(3), VertexId(6)),
+                        make_arc("0_00_data", VertexId(5), VertexId(7)),
+                        make_arc("0_01_data", VertexId(5), VertexId(8)),
+                        make_arc("2100_0_data", VertexId(6), VertexId(5)),));
 
         let mut state_associations = HashMap::new();
         state_associations.insert("2", VertexId(0));
@@ -458,46 +451,6 @@ mod test {
         state_associations.insert("01", VertexId(8));
         let mut state_ids = StateNamespace::new();
         mem::swap(&mut state_ids, &mut c.graph.state_ids);
-        assert_eq!(state_ids.to_hash_map(), state_associations);
-    }
-
-    #[test]
-    fn unexpanded_arcs_ok() {
-        let mut g = empty_graph();
-        g.add_edge("0", |_| "0_data", "00", |_| "00_data", "0_00_data");
-        g.get_node_mut(&"0").unwrap().to_child_list().to_add("0_unexpanded_data");
-        g.add_edge("0", |_| "0_data", "02", |_| "02_data", "0_02_data");
-        g.add_edge("02", |_| "02_data", "020", |_| "020_data", "02_020_data");
-        assert_eq!(g.vertices,
-                   vec!(make_vertex("0_data", vec!(), vec!(EdgeId(0), EdgeId(1), EdgeId(2))),
-                        make_vertex("00_data", vec!(EdgeId(0)), vec!()),
-                        make_vertex("02_data", vec!(EdgeId(2)), vec!(EdgeId(3))),
-                        make_vertex("020_data", vec!(EdgeId(3)), vec!())));
-        assert_eq!(g.arcs,
-                   vec!(make_arc("0_00_data", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("0_unexpanded_data", VertexId(0), Target::Unexpanded(())),
-                        make_arc("0_02_data", VertexId(0), Target::Expanded(VertexId(2))),
-                        make_arc("02_020_data", VertexId(2), Target::Expanded(VertexId(3)))));
-
-        Collector::retain_reachable(&mut g, &[VertexId(0)]);
-        assert_eq!(g.vertices,
-                   vec!(make_vertex("0_data", vec!(), vec!(EdgeId(0), EdgeId(1), EdgeId(2))),
-                        make_vertex("00_data", vec!(EdgeId(0)), vec!()),
-                        make_vertex("02_data", vec!(EdgeId(2)), vec!(EdgeId(3))),
-                        make_vertex("020_data", vec!(EdgeId(3)), vec!())));
-        assert_eq!(g.arcs,
-                   vec!(make_arc("0_00_data", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("0_unexpanded_data", VertexId(0), Target::Unexpanded(())),
-                        make_arc("0_02_data", VertexId(0), Target::Expanded(VertexId(2))),
-                        make_arc("02_020_data", VertexId(2), Target::Expanded(VertexId(3)))));
-
-        let mut state_associations = HashMap::new();
-        state_associations.insert("0", VertexId(0));
-        state_associations.insert("00", VertexId(1));
-        state_associations.insert("02", VertexId(2));
-        state_associations.insert("020", VertexId(3));
-        let mut state_ids = StateNamespace::new();
-        mem::swap(&mut state_ids, &mut g.state_ids);
         assert_eq!(state_ids.to_hash_map(), state_associations);
     }
 
@@ -516,11 +469,11 @@ mod test {
                         make_vertex("1_data", vec!(EdgeId(4)), vec!(EdgeId(3), EdgeId(4))),
                         make_vertex("10_data", vec!(EdgeId(3)), vec!())));
         assert_eq!(g.arcs,
-                   vec!(make_arc("0_00_data_1", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("0_00_data_2", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("0_01_data", VertexId(0), Target::Expanded(VertexId(2))),
-                        make_arc("1_10_data", VertexId(3), Target::Expanded(VertexId(4))),
-                        make_arc("1_1_data", VertexId(3), Target::Expanded(VertexId(3)))));
+                   vec!(make_arc("0_00_data_1", VertexId(0), VertexId(1)),
+                        make_arc("0_00_data_2", VertexId(0), VertexId(1)),
+                        make_arc("0_01_data", VertexId(0), VertexId(2)),
+                        make_arc("1_10_data", VertexId(3), VertexId(4)),
+                        make_arc("1_1_data", VertexId(3), VertexId(3))));
         
         Collector::retain_reachable(&mut g, &[VertexId(0)]);
         assert_eq!(g.vertices,
@@ -528,9 +481,9 @@ mod test {
                         make_vertex("00_data", vec!(EdgeId(0), EdgeId(1)), vec!()),
                         make_vertex("01_data", vec!(EdgeId(2)), vec!())));
         assert_eq!(g.arcs,
-                   vec!(make_arc("0_00_data_1", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("0_00_data_2", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("0_01_data", VertexId(0), Target::Expanded(VertexId(2)))));
+                   vec!(make_arc("0_00_data_1", VertexId(0), VertexId(1)),
+                        make_arc("0_00_data_2", VertexId(0), VertexId(1)),
+                        make_arc("0_01_data", VertexId(0), VertexId(2))));
 
         let mut state_associations = HashMap::new();
         state_associations.insert("0", VertexId(0));
@@ -557,12 +510,12 @@ mod test {
                         make_vertex("010_data", vec!(EdgeId(4)), vec!()),
                         make_vertex("root_data", vec!(), vec!(EdgeId(5)))));
         assert_eq!(g.arcs,
-                   vec!(make_arc("0_00_data", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("00_00_data", VertexId(1), Target::Expanded(VertexId(1))),
-                        make_arc("00_0_data", VertexId(1), Target::Expanded(VertexId(0))),
-                        make_arc("0_01_data", VertexId(0), Target::Expanded(VertexId(2))),
-                        make_arc("01_010_data", VertexId(2), Target::Expanded(VertexId(3))),
-                        make_arc("root_0_data", VertexId(4), Target::Expanded(VertexId(0)))));
+                   vec!(make_arc("0_00_data", VertexId(0), VertexId(1)),
+                        make_arc("00_00_data", VertexId(1), VertexId(1)),
+                        make_arc("00_0_data", VertexId(1), VertexId(0)),
+                        make_arc("0_01_data", VertexId(0), VertexId(2)),
+                        make_arc("01_010_data", VertexId(2), VertexId(3)),
+                        make_arc("root_0_data", VertexId(4), VertexId(0))));
 
         Collector::retain_reachable(&mut g, &[VertexId(1)]);
         assert_eq!(g.vertices,
@@ -571,11 +524,11 @@ mod test {
                         make_vertex("01_data", vec!(EdgeId(3)), vec!(EdgeId(4))),
                         make_vertex("010_data", vec!(EdgeId(4)), vec!())));
         assert_eq!(g.arcs,
-                   vec!(make_arc("00_00_data", VertexId(0), Target::Expanded(VertexId(0))),
-                        make_arc("00_0_data", VertexId(0), Target::Expanded(VertexId(1))),
-                        make_arc("0_00_data", VertexId(1), Target::Expanded(VertexId(0))),
-                        make_arc("0_01_data", VertexId(1), Target::Expanded(VertexId(2))),
-                        make_arc("01_010_data", VertexId(2), Target::Expanded(VertexId(3)))));
+                   vec!(make_arc("00_00_data", VertexId(0), VertexId(0)),
+                        make_arc("00_0_data", VertexId(0), VertexId(1)),
+                        make_arc("0_00_data", VertexId(1), VertexId(0)),
+                        make_arc("0_01_data", VertexId(1), VertexId(2)),
+                        make_arc("01_010_data", VertexId(2), VertexId(3))));
 
         let mut state_associations = HashMap::new();
         state_associations.insert("00", VertexId(0));

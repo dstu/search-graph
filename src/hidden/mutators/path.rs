@@ -11,25 +11,14 @@ use std::fmt;
 use std::hash::Hash;
 use std::iter::Iterator;
 
-use ::{Graph, Target};
+use ::Graph;
 use ::hidden::base::*;
-use ::hidden::mutators::{MutEdge, MutNode};
+use ::hidden::mutators::MutNode;
 use ::hidden::nav::{Edge, Node, make_edge, make_node};
-
-/// State of search path's head.
-enum Head {
-    /// Head resolves to a graph vertex.
-    Vertex(VertexId),
-    /// Head resolves to an unexpanded edge.
-    Unexpanded(EdgeId),
-}
 
 /// Errors that may arise during search.
 #[derive(Debug)]
 pub enum SearchError<E> where E: Error {
-    /// A traversal operation could not be performed because the path head is
-    /// unexpanded.
-    Unexpanded,
     /// A search operation selected a child index that was out of bounds.
     ChildBounds {
         /// The index of the child that was requested.
@@ -71,7 +60,7 @@ pub struct Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
     /// The edges that have been traversed.
     path: Vec<EdgeId>,
     /// The path head.
-    head: Head,
+    head: VertexId,
 }
 
 /// Indicates which edge of a vertex to traverse. Edges are denoted by a 0-based
@@ -99,13 +88,12 @@ pub enum StackItem<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 'a {
     /// Non-head item, a (vertex, edge) pair.
     Item(Edge<'a, T, S, A>),
     /// The path head, which may resolve to a vertex or an unexpanded edge.
-    Head(Target<Node<'a, T, S, A>, Edge<'a, T, S, A>>),
+    Head(Node<'a, T, S, A>),
 }
 
 impl<E> fmt::Display for SearchError<E> where E: Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            SearchError::Unexpanded => write!(f, "Path head is unexpanded"),
             SearchError::ChildBounds { requested_index, child_count } =>
                 write!(f, "Search chose child {}/{}", requested_index, child_count),
             SearchError::ParentBounds { requested_index, parent_count } =>
@@ -118,7 +106,6 @@ impl<E> fmt::Display for SearchError<E> where E: Error {
 impl<E> Error for SearchError<E> where E: Error {
     fn description(&self) -> &str {
         match *self {
-            SearchError::Unexpanded => "unexpanded",
             SearchError::ChildBounds { requested_index: _, child_count: _ } => "child out of bounds",
             SearchError::ParentBounds { requested_index: _, parent_count: _ } => "parent out of bounds",
             SearchError::SelectionError(ref e) => e.description(),
@@ -139,17 +126,14 @@ impl<'a, T, S, A> Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 
         Stack {
             graph: node.graph,
             path: Vec::new(),
-            head: Head::Vertex(node.id),
+            head: node.id,
         }
     }
 
     /// Returns the number of elements in the path. Since a path always has a
     /// head, there is always at least 1 element.
     pub fn len(&self) -> usize {
-        match self.head {
-            Head::Vertex(_) => self.path.len() + 1,
-            Head::Unexpanded(_) => self.path.len() + 2,
-        }
+        self.path.len() + 1
     }
 
     /// Removes the most recently traversed element from the path, if
@@ -157,7 +141,7 @@ impl<'a, T, S, A> Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 
     pub fn pop<'s>(&'s mut self) -> Option<Edge<'s, T, S, A>> {
         match self.path.pop() {
             Some(edge_id) => {
-                self.head = Head::Vertex(self.graph.get_arc(edge_id).source);
+                self.head = self.graph.get_arc(edge_id).source;
                 Some(make_edge(self.graph, edge_id))
             },
             None => None,
@@ -165,28 +149,13 @@ impl<'a, T, S, A> Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 
     }
 
     /// Returns a read-only view of the head element.
-    pub fn head<'s>(&'s self) -> Target<Node<'s, T, S, A>, Edge<'s, T, S, A>> {
-        match self.head {
-            Head::Vertex(id) => Target::Expanded(make_node(self.graph, id)),
-            Head::Unexpanded(id) => Target::Unexpanded(make_edge(self.graph, id)),
-        }
-    }
-
-    /// Returns `true` iff the head element is expanded (i.e., resolves to a
-    /// vertex).
-    pub fn is_head_expanded(&self) -> bool {
-        match self.head {
-            Head::Vertex(_) => true,
-            Head::Unexpanded(_) => false,
-        }
+    pub fn head<'s>(&'s self) -> Node<'s, T, S, A> {
+        make_node(self.graph, self.head)
     }
 
     /// Consumes the path and returns a mutable view of its head.
-    pub fn to_head(self) -> Target<MutNode<'a, T, S, A>, MutEdge<'a, T, S, A>> {
-        match self.head {
-            Head::Vertex(id) => Target::Expanded(MutNode { graph: self.graph, id: id, }),
-            Head::Unexpanded(id) => Target::Unexpanded(MutEdge { graph: self.graph, id: id, })
-        }
+    pub fn to_head(self) -> MutNode<'a, T, S, A> {
+        MutNode { graph: self.graph, id: self.head, }
     }
 
     /// Grows the path by consulting a function of the current head. If this
@@ -202,45 +171,34 @@ impl<'a, T, S, A> Stack<'a, T, S, A> where T: 'a + Hash + Eq + Clone, S: 'a, A: 
     /// `Err(e)` if an error was encountered.
     pub fn push<'s, F, E>(&'s mut self, mut f: F) -> Result<Option<Edge<'s, T, S, A>>, SearchError<E>>
         where F: FnMut(&Node<'s, T, S, A>) -> Result<Option<Traversal>, E>, E: Error {
-            match self.head {
-                Head::Vertex(head_id) => {
-                    let node = make_node(self.graph, head_id);
-                    match f(&node) {
-                        Ok(Some(Traversal::Child(i))) => {
-                            let children = node.get_child_list();
-                            if i >= children.len() {
-                                Err(SearchError::ChildBounds {
-                                    requested_index: i, child_count: children.len() })
-                            } else {
-                                let child = children.get_edge(i);
-                                match child.get_target() {
-                                    Target::Expanded(n) => {
-                                        self.path.push(EdgeId(child.get_id()));
-                                        self.head = Head::Vertex(VertexId(n.get_id()));
-                                    },
-                                    Target::Unexpanded(()) =>
-                                        self.head = Head::Unexpanded(EdgeId(child.get_id())),
-                                };
-                                Ok(Some(child))
-                            }
-                        },
-                        Ok(Some(Traversal::Parent(i))) => {
-                            let parents = node.get_parent_list();
-                            if i >= parents.len() {
-                                Err(SearchError::ParentBounds {
-                                    requested_index: i, parent_count: parents.len() })
-                            } else {
-                                let parent = parents.get_edge(i);
-                                self.path.push(EdgeId(parent.get_id()));
-                                self.head = Head::Vertex(VertexId(parent.get_source().get_id()));
-                                Ok(Some(parent))
-                            }
-                        },
-                        Ok(None) => Ok(None),
-                        Err(e) => Err(SearchError::SelectionError(e)),
+            let node = make_node(self.graph, self.head);
+            match f(&node) {
+                Ok(Some(Traversal::Child(i))) => {
+                    let children = node.get_child_list();
+                    if i >= children.len() {
+                        Err(SearchError::ChildBounds {
+                            requested_index: i, child_count: children.len() })
+                    } else {
+                        let child = children.get_edge(i);
+                        self.path.push(EdgeId(child.get_id()));
+                        self.head = VertexId(child.get_target().get_id());
+                        Ok(Some(child))
                     }
                 },
-                Head::Unexpanded(_) => Err(SearchError::Unexpanded),
+                Ok(Some(Traversal::Parent(i))) => {
+                    let parents = node.get_parent_list();
+                    if i >= parents.len() {
+                        Err(SearchError::ParentBounds {
+                            requested_index: i, parent_count: parents.len() })
+                    } else {
+                        let parent = parents.get_edge(i);
+                        self.path.push(EdgeId(parent.get_id()));
+                        self.head = VertexId(parent.get_source().get_id());
+                        Ok(Some(parent))
+                    }
+                },
+                Ok(None) => Ok(None),
+                Err(e) => Err(SearchError::SelectionError(e)),
             }
         }
 
@@ -293,10 +251,9 @@ impl<'a, 's, T, S, A> Iterator for StackIter<'a, 's, T, S, A>
 
 #[cfg(test)]
 mod test {
-    use ::Target;
     use std::error::Error;
     use std::fmt;
-    use super::{SearchError, Traversal};
+    use super::{SearchError, StackItem, Traversal};
 
     type Graph = ::Graph<&'static str, &'static str, ()>;
     type Node<'a> = ::nav::Node<'a, &'static str, &'static str, ()>;
@@ -326,11 +283,7 @@ mod test {
 
         let path = Stack::new(root);
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.head().get_data());
     }
 
     #[test]
@@ -340,7 +293,6 @@ mod test {
 
         let mut path = Stack::new(root);
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         fn no_traversal<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("root", *n.get_data());
@@ -353,11 +305,7 @@ mod test {
         }
 
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.head().get_data());
     }
 
     #[test]
@@ -367,7 +315,6 @@ mod test {
 
         let mut path = Stack::new(root);
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("root", *n.get_data());
@@ -384,11 +331,7 @@ mod test {
         }
 
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.head().get_data());
     }
 
     #[test]
@@ -403,34 +346,23 @@ mod test {
             assert_eq!("A", *n.get_data());
             let children = n.get_child_list();
             assert_eq!(2, children.len());
-            match children.get_edge(0).get_target() {
-                Target::Expanded(n) => assert_eq!("B1", *n.get_data()),
-                _ => panic!(),
-            }
-            match children.get_edge(1).get_target() {
-                Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
-                _ => panic!(),
-            }
+            assert_eq!("B1", *children.get_edge(0).get_target().get_data());
+            assert_eq!("B2", *children.get_edge(1).get_target().get_data());
             Ok(Some(Traversal::Child(1)))
         }
 
         let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         match path.push(traverse_second_child) {
             Ok(Some(e)) => {
                 assert_eq!("A", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("B2", *e.get_target().get_data());
             },
             _ => panic!(),
         }
 
         assert_eq!(2, path.len());
-        assert!(path.is_head_expanded());
 
         fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("B2", *n.get_data());
@@ -441,20 +373,13 @@ mod test {
         match path.push(traverse_first_child) {
             Ok(Some(e)) => {
                 assert_eq!("B2", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("D", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("D", *e.get_target().get_data());
             },
             _ => panic!(),
         }
 
         assert_eq!(3, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("D", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("D", *path.head().get_data());
     }
 
     #[test]
@@ -472,54 +397,13 @@ mod test {
 
         let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         match path.push(traverse_err) {
             Err(SearchError::SelectionError(_)) => (),
             _ => panic!(),
         }
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("A", *n.get_data()),
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn push_to_child_unexpanded_ok() {
-        let mut g = Graph::new();
-        {
-            let mut n = g.add_root("root", "root");
-            n.get_child_list_mut().add_child(());
-        }
-
-        fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
-            assert_eq!("root", *n.get_data());
-            assert_eq!(1, n.get_child_list().len());
-            Ok(Some(Traversal::Child(0)))
-        }
-
-        let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
-        assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-
-        match path.push(traverse_first_child) {
-            Ok(Some(e)) => {
-                assert_eq!("root", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Unexpanded(()) => (),
-                    _ => panic!(),
-                }
-            },
-            _ => panic!(),
-        }
-        assert_eq!(2, path.len());
-        assert!(!path.is_head_expanded());
-        match path.head() {
-            Target::Unexpanded(e) => assert_eq!("root", *e.get_source().get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("A", *path.head().get_data())
     }
 
     #[test]
@@ -529,7 +413,6 @@ mod test {
 
         let mut path = Stack::new(root);
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         fn no_traversal<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("root", *n.get_data());
@@ -542,11 +425,7 @@ mod test {
         }
 
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.head().get_data());
     }
 
     #[test]
@@ -556,7 +435,6 @@ mod test {
 
         let mut path = Stack::new(root);
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         fn traverse_first_parent<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("root", *n.get_data());
@@ -573,11 +451,7 @@ mod test {
         }
 
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.head().get_data());
     }
 
     #[test]
@@ -593,37 +467,23 @@ mod test {
             assert_eq!("A", *n.get_data());
             let children = n.get_child_list();
             assert_eq!(2, children.len());
-            match children.get_edge(0).get_target() {
-                Target::Expanded(n) => assert_eq!("B1", *n.get_data()),
-                _ => panic!(),
-            }
-            match children.get_edge(1).get_target() {
-                Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
-                _ => panic!(),
-            }
+            assert_eq!("B1", *children.get_edge(0).get_target().get_data());
+            assert_eq!("B2", *children.get_edge(1).get_target().get_data());
             Ok(Some(Traversal::Child(1)))
         }
 
         let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         match path.push(traverse_second_child) {
             Ok(Some(e)) => {
                 assert_eq!("A", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("B2", *e.get_target().get_data());
             },
             _ => panic!(),
         }
         assert_eq!(2, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("B2", *path.head().get_data());
 
         fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("B2", *n.get_data());
@@ -634,19 +494,12 @@ mod test {
         match path.push(traverse_first_child) {
             Ok(Some(e)) => {
                 assert_eq!("B2", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("D", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("D", *e.get_target().get_data());
             },
             _ => panic!(),
         }
         assert_eq!(3, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("D", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("D", *path.head().get_data());
 
         fn traverse_first_parent<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("D", *n.get_data());
@@ -657,19 +510,12 @@ mod test {
         match path.push(traverse_first_parent) {
             Ok(Some(e)) => {
                 assert_eq!("B2", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("D", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("D", *e.get_target().get_data());
             },
             _ => panic!(),
         }
         assert_eq!(4, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("B2", *path.head().get_data());
 
         fn traverse_second_parent<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("B2", *n.get_data());
@@ -680,19 +526,12 @@ mod test {
         match path.push(traverse_second_parent) {
             Ok(Some(e)) => {
                 assert_eq!("C", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("B2", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("B2", *e.get_target().get_data());
             },
             _ => panic!(),
         }
         assert_eq!(5, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("C", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("C", *path.head().get_data());
     }
 
     #[test]
@@ -710,69 +549,13 @@ mod test {
 
         let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         match path.push(traverse_err) {
             Err(SearchError::SelectionError(_)) => (),
             _ => panic!(),
         }
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("A", *n.get_data()),
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn push_to_parent_from_unexpanded_err() {
-        let mut g = Graph::new();
-        {
-            let mut n = g.add_root("root", "root");
-            n.get_child_list_mut().add_child(());
-        }
-
-        fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
-            assert_eq!("root", *n.get_data());
-            assert_eq!(1, n.get_child_list().len());
-            Ok(Some(Traversal::Child(0)))
-        }
-
-        let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
-        assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-
-        match path.push(traverse_first_child) {
-            Ok(Some(e)) => {
-                assert_eq!("root", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Unexpanded(()) => (),
-                    _ => panic!(),
-                }
-            },
-            _ => panic!(),
-        }
-        assert_eq!(2, path.len());
-        assert!(!path.is_head_expanded());
-        match path.head() {
-            Target::Unexpanded(e) => assert_eq!("root", *e.get_source().get_data()),
-            _ => panic!(),
-        }
-
-        fn traverse_first_parent<'a>(_: &Node<'a>) -> Result<Option<Traversal>, MockError> {
-            panic!()
-        }
-
-        match path.push(traverse_first_parent) {
-            Err(SearchError::Unexpanded) => (),
-            _ => panic!(),
-        }
-        assert_eq!(2, path.len());
-        assert!(!path.is_head_expanded());
-        match path.head() {
-            Target::Unexpanded(e) => assert_eq!("root", *e.get_source().get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("A", *path.head().get_data());
     }
 
     #[test]
@@ -782,15 +565,12 @@ mod test {
 
         let path = Stack::new(g.add_root("root", "root"));
         assert_eq!(1, path.len());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.head().get_data());
 
         let mut iter_items = path.iter();
         assert_eq!((1, Some(1)), iter_items.size_hint());
         match iter_items.next() {
-            Some(super::StackItem::Head(Target::Expanded(n))) => assert_eq!("root", *n.get_data()),
+            Some(StackItem::Head(n)) => assert_eq!("root", *n.get_data()),
             _ => panic!(),
         }
         assert!(iter_items.next().is_none());
@@ -802,7 +582,6 @@ mod test {
         g.add_root("root", "root");
         add_edge(&mut g, "root", "A");
         add_edge(&mut g, "A", "B");
-        g.get_node_mut(&"B").unwrap().get_child_list_mut().add_child(());
 
         fn traverse_first_child<'a>(_: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             Ok(Some(Traversal::Child(0)))
@@ -814,49 +593,37 @@ mod test {
             _ => panic!(),
         }
         match path.push(traverse_first_child) {
-            Ok(Some(e)) => assert_eq!("A", *e.get_source().get_data()),
+            Ok(Some(e)) => {
+                assert_eq!("A", *e.get_source().get_data());
+                assert_eq!("B", *e.get_target().get_data());
+            },
             _ => panic!(),
         }
         match path.push(traverse_first_child) {
-            Ok(Some(e)) => assert_eq!("B", *e.get_source().get_data()),
-            _ => panic!(),
-        }
-        assert!(!path.is_head_expanded());
-        match path.head() {
-            Target::Unexpanded(e) => assert_eq!("B", *e.get_source().get_data()),
+            Err(SearchError::ChildBounds { requested_index, child_count })
+                if requested_index == 0 && child_count == 0 => (),
             _ => panic!(),
         }
 
         let mut iter_items = path.iter();
-        assert_eq!((4, Some(4)), iter_items.size_hint());
+        assert_eq!((3, Some(3)), iter_items.size_hint());
         match iter_items.next() {
-            Some(super::StackItem::Item(e)) => {
+            Some(StackItem::Item(e)) => {
                 assert_eq!("root", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("A", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("A", *e.get_target().get_data());
             },
             _ => panic!(),
         }
         match iter_items.next() {
-            Some(super::StackItem::Item(e)) => {
+            Some(StackItem::Item(e)) => {
                 assert_eq!("A", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Expanded(n) => assert_eq!("B", *n.get_data()),
-                    _ => panic!(),
-                }
+                assert_eq!("B", *e.get_target().get_data());
             },
             _ => panic!(),
         }
         match iter_items.next() {
-            Some(super::StackItem::Head(Target::Unexpanded(e))) => {
-                assert_eq!("B", *e.get_source().get_data());
-                match e.get_target() {
-                    Target::Unexpanded(()) => (),
-                    _ => panic!(),
-                }
-            },
+            Some(StackItem::Head(n)) =>
+                assert_eq!("B", *n.get_data()),
             _ => panic!(),
         }
         assert!(iter_items.next().is_none());
@@ -868,7 +635,6 @@ mod test {
 
         let mut path = Stack::new(g.add_root("root", "root"));
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
         assert!(path.pop().is_none());
     }
 
@@ -879,7 +645,6 @@ mod test {
 
         let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("root", *n.get_data());
@@ -891,22 +656,14 @@ mod test {
             _ => panic!(),
         }
         assert_eq!(2, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("A", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("A", *path.head().get_data());
 
         match path.pop() {
             Some(e) => assert_eq!("root", *e.get_source().get_data()),
             _ => panic!(),
         }
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-        match path.head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.head().get_data());
 
         assert!(path.pop().is_none());
     }
@@ -918,12 +675,8 @@ mod test {
 
         let path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
-        match path.to_head() {
-            Target::Expanded(n) => assert_eq!("root", *n.get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("root", *path.to_head().get_data());
     }
 
     #[test]
@@ -933,7 +686,6 @@ mod test {
 
         let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
         assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
 
         fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
             assert_eq!("root", *n.get_data());
@@ -945,40 +697,7 @@ mod test {
             _ => panic!(),
         }
         assert_eq!(2, path.len());
-        assert!(path.is_head_expanded());
 
-        match path.to_head() {
-            Target::Expanded(n) => assert_eq!("A", *n.get_data()),
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn to_head_unexpanded_ok() {
-        let mut g = Graph::new();
-        g.add_root("root", "root");
-        let mut n = g.get_node_mut(&"root").unwrap();
-        n.get_child_list_mut().add_child(());
-
-        let mut path = Stack::new(n);
-        assert_eq!(1, path.len());
-        assert!(path.is_head_expanded());
-
-        fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
-            assert_eq!("root", *n.get_data());
-            Ok(Some(Traversal::Child(0)))
-        }
-
-        match path.push(traverse_first_child) {
-            Ok(Some(e)) => assert_eq!("root", *e.get_source().get_data()),
-            _ => panic!(),
-        }
-        assert_eq!(2, path.len());
-        assert!(!path.is_head_expanded());
-
-        match path.to_head() {
-            Target::Unexpanded(e) => assert_eq!("root", *e.get_source().get_data()),
-            _ => panic!(),
-        }
+        assert_eq!("A", *path.to_head().get_data());
     }
 }

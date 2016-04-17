@@ -1,7 +1,7 @@
 use std::hash::Hash;
 use std::iter::Iterator;
 
-use ::{Graph, Target};
+use ::Graph;
 use ::hidden::base::{EdgeId, VertexId, RawEdge, RawVertex};
 
 /// Immutable handle to a graph vertex ("node handle").
@@ -273,10 +273,7 @@ impl<'a, T, S, A> Edge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: '
 
     /// Returns the target of this edge. If the edge is unexpanded, no data will
     /// be available. If it is expanded, a node handle will be available.
-    pub fn get_target(&self) -> Target<Node<'a, T, S, A>, ()> {
-        match self.arc().target {
-            Target::Unexpanded(_) => Target::Unexpanded(()),
-            Target::Expanded(id) => Target::Expanded(Node { graph: self.graph, id: id, }),
-        }
+    pub fn get_target(&self) -> Node<'a, T, S, A> {
+        Node { graph: self.graph, id: self.arc().target, }
     }
 }

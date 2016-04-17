@@ -5,5 +5,4 @@
 //! underlying graph. As a result, only one handle may be active at any given
 //! time.
 
-pub use super::hidden::mutators::{EdgeExpander, Expanded, MutChildList, MutEdge, MutExpandedEdge,
-                                  MutNode, MutParentList};
+pub use super::hidden::mutators::{MutChildList, MutEdge, MutNode, MutParentList};

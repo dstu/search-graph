@@ -67,7 +67,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// This method does not add incoming or outgoing edges (expanded or
     /// not). That must be done by calling `add_arc` with the new vertex
     /// `VertexId`.
-    fn add_vertex(&mut self, data: S) -> &mut RawVertex<S> {
+    fn add_raw_vertex(&mut self, data: S) -> &mut RawVertex<S> {
         self.vertices.push(RawVertex {
             data: data,
             parents: Vec::new(),
@@ -78,12 +78,10 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 
     /// Adds a new edge with the given data, source, and target. Returns the
     /// internal ID for the new edge.
-    fn add_arc(&mut self, data: A, source: VertexId, target: Target<VertexId, ()>) -> EdgeId {
+    fn add_raw_edge(&mut self, data: A, source: VertexId, target: VertexId) -> EdgeId {
         let arc_id = EdgeId(self.arcs.len());
         self.get_vertex_mut(source).children.push(arc_id);
-        if let Target::Expanded(target_id) = target {
-            self.get_vertex_mut(target_id).parents.push(arc_id);
-        }
+        self.get_vertex_mut(target).parents.push(arc_id);
         self.arcs.push(RawEdge { data: data, source: source, target: target, });
         arc_id
     }
@@ -119,7 +117,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         let node_id = match self.state_ids.get_or_insert(state) {
             NamespaceInsertion::Present(id) => id,
             NamespaceInsertion::New(id) => {
-                self.add_vertex(data);
+                self.add_raw_vertex(data);
                 id
             },
         };
@@ -140,7 +138,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
                 NamespaceInsertion::Present(id) => id,
                 NamespaceInsertion::New(id) => {
                     let data = source_data(make_node(self, id));
-                    self.add_vertex(data);
+                    self.add_raw_vertex(data);
                     id
                 },
             };
@@ -148,11 +146,11 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
                 NamespaceInsertion::Present(id) => id,
                 NamespaceInsertion::New(id) => {
                     let data = dest_data(make_node(self, id));
-                    self.add_vertex(data);
+                    self.add_raw_vertex(data);
                     id
                 },
             };
-            let arc_id = self.add_arc(edge_data, source_id, Target::Expanded(dest_id));
+            let arc_id = self.add_raw_edge(edge_data, source_id, dest_id);
             make_mut_edge(self, arc_id)
         }
 
@@ -188,19 +186,4 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     fn retain_reachable_from_ids(&mut self, root_ids: &[VertexId]) {
         self::hidden::mutators::mark_compact::Collector::retain_reachable(self, root_ids);
     }
-}
-
-/// The target of an outgoing graph edge.
-///
-/// A search graph is built up incrementally, and this type is used to represent
-/// an edge whose destination vertex isn't yet known. Graph-modifying operations
-/// which are executed while exploring the graph topology may expand such edges.
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum Target<T, R> {
-    /// Edge has not yet been expanded. Associated data may be used to perform
-    /// expansion.
-    Unexpanded(R),
-    /// Edge has been expanded. Associated data indicates the target vertex. The
-    /// target will have a backpointer to this edge's source in its parent list.
-    Expanded(T),
 }
