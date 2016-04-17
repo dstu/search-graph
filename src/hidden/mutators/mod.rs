@@ -197,8 +197,7 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
                     id
                 },
             };
-            let edge_id =
-                EdgeId(self.graph.add_edge_from_raw(self.id, target_id, edge_data).get_id());
+            let edge_id = self.graph.add_raw_edge(edge_data, self.id, target_id);
             MutEdge { graph: self.graph, id: edge_id, }
         }
 
@@ -214,8 +213,7 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
                     id
                 },
             };
-            let edge_id =
-                EdgeId(self.graph.add_edge_from_raw(self.id, target_id, edge_data).get_id());
+            let edge_id = self.graph.add_raw_edge(edge_data, self.id, target_id);
             MutEdge { graph: self.graph, id: edge_id, }
         }
 }
@@ -284,6 +282,40 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
     pub fn iter<'s>(&'s self) -> ParentListIter<'s, T, S, A> {
         self.get_target_node().get_parent_list().iter()
     }
+
+    /// Adds a parent edge to the vertex labeled by `parent_label`. If no such
+    /// vertex exists, it is created and associated with the data returned by
+    /// `f`. Returns a mutable edge handle for the new edge, with a lifetime
+    /// limited to a borrow of `self`.
+    pub fn add_parent<'s, F>(&'s mut self, parent_label: T, f: F, edge_data: A)
+                            -> MutEdge<'s, T, S, A>
+        where F: FnOnce() -> S {
+            let source_id = match self.graph.state_ids.get_or_insert(parent_label) {
+                NamespaceInsertion::Present(id) => id,
+                NamespaceInsertion::New(id) => {
+                    self.graph.add_raw_vertex(f());
+                    id
+                },
+            };
+            let edge_id = self.graph.add_raw_edge(edge_data, source_id, self.id);
+            MutEdge { graph: self.graph, id: edge_id, }
+        }
+
+    /// Adds a parent edge to the vertex labeled by `parent_label`. If no such
+    /// vertex exists, it is created and associated with the data returned by
+    /// `f`. Returns a mutable edge handle for the new edge.
+    pub fn to_add_parent<F>(self, parent_label: T, f: F, edge_data: A) -> MutEdge<'a, T, S, A>
+        where F: FnOnce() -> S {
+            let source_id = match self.graph.state_ids.get_or_insert(parent_label) {
+                NamespaceInsertion::Present(id) => id,
+                NamespaceInsertion::New(id) => {
+                    self.graph.add_raw_vertex(f());
+                    id
+                },
+            };
+            let edge_id = self.graph.add_raw_edge(edge_data, source_id, self.id);
+            MutEdge { graph: self.graph, id: edge_id, }
+        }
 }
 
 /// Mutable handle to a graph edge ("edge handle") when edge expansion state is

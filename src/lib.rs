@@ -124,12 +124,6 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         make_mut_node(self, node_id)
     }
 
-    fn add_edge_from_raw<'s>(&'s mut self, source: VertexId, target: VertexId, data: A)
-                             -> MutEdge<'s, T, S, A> {
-        let arc_id = self.add_raw_edge(data, source, target);
-        make_mut_edge(self, arc_id)
-    }
-
     /// Adds an edge from the vertex with state data `source` to the vertex with
     /// state data `dest`. If vertices are not found for `source` or `dest`,
     /// they are added, with the data provided by `source_data` and `dest_data`
@@ -156,7 +150,8 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
                     id
                 },
             };
-            self.add_edge_from_raw(source_id, dest_id, edge_data)
+            let edge_id = self.add_raw_edge(edge_data, source_id, dest_id);
+            make_mut_edge(self, edge_id)
         }
 
     /// Returns the number of vertices in the graph.
