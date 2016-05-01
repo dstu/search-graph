@@ -37,39 +37,6 @@ impl symbol_table::SymbolId for VertexId {
     fn as_usize(&self) -> usize { self.0 }
 }
 
-    // /// Changes associations between states and `VertexId`s.
-    // ///
-    // /// `(T, VertexId)` associations for which `f` returns `Some(new_id)` will be
-    // /// remapped to use `new_id`.
-    // ///
-    // /// `(T, VertexId)` associations for which `f` returns `None` will be dropped.
-    // ///
-    // /// It is the responsibility of the caller to ensure that states map to
-    // /// unique `VertexId`s.
-    // pub fn remap<F>(&mut self, mut f: F) where F: FnMut(&T, VertexId) -> Option<VertexId> {
-    //     let mut new_state_to_id = HashMap::with_capacity(self.state_to_id.len());
-    //     for (state, old_state_id) in self.state_to_id.drain() {
-    //         if let Some(new_state_id) = f(&state, old_state_id) {
-    //             new_state_to_id.insert(state.clone(), new_state_id);
-    //             self.id_to_state[new_state_id.as_usize()] = state;
-    //         }
-    //     }
-    //     new_state_to_id.shrink_to_fit();
-    //     self.state_to_id = new_state_to_id;
-    //     self.id_to_state.truncate(self.state_to_id.len());
-    // }
-
-    // /// Transforms this namespace mapping to a hashtable. This is intended for
-    // /// testing purposes only.
-    // #[cfg(test)]
-    // pub fn to_hash_map(self) -> HashMap<Rc<T>, VertexId> {
-    //     self.state_to_id
-    // }
-
-    // pub fn get_state(&self, id: usize) -> Option<&T> {
-    //     self.id_to_state.get(id).map(|x| &**x)
-    // }
-
 /// Internal type for graph edges.
 ///
 /// The Hash, Ord, and Eq implementations will conflate parallel edges with
