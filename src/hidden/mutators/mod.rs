@@ -10,14 +10,6 @@ use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
 pub mod path;
 pub mod mark_compact;
 
-/// The result of edge expansion. This wraps the resulting handle to the graph
-/// component, with each variant indicating whether the expansion created a new
-/// vertex or connected an edge to an existing one.
-pub enum Expanded<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    Extant(MutNode<'a, T, S, A>),
-    New(MutNode<'a, T, S, A>),
-}
-
 /// Mutable handle to a graph vertex ("node handle").
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's
