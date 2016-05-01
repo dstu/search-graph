@@ -1,4 +1,4 @@
-#![feature(map_entry_keys)]
+extern crate symbol_table;
 
 mod hidden;
 pub mod mutators;
@@ -10,6 +10,8 @@ use std::hash::Hash;
 use self::hidden::base::*;
 use self::hidden::nav::{Node, make_node};
 use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
+use ::symbol_table::indexing::{Indexing, Insertion};
+use ::symbol_table::SymbolId;
 
 /// A search graph.
 ///
@@ -29,7 +31,7 @@ use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
 /// `add_root` and retrieve extant vertices with `get_node_mut`.
 pub struct Graph<T, S, A> where T: Hash + Eq + Clone {
     /// Lookup table that maps from game states to `VertexId`.
-    state_ids: StateNamespace<T>,
+    state_ids: symbol_table::indexing::HashIndexing<T, VertexId>,
     vertices: Vec<RawVertex<S>>,  // Indexed by VertexId.
     arcs: Vec<RawEdge<A>>,  // Indexed by EdgeId.
 }
@@ -38,7 +40,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// Creates an empty `Graph` with no vertices or edges.
     pub fn new() -> Self {
         Graph {
-            state_ids: StateNamespace::new(),
+            state_ids: Default::default(),
             vertices: Vec::new(),
             arcs: Vec::new(),
         }
@@ -66,7 +68,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 
     /// Returns the game state associated with `id`.
     fn get_state(&self, id: VertexId) -> Option<&T> {
-        self.state_ids.get_state(id.as_usize())
+        self.state_ids.get_symbol(&id).as_ref().map(|x| x.data())
     }
 
     /// Adds a new vertex with the given data, returning a mutable reference to it.
@@ -97,8 +99,8 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     ///
     /// If `state` does not correspond to a known game state, returns `None`.
     pub fn get_node<'s>(&'s self, state: &T) -> Option<Node<'s, T, S, A>> {
-        match self.state_ids.get(&state) {
-            Some(id) => Some(make_node(self, id)),
+        match self.state_ids.get(state) {
+            Some(symbol) => Some(make_node(self, *symbol.id())),
             None => None,
         }
     }
@@ -107,7 +109,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     ///
     /// If `state` does not correspond to a known game state, returns `None`.
     pub fn get_node_mut<'s>(&'s mut self, state: &T) -> Option<MutNode<'s, T, S, A>> {
-        match self.state_ids.get(state) {
+        match self.state_ids.get(state).map(|s| s.id().clone()) {
             Some(id) => Some(make_mut_node(self, id)),
             None => None,
         }
@@ -121,9 +123,9 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// return a handle for a root vertex only when `state` is a novel game
     /// state.
     pub fn add_root<'s>(&'s mut self, state: T, data: S) -> MutNode<'s, T, S, A> {
-        let node_id = match self.state_ids.get_or_insert(state) {
-            NamespaceInsertion::Present(id) => id,
-            NamespaceInsertion::New(id) => {
+        let node_id = match self.state_ids.get_or_insert(state).map(|s| s.id().clone()) {
+            Insertion::Present(id) => id,
+            Insertion::New(id) => {
                 self.add_raw_vertex(data);
                 id
             },
@@ -141,17 +143,17 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     pub fn add_edge<'s, F, G>(&'s mut self, source: T, source_data: F, dest: T, dest_data: G,
                               edge_data: A) -> MutEdge<'s, T, S, A>
         where F: for<'b> FnOnce(Node<'b, T, S, A>) -> S, G: for<'b> FnOnce(Node<'b, T, S, A>) -> S {
-            let source_id = match self.state_ids.get_or_insert(source) {
-                NamespaceInsertion::Present(id) => id,
-                NamespaceInsertion::New(id) => {
+            let source_id = match self.state_ids.get_or_insert(source).map(|s| s.id().clone()) {
+                Insertion::Present(id) => id,
+                Insertion::New(id) => {
                     let data = source_data(make_node(self, id));
                     self.add_raw_vertex(data);
                     id
                 },
             };
-            let dest_id = match self.state_ids.get_or_insert(dest) {
-                NamespaceInsertion::Present(id) => id,
-                NamespaceInsertion::New(id) => {
+            let dest_id = match self.state_ids.get_or_insert(dest).map(|s| s.id().clone()) {
+                Insertion::Present(id) => id,
+                Insertion::New(id) => {
                     let data = dest_data(make_node(self, id));
                     self.add_raw_vertex(data);
                     id
@@ -181,8 +183,8 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     pub fn retain_reachable_from(&mut self, roots: &[&T]) {
         let mut root_ids = Vec::with_capacity(roots.len());
         for state in roots.iter() {
-            if let Some(id) = self.state_ids.get(state) {
-                root_ids.push(id);
+            if let Some(symbol) = self.state_ids.get(state) {
+                root_ids.push(*symbol.id());
             }
         }
         self.retain_reachable_from_ids(&root_ids);

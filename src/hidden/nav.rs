@@ -3,6 +3,7 @@ use std::iter::Iterator;
 
 use ::Graph;
 use ::hidden::base::{EdgeId, VertexId, RawEdge, RawVertex};
+use ::symbol_table::SymbolId;
 
 /// Immutable handle to a graph vertex ("node handle").
 ///

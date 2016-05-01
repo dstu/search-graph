@@ -2,3 +2,6 @@
 name = "search-graph"
 version = "0.1.0"
 authors = ["Stu Black"]
+
+[dependencies]
+symbol-table = { git = "https://github.com/dstu/symbol-table.git", branch = "master" }
