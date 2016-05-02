@@ -196,3 +196,57 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         self::hidden::mutators::mark_compact::Collector::retain_reachable(self, root_ids);
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::mem;
+    use std::sync::Arc;
+    use std::thread;
+
+    type Graph = ::Graph<&'static str, &'static str, &'static str>;
+
+    #[test]
+    fn send_to_thread_safe_ok() {
+        let mut g = Graph::new();
+        g.add_edge("root", |_| "root_data", "0", |_| "0_data", "root_0_data");
+        g.add_edge("root", |_| "root_data", "1", |_| "1_data", "root_1_data");
+        let g = Arc::new(g);
+        let t1 = {
+            let g = g.clone();
+            thread::spawn(move || g.get_node(&"root").map(|n| n.get_id()))
+        };
+        let t2 = {
+            let g = g.clone();
+            thread::spawn(move || g.get_node(&"1").map(|n| n.get_id()))
+        };
+        match t1.join() {
+            Ok(Some(id)) => assert_eq!(id, 0),
+            _ => panic!(),
+        }
+        match t2.join() {
+            Ok(Some(id)) => assert_eq!(id, 2),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn sync_to_thread_ok() {
+        let mut g = Graph::new();
+        g.add_edge("root", |_| "root_data", "0", |_| "0_data", "root_0_data");
+        g.add_edge("root", |_| "root_data", "1", |_| "1_data", "root_1_data");
+        // I totally promise not to use this (or any references obtained through
+        // it) after the function exits. Swear on it, cross my heart, etc.
+        let fake_static_graph: &'static Graph = unsafe { mem::transmute(&g) };
+        let t1 = thread::spawn(move || fake_static_graph.get_node(&"root").map(|n| n.get_id()));
+        let t2 = thread::spawn(move || fake_static_graph.get_node(&"1").map(|n| n.get_id()));
+        match t1.join() {
+            Ok(Some(id)) => assert_eq!(id, 0),
+            _ => panic!(),
+        }
+        match t2.join() {
+            Ok(Some(id)) => assert_eq!(id, 2),
+            _ => panic!(),
+        }
+
+    }
+}
