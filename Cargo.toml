@@ -5,3 +5,6 @@ authors = ["Stu Black"]
 
 [dependencies]
 symbol-table = { git = "https://github.com/dstu/symbol-table.git", branch = "master" }
+
+[dev-dependencies]
+crossbeam = "0.2.*"

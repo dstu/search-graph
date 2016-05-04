@@ -1,4 +1,5 @@
 extern crate symbol_table;
+#[cfg(test)] extern crate crossbeam;
 
 mod hidden;
 pub mod mutators;
@@ -199,7 +200,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
 
 #[cfg(test)]
 mod test {
-    use std::mem;
+    use ::crossbeam;
     use std::sync::Arc;
     use std::thread;
 
@@ -234,17 +235,21 @@ mod test {
         let mut g = Graph::new();
         g.add_edge("root", |_| "root_data", "0", |_| "0_data", "root_0_data");
         g.add_edge("root", |_| "root_data", "1", |_| "1_data", "root_1_data");
-        // I totally promise not to use this (or any references obtained through
-        // it) after the function exits. Swear on it, cross my heart, etc.
-        let fake_static_graph: &'static Graph = unsafe { mem::transmute(&g) };
-        let t1 = thread::spawn(move || fake_static_graph.get_node(&"root").map(|n| n.get_id()));
-        let t2 = thread::spawn(move || fake_static_graph.get_node(&"1").map(|n| n.get_id()));
+        let g = &g;
+        let t1 = crossbeam::scope(
+            move |scope|
+            scope.spawn(move ||
+                        g.get_node(&"root").map(|n| n.get_id())));
+        let t2 = crossbeam::scope(
+            move |scope|
+            scope.spawn(move ||
+                        g.get_node(&"1").map(|n| n.get_id())));
         match t1.join() {
-            Ok(Some(id)) => assert_eq!(id, 0),
+            Some(id) => assert_eq!(id, 0),
             _ => panic!(),
         }
         match t2.join() {
-            Ok(Some(id)) => assert_eq!(id, 2),
+            Some(id) => assert_eq!(id, 2),
             _ => panic!(),
         }
 
