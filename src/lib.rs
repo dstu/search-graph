@@ -1,12 +1,17 @@
+#![feature(conservative_impl_trait)]
+
 extern crate symbol_table;
 #[cfg(test)] extern crate crossbeam;
 
 mod hidden;
 pub mod mutators;
+pub mod mut_types;
 pub mod nav;
+pub mod nav_types;
 pub mod search;
 
 use std::hash::Hash;
+use std::iter::Iterator;
 use std::marker::Sized;
 
 use self::hidden::base::*;
@@ -20,6 +25,8 @@ pub trait GraphTypes: Sized {
     type VertexData;
     type EdgeData;
 }
+
+pub trait BoundedIterator<'a>: Iterator { }
 
 /// A search graph.
 ///
