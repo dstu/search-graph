@@ -7,12 +7,19 @@ pub mod nav;
 pub mod search;
 
 use std::hash::Hash;
+use std::marker::Sized;
 
 use self::hidden::base::*;
 use self::hidden::nav::{Node, make_node};
 use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
 use ::symbol_table::indexing::{Indexing, Insertion};
 use ::symbol_table::SymbolId;
+
+pub trait GraphTypes: Sized {
+    type VertexLabel: Hash + Eq + Clone;
+    type VertexData;
+    type EdgeData;
+}
 
 /// A search graph.
 ///
