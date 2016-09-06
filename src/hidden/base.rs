@@ -1,5 +1,3 @@
-use std::cmp::Eq;
-
 use ::symbol_table;
 
 /// Internal edge identifier.
