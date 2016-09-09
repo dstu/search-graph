@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,52 +44,47 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>mutators</a>::<wbr><a class='struct' href=''>MutChildList</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-979' class='srclink' href='../../src/search_graph/src/hidden/mutators/mod.rs.html#123-126' title='goto source code'>[src]</a></span></h1>
-<pre class='rust struct'>pub struct MutChildList&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span> {
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-886' class='srclink' href='../../src/search_graph/src/hidden/mutators/mod.rs.html#140-143' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct MutChildList&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span> {
     // some fields omitted
 }</pre><div class='docblock'><p>A traversible list of a vertex&#39;s outgoing edges.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T, S, A&gt; <a class='struct' href='../../search_graph/mutators/struct.MutChildList.html' title='search_graph::mutators::MutChildList'>MutChildList</a>&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></h3><div class='impl-items'><h4 id='method.len' class='method'><code>fn <a href='#method.len' class='fnname'>len</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt; <a class='struct' href='../../search_graph/mutators/struct.MutChildList.html' title='search_graph::mutators::MutChildList'>MutChildList</a>&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-893' class='srclink' href='../../src/search_graph/src/hidden/mutators/mod.rs.html#145-236' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.len' class='method'><span id='len.v' class='invisible'><code>fn <a href='#method.len' class='fnname'>len</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></span></h4>
 <div class='docblock'><p>Returns the number of outgoing eges.</p>
-</div><h4 id='method.is_empty' class='method'><code>fn <a href='#method.is_empty' class='fnname'>is_empty</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h4 id='method.is_empty' class='method'><span id='is_empty.v' class='invisible'><code>fn <a href='#method.is_empty' class='fnname'>is_empty</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></span></h4>
 <div class='docblock'><p>Returns true iff there are no outgoing edges.</p>
-</div><h4 id='method.get_edge' class='method'><code>fn <a href='#method.get_edge' class='fnname'>get_edge</a>&lt;'s&gt;(&amp;'s self, i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../search_graph/nav/struct.Edge.html' title='search_graph::nav::Edge'>Edge</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_edge' class='method'><span id='get_edge.v' class='invisible'><code>fn <a href='#method.get_edge' class='fnname'>get_edge</a>&lt;'s&gt;(&amp;'s self, i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../search_graph/nav/struct.Edge.html' title='search_graph::nav::Edge'>Edge</a>&lt;'s,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns an edge handle for the <code>i</code>th edge.</p>
-</div><h4 id='method.get_edge_mut' class='method'><code>fn <a href='#method.get_edge_mut' class='fnname'>get_edge_mut</a>&lt;'s&gt;(&amp;'s mut self, i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_edge_mut' class='method'><span id='get_edge_mut.v' class='invisible'><code>fn <a href='#method.get_edge_mut' class='fnname'>get_edge_mut</a>&lt;'s&gt;(&amp;'s mut self, i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'s,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns an edge handle for the <code>i</code>th edge. Its lifetime will be limited
 to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.to_edge' class='method'><code>fn <a href='#method.to_edge' class='fnname'>to_edge</a>(self, i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.to_edge' class='method'><span id='to_edge.v' class='invisible'><code>fn <a href='#method.to_edge' class='fnname'>to_edge</a>(self, i: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns an edge handle for the <code>i</code>th <code>self</code> is consumed, and the return
 value&#39;s lifetime will be the same as that of <code>self</code>.</p>
-</div><h4 id='method.get_source_node' class='method'><code>fn <a href='#method.get_source_node' class='fnname'>get_source_node</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_source_node' class='method'><span id='get_source_node.v' class='invisible'><code>fn <a href='#method.get_source_node' class='fnname'>get_source_node</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'s,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns a node handle for the vertex these edges originate from. Its
 lifetime will be limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.get_source_node_mut' class='method'><code>fn <a href='#method.get_source_node_mut' class='fnname'>get_source_node_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_source_node_mut' class='method'><span id='get_source_node_mut.v' class='invisible'><code>fn <a href='#method.get_source_node_mut' class='fnname'>get_source_node_mut</a>&lt;'s&gt;(&amp;'s mut self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'s,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns a mutable node handle for the vertex these edges originate
 from. Its lifetime will be limited to a local borrow of <code>self</code>.</p>
-</div><h4 id='method.to_source_node' class='method'><code>fn <a href='#method.to_source_node' class='fnname'>to_source_node</a>(self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.to_source_node' class='method'><span id='to_source_node.v' class='invisible'><code>fn <a href='#method.to_source_node' class='fnname'>to_source_node</a>(self) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutNode.html' title='search_graph::mutators::MutNode'>MutNode</a>&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns a mutable node handle for the vertex these edges originate
 from. <code>self</code> is consumed, and the return value&#39;s lifetime will be the
 same as that of <code>self</code>.</p>
-</div><h4 id='method.iter' class='method'><code>fn <a href='#method.iter' class='fnname'>iter</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../../search_graph/nav/struct.ChildListIter.html' title='search_graph::nav::ChildListIter'>ChildListIter</a>&lt;'s, T, S, A&gt;</code></h4>
+</div><h4 id='method.iter' class='method'><span id='iter.v' class='invisible'><code>fn <a href='#method.iter' class='fnname'>iter</a>&lt;'s&gt;(&amp;'s self) -&gt; <a class='struct' href='../../search_graph/nav/struct.ChildListIter.html' title='search_graph::nav::ChildListIter'>ChildListIter</a>&lt;'s,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns an iterator over child edges.</p>
-</div><h4 id='method.add_child' class='method'><code>fn <a href='#method.add_child' class='fnname'>add_child</a>&lt;'s&gt;(&amp;'s mut self, data: A) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'s, T, S, A&gt;</code></h4>
-<div class='docblock'><p>Appends an unexpanded edge to this list of children and returns a mutable handle to
-it. Its lifetime will be limited to a local borrow of <code>self</code>.</p>
-
-<p>An unexpanded edge is one with known source but unknown target. Unexpanded
-edges may be expanded by resolving their target (which will be a
-<code>Target::Unexpanded(EdgeExpander)</code>) and expanding the edge.</p>
-</div><h4 id='method.to_add' class='method'><code>fn <a href='#method.to_add' class='fnname'>to_add</a>(self, data: A) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'a, T, S, A&gt;</code></h4>
-<div class='docblock'><p>Appends unexpanded an edge to the vertex&#39;s&#39; children and returns a
-mutable handle to it. <code>self</code> will be consumed, and the return value&#39;s
-lifetime will be equal to that of <code>self</code>.</p>
-
-<p>An unexpanded edge is one with known source but unknown target. Unexpanded
-edges may be expanded by resolving their target (which will be a
-<code>Target::Unexpanded(EdgeExpander)</code>) and expanding the edge.</p>
+</div><h4 id='method.add_child' class='method'><span id='add_child.v' class='invisible'><code>fn <a href='#method.add_child' class='fnname'>add_child</a>&lt;'s,&nbsp;F&gt;(&amp;'s mut self, child_label: T, f: F, edge_data: A) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'s,&nbsp;T,&nbsp;S,&nbsp;A&gt; <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></span></h4>
+<div class='docblock'><p>Adds a child edge to the vertex labeled by <code>child_label</code>. If no such
+vertex exists, it is created and associated with the data returned by
+<code>f</code>. Returns a mutable edge handle for the new edge, with a lifetime
+limited to a borrow of <code>self</code>.</p>
+</div><h4 id='method.to_add_child' class='method'><span id='to_add_child.v' class='invisible'><code>fn <a href='#method.to_add_child' class='fnname'>to_add_child</a>&lt;F&gt;(self, child_label: T, f: F, edge_data: A) -&gt; <a class='struct' href='../../search_graph/mutators/struct.MutEdge.html' title='search_graph::mutators::MutEdge'>MutEdge</a>&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt; <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>() -&gt; S</span></code></span></h4>
+<div class='docblock'><p>Adds a child edge to the vertex labeled by <code>child_label</code>. If no such
+vertex exists, it is created and associated with the data returned by
+<code>f</code>. Returns a mutable edge handle for the new edge.</p>
 </div></div></section>
     <section id='search' class="content hidden"></section>
 
@@ -112,6 +108,8 @@ edges may be expanded by resolving their target (which will be a
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

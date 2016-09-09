@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>search_graph</a>::<wbr><a class='mod' href=''>mutators</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-1218' class='srclink' href='../../src/search_graph/src/mutators.rs.html#1-9' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-1073' class='srclink' href='../../src/search_graph/src/mutators.rs.html#1-8' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Support for navigation of a graph that allows modifications to graph
 topology and full read-write access to graph data.</p>
 
@@ -55,68 +56,35 @@ underlying graph. As a result, only one handle may be active at any given
 time.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.EdgeExpander.html'
-                               title='search_graph::mutators::EdgeExpander'>EdgeExpander</a></td>
-                        <td class='docblock short'>
-                             <p>Modifies graph topology by connecting an unexpanded edge to its target
-vertex.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.MutChildList.html'
-                               title='search_graph::mutators::MutChildList'>MutChildList</a></td>
-                        <td class='docblock short'>
-                             <p>A traversible list of a vertex&#39;s outgoing edges.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.MutEdge.html'
-                               title='search_graph::mutators::MutEdge'>MutEdge</a></td>
-                        <td class='docblock short'>
-                             <p>Mutable handle to a graph edge (&quot;edge handle&quot;) when edge expansion state is
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MutChildList.html'
+                                  title='search_graph::mutators::MutChildList'>MutChildList</a></td>
+                           <td class='docblock short'>
+                                <p>A traversible list of a vertex&#39;s outgoing edges.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MutEdge.html'
+                                  title='search_graph::mutators::MutEdge'>MutEdge</a></td>
+                           <td class='docblock short'>
+                                <p>Mutable handle to a graph edge (&quot;edge handle&quot;) when edge expansion state is
 unknown.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.MutExpandedEdge.html'
-                               title='search_graph::mutators::MutExpandedEdge'>MutExpandedEdge</a></td>
-                        <td class='docblock short'>
-                             <p>Mutable handle to a graph edge (&quot;edge handle&quot;) when edge expansion state is
-known.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.MutNode.html'
-                               title='search_graph::mutators::MutNode'>MutNode</a></td>
-                        <td class='docblock short'>
-                             <p>Mutable handle to a graph vertex (&quot;node handle&quot;).</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.MutParentList.html'
-                               title='search_graph::mutators::MutParentList'>MutParentList</a></td>
-                        <td class='docblock short'>
-                             <p>A traversible list of a vertex&#39;s incoming edges.</p>
-                        </td>
-                    </tr>
-                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
-<table>
-                    <tr class=' module-item'>
-                        <td><a class='enum' href='enum.Expanded.html'
-                               title='search_graph::mutators::Expanded'>Expanded</a></td>
-                        <td class='docblock short'>
-                             <p>The result of edge expansion. This wraps the resulting handle to the graph
-component, with each variant indicating whether the expansion created a new
-vertex or connected an edge to an existing one.</p>
-                        </td>
-                    </tr>
-                </table></section>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MutNode.html'
+                                  title='search_graph::mutators::MutNode'>MutNode</a></td>
+                           <td class='docblock short'>
+                                <p>Mutable handle to a graph vertex (&quot;node handle&quot;).</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.MutParentList.html'
+                                  title='search_graph::mutators::MutParentList'>MutParentList</a></td>
+                           <td class='docblock short'>
+                                <p>A traversible list of a vertex&#39;s incoming edges.</p>
+                           </td>
+                       </tr></table></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -139,6 +107,8 @@ vertex or connected an edge to an existing one.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

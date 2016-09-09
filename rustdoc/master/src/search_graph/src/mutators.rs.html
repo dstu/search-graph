@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     
     
@@ -49,7 +50,6 @@
 <span id="6">6</span>
 <span id="7">7</span>
 <span id="8">8</span>
-<span id="9">9</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Support for navigation of a graph that allows modifications to graph</span>
 <span class='doccomment'>//! topology and full read-write access to graph data.</span>
@@ -58,8 +58,7 @@
 <span class='doccomment'>//! underlying graph. As a result, only one handle may be active at any given</span>
 <span class='doccomment'>//! time.</span>
 
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>EdgeExpander</span>, <span class='ident'>Expanded</span>, <span class='ident'>MutChildList</span>, <span class='ident'>MutEdge</span>, <span class='ident'>MutExpandedEdge</span>,
-                                  <span class='ident'>MutNode</span>, <span class='ident'>MutParentList</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='kw'>super</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::{<span class='ident'>MutChildList</span>, <span class='ident'>MutEdge</span>, <span class='ident'>MutNode</span>, <span class='ident'>MutParentList</span>};
 </pre>
 </section>
     <section id='search' class="content hidden"></section>
@@ -84,6 +83,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

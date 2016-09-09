@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     
     
@@ -47,7 +48,7 @@
 </pre><pre class='rust '>
 <span class='doccomment'>//! Data structures and algorithms for local graph search.</span>
 
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::<span class='ident'>path</span>::{<span class='ident'>SearchError</span>, <span class='ident'>Stack</span>, <span class='ident'>StackItem</span>, <span class='ident'>StackIter</span>, <span class='ident'>Traversal</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='kw'>super</span>::<span class='ident'>hidden</span>::<span class='ident'>mutators</span>::<span class='ident'>path</span>::{<span class='ident'>SearchError</span>, <span class='ident'>Stack</span>, <span class='ident'>StackItem</span>, <span class='ident'>StackIter</span>, <span class='ident'>Traversal</span>};
 </pre>
 </section>
     <section id='search' class="content hidden"></section>
@@ -72,6 +73,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

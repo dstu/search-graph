@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,25 +44,26 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>nav</a>::<wbr><a class='struct' href=''>Edge</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-599' class='srclink' href='../../src/search_graph/src/hidden/nav.rs.html#239-242' title='goto source code'>[src]</a></span></h1>
-<pre class='rust struct'>pub struct Edge&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span> {
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-530' class='srclink' href='../../src/search_graph/src/hidden/nav.rs.html#249-252' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Edge&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span> {
     // some fields omitted
 }</pre><div class='docblock'><p>Immutable handle to a graph edge (&quot;edge handle&quot;).</p>
 
 <p>This zipper-like type enables traversal of a graph along the edge&#39;s source
 and target vertices.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T, S, A&gt; <a class='struct' href='../../search_graph/nav/struct.Edge.html' title='search_graph::nav::Edge'>Edge</a>&lt;'a, T, S, A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></h3><div class='impl-items'><h4 id='method.get_id' class='method'><code>fn <a href='#method.get_id' class='fnname'>get_id</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt; <a class='struct' href='../../search_graph/nav/struct.Edge.html' title='search_graph::nav::Edge'>Edge</a>&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt; <span class='where'>where T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> + 'a, S: 'a, A: 'a</span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-544' class='srclink' href='../../src/search_graph/src/hidden/nav.rs.html#262-289' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.get_id' class='method'><span id='get_id.v' class='invisible'><code>fn <a href='#method.get_id' class='fnname'>get_id</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></span></h4>
 <div class='docblock'><p>Returns an immutable ID that is guaranteed to identify this edge
 uniquely within its graph.  This ID may change when the graph is
 mutated.</p>
-</div><h4 id='method.get_data' class='method'><code>fn <a href='#method.get_data' class='fnname'>get_data</a>(&amp;self) -&gt; &amp;'a A</code></h4>
+</div><h4 id='method.get_data' class='method'><span id='get_data.v' class='invisible'><code>fn <a href='#method.get_data' class='fnname'>get_data</a>(&amp;self) -&gt; &amp;'a A</code></span></h4>
 <div class='docblock'><p>Returns the data at this edge.</p>
-</div><h4 id='method.get_source' class='method'><code>fn <a href='#method.get_source' class='fnname'>get_source</a>(&amp;self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'a, T, S, A&gt;</code></h4>
+</div><h4 id='method.get_source' class='method'><span id='get_source.v' class='invisible'><code>fn <a href='#method.get_source' class='fnname'>get_source</a>(&amp;self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns a node handle for this edge&#39;s source vertex.</p>
-</div><h4 id='method.get_target' class='method'><code>fn <a href='#method.get_target' class='fnname'>get_target</a>(&amp;self) -&gt; <a class='enum' href='../../search_graph/enum.Target.html' title='search_graph::Target'>Target</a>&lt;<a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'a, T, S, A&gt;, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h4 id='method.get_target' class='method'><span id='get_target.v' class='invisible'><code>fn <a href='#method.get_target' class='fnname'>get_target</a>(&amp;self) -&gt; <a class='struct' href='../../search_graph/nav/struct.Node.html' title='search_graph::nav::Node'>Node</a>&lt;'a,&nbsp;T,&nbsp;S,&nbsp;A&gt;</code></span></h4>
 <div class='docblock'><p>Returns the target of this edge. If the edge is unexpanded, no data will
 be available. If it is expanded, a node handle will be available.</p>
 </div></div></section>
@@ -87,6 +89,8 @@ be available. If it is expanded, a node handle will be available.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

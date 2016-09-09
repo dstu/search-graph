@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,58 +44,53 @@
 
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>search_graph</a>::<wbr><a class='mod' href=''>search</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-1224' class='srclink' href='../../src/search_graph/src/search.rs.html#1-3' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-1077' class='srclink' href='../../src/search_graph/src/search.rs.html#1-3' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Data structures and algorithms for local graph search.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.Stack.html'
-                               title='search_graph::search::Stack'>Stack</a></td>
-                        <td class='docblock short'>
-                             <p>Tracks the path through a graph that is followed when performing local search.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.StackIter.html'
-                               title='search_graph::search::StackIter'>StackIter</a></td>
-                        <td class='docblock short'>
-                             <p>Iterates over elements of a search path, in the order in which they were
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Stack.html'
+                                  title='search_graph::search::Stack'>Stack</a></td>
+                           <td class='docblock short'>
+                                <p>Tracks the path through a graph that is followed when performing local search.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.StackIter.html'
+                                  title='search_graph::search::StackIter'>StackIter</a></td>
+                           <td class='docblock short'>
+                                <p>Iterates over elements of a search path, in the order in which they were
 traversed, ending with the head.</p>
-                        </td>
-                    </tr>
-                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='enum' href='enum.SearchError.html'
-                               title='search_graph::search::SearchError'>SearchError</a></td>
-                        <td class='docblock short'>
-                             <p>Errors that may arise during search.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='enum' href='enum.StackItem.html'
-                               title='search_graph::search::StackItem'>StackItem</a></td>
-                        <td class='docblock short'>
-                             <p>Sum type for path elements. All elements except the head are represented
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.SearchError.html'
+                                  title='search_graph::search::SearchError'>SearchError</a></td>
+                           <td class='docblock short'>
+                                <p>Errors that may arise during search.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.StackItem.html'
+                                  title='search_graph::search::StackItem'>StackItem</a></td>
+                           <td class='docblock short'>
+                                <p>Sum type for path elements. All elements except the head are represented
 with the <code>StackItem::Item</code> variant.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='enum' href='enum.Traversal.html'
-                               title='search_graph::search::Traversal'>Traversal</a></td>
-                        <td class='docblock short'>
-                             <p>Indicates which edge of a vertex to traverse. Edges are denoted by a 0-based
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.Traversal.html'
+                                  title='search_graph::search::Traversal'>Traversal</a></td>
+                           <td class='docblock short'>
+                                <p>Indicates which edge of a vertex to traverse. Edges are denoted by a 0-based
 index. This type is used by functions provided during graph search to
 indicate which child or parent edges to traverse.</p>
-                        </td>
-                    </tr>
-                </table></section>
+                           </td>
+                       </tr></table></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -117,6 +113,8 @@ indicate which child or parent edges to traverse.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

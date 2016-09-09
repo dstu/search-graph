@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,12 +44,11 @@
 
     <section id='main' class="content enum">
 <h1 class='fqn'><span class='in-band'>Enum <a href='../index.html'>search_graph</a>::<wbr><a href='index.html'>search</a>::<wbr><a class='enum' href=''>SearchError</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-655' class='srclink' href='../../src/search_graph/src/hidden/mutators/path.rs.html#29-49' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-580' class='srclink' href='../../src/search_graph/src/hidden/mutators/path.rs.html#21-38' title='goto source code'>[src]</a></span></h1>
 <pre class='rust enum'>pub enum SearchError&lt;E&gt; <span class='where'>where E: <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a></span> {
-    Unexpanded,
     ChildBounds {
         requested_index: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>,
         child_count: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>,
@@ -60,24 +60,29 @@
     SelectionError(E),
 }</pre><div class='docblock'><p>Errors that may arise during search.</p>
 </div><h2 class='variants'>Variants</h2>
-<table class='variants_table'><tr><td id='variant.Unexpanded'><code>Unexpanded</code></td><td><div class='docblock'><p>A traversal operation could not be performed because the path head is
-unexpanded.</p>
-</div></td><td></td></tr><tr><td id='variant.ChildBounds'><code>ChildBounds</code></td><td><div class='docblock'><p>A search operation selected a child index that was out of bounds.</p>
+<span id='variant.ChildBounds' class='variant'><span id='ChildBounds.v' class='invisible'><code>ChildBounds</code></span></span><div class='docblock'><p>A search operation selected a child index that was out of bounds.</p>
 </div><h3 class='fields'>Fields</h3>
 
-                                  <table><tr><td id='variant.ChildBounds.field.requested_index'><code>requested_index</code></td><td><div class='docblock'><p>The index of the child that was requested.</p>
-</div></td></tr><tr><td id='variant.ChildBounds.field.child_count'><code>child_count</code></td><td><div class='docblock'><p>The actual number of chidren (which <code>requested_index</code> exceeds).</p>
-</div></td></tr></table></td><td></td></tr><tr><td id='variant.ParentBounds'><code>ParentBounds</code></td><td><div class='docblock'><p>A search operation selected a parent index that was out of bounds.</p>
+                           <table><tr><td id='variant.ChildBounds.field.requested_index'><span id='ChildBounds.v.requested_index.v' class='invisible'><code>requested_index:&nbsp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></span></td><td><div class='docblock'><p>The index of the child that was requested.</p>
+</div></td></tr><tr><td id='variant.ChildBounds.field.child_count'><span id='ChildBounds.v.child_count.v' class='invisible'><code>child_count:&nbsp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></span></td><td><div class='docblock'><p>The actual number of chidren (which <code>requested_index</code> exceeds).</p>
+</div></td></tr></table><span id='variant.ParentBounds' class='variant'><span id='ParentBounds.v' class='invisible'><code>ParentBounds</code></span></span><div class='docblock'><p>A search operation selected a parent index that was out of bounds.</p>
 </div><h3 class='fields'>Fields</h3>
 
-                                  <table><tr><td id='variant.ParentBounds.field.requested_index'><code>requested_index</code></td><td><div class='docblock'><p>The index of the parent that was requested.</p>
-</div></td></tr><tr><td id='variant.ParentBounds.field.parent_count'><code>parent_count</code></td><td><div class='docblock'><p>The actual number of parents (which <code>requested_index</code> exceeds).</p>
-</div></td></tr></table></td><td></td></tr><tr><td id='variant.SelectionError'><code>SelectionError</code></td><td><div class='docblock'><p>A search operation encountered an error.</p>
-</div></td><td></td></tr></table><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;E&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html' title='core::fmt::Display'>Display</a> for <a class='enum' href='../../search_graph/search/enum.SearchError.html' title='search_graph::search::SearchError'>SearchError</a>&lt;E&gt; <span class='where'>where E: <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a></span></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
-</div><h3 class='impl'><code>impl&lt;E&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a> for <a class='enum' href='../../search_graph/search/enum.SearchError.html' title='search_graph::search::SearchError'>SearchError</a>&lt;E&gt; <span class='where'>where E: <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a></span></code></h3><div class='impl-items'><h4 id='method.description' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.description' class='fnname'>description</a>(&amp;self) -&gt; &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a></code></h4>
-<h4 id='method.cause' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause' class='fnname'>cause</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a>&gt;</code></h4>
-</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl&lt;E: <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../search_graph/search/enum.SearchError.html' title='search_graph::search::SearchError'>SearchError</a>&lt;E&gt; <span class='where'>where E: <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a></span></code></h3><div class='impl-items'><h4 id='method.fmt-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
-</div></section>
+                           <table><tr><td id='variant.ParentBounds.field.requested_index'><span id='ParentBounds.v.requested_index.v' class='invisible'><code>requested_index:&nbsp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></span></td><td><div class='docblock'><p>The index of the parent that was requested.</p>
+</div></td></tr><tr><td id='variant.ParentBounds.field.parent_count'><span id='ParentBounds.v.parent_count.v' class='invisible'><code>parent_count:&nbsp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></span></td><td><div class='docblock'><p>The actual number of parents (which <code>requested_index</code> exceeds).</p>
+</div></td></tr></table><span id='variant.SelectionError' class='variant'><span id='SelectionError.v' class='invisible'><code>SelectionError(E)</code></span></span><div class='docblock'><p>A search operation encountered an error.</p>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl&lt;E:&nbsp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../search_graph/search/enum.SearchError.html' title='search_graph::search::SearchError'>SearchError</a>&lt;E&gt; <span class='where'>where E: <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a></span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-590' class='srclink' href='../../src/search_graph/src/hidden/mutators/path.rs.html#20' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class='method'><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl&lt;E&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html' title='core::fmt::Display'>Display</a> for <a class='enum' href='../../search_graph/search/enum.SearchError.html' title='search_graph::search::SearchError'>SearchError</a>&lt;E&gt; <span class='where'>where E: <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a></span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-633' class='srclink' href='../../src/search_graph/src/hidden/mutators/path.rs.html#94-104' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt-1' class='method'><span id='fmt.v-1' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl&lt;E&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a> for <a class='enum' href='../../search_graph/search/enum.SearchError.html' title='search_graph::search::SearchError'>SearchError</a>&lt;E&gt; <span class='where'>where E: <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a></span></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-651' class='srclink' href='../../src/search_graph/src/hidden/mutators/path.rs.html#106-121' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.description' class='method'><span id='description.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#tymethod.description' class='fnname'>description</a>(&amp;self) -&gt; &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a></code></span></h4>
+<div class='docblock'><p>A short description of the error. <a href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html#tymethod.description">Read more</a></p>
+</div><h4 id='method.cause' class='method'><span id='cause.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause' class='fnname'>cause</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>Error</a>&gt;</code></span></h4>
+<div class='docblock'><p>The lower-level cause of this error, if any. <a href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause">Read more</a></p>
+</div></div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -100,6 +105,8 @@ unexpanded.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

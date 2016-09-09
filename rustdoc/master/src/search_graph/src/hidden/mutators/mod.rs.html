@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../../../main.css">
+    
 
     
     
@@ -480,149 +481,17 @@
 <span id="437">437</span>
 <span id="438">438</span>
 <span id="439">439</span>
-<span id="440">440</span>
-<span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
-<span id="444">444</span>
-<span id="445">445</span>
-<span id="446">446</span>
-<span id="447">447</span>
-<span id="448">448</span>
-<span id="449">449</span>
-<span id="450">450</span>
-<span id="451">451</span>
-<span id="452">452</span>
-<span id="453">453</span>
-<span id="454">454</span>
-<span id="455">455</span>
-<span id="456">456</span>
-<span id="457">457</span>
-<span id="458">458</span>
-<span id="459">459</span>
-<span id="460">460</span>
-<span id="461">461</span>
-<span id="462">462</span>
-<span id="463">463</span>
-<span id="464">464</span>
-<span id="465">465</span>
-<span id="466">466</span>
-<span id="467">467</span>
-<span id="468">468</span>
-<span id="469">469</span>
-<span id="470">470</span>
-<span id="471">471</span>
-<span id="472">472</span>
-<span id="473">473</span>
-<span id="474">474</span>
-<span id="475">475</span>
-<span id="476">476</span>
-<span id="477">477</span>
-<span id="478">478</span>
-<span id="479">479</span>
-<span id="480">480</span>
-<span id="481">481</span>
-<span id="482">482</span>
-<span id="483">483</span>
-<span id="484">484</span>
-<span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
-<span id="488">488</span>
-<span id="489">489</span>
-<span id="490">490</span>
-<span id="491">491</span>
-<span id="492">492</span>
-<span id="493">493</span>
-<span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
-<span id="503">503</span>
-<span id="504">504</span>
-<span id="505">505</span>
-<span id="506">506</span>
-<span id="507">507</span>
-<span id="508">508</span>
-<span id="509">509</span>
-<span id="510">510</span>
-<span id="511">511</span>
-<span id="512">512</span>
-<span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
-<span id="517">517</span>
-<span id="518">518</span>
-<span id="519">519</span>
-<span id="520">520</span>
-<span id="521">521</span>
-<span id="522">522</span>
-<span id="523">523</span>
-<span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
-<span id="529">529</span>
-<span id="530">530</span>
-<span id="531">531</span>
-<span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
-<span id="537">537</span>
-<span id="538">538</span>
-<span id="539">539</span>
-<span id="540">540</span>
-<span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
-<span id="545">545</span>
-<span id="546">546</span>
-<span id="547">547</span>
-<span id="548">548</span>
-<span id="549">549</span>
-<span id="550">550</span>
-<span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
-<span id="557">557</span>
-<span id="558">558</span>
-<span id="559">559</span>
-<span id="560">560</span>
-<span id="561">561</span>
-<span id="562">562</span>
-<span id="563">563</span>
-<span id="564">564</span>
-<span id="565">565</span>
-<span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
-<span id="569">569</span>
-<span id="570">570</span>
-<span id="571">571</span>
-<span id="572">572</span>
-<span id="573">573</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>clone</span>::<span class='ident'>Clone</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Eq</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>hash</span>::<span class='ident'>Hash</span>;
 
-<span class='kw'>use</span> ::{<span class='ident'>Graph</span>, <span class='ident'>Target</span>};
+<span class='kw'>use</span> ::<span class='ident'>Graph</span>;
 <span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>base</span>::<span class='op'>*</span>;
 <span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>nav</span>::{<span class='ident'>ChildList</span>, <span class='ident'>ChildListIter</span>, <span class='ident'>Edge</span>, <span class='ident'>Node</span>, <span class='ident'>ParentList</span>, <span class='ident'>ParentListIter</span>};
 <span class='kw'>use</span> ::<span class='ident'>hidden</span>::<span class='ident'>nav</span>::{<span class='ident'>make_child_list</span>, <span class='ident'>make_edge</span>, <span class='ident'>make_node</span>, <span class='ident'>make_parent_list</span>};
+<span class='kw'>use</span> ::<span class='ident'>symbol_map</span>::<span class='ident'>SymbolId</span>;
+<span class='kw'>use</span> ::<span class='ident'>symbol_map</span>::<span class='ident'>indexing</span>::{<span class='ident'>Indexing</span>, <span class='ident'>Insertion</span>};
 
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>path</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>mark_compact</span>;
@@ -661,6 +530,15 @@
     <span class='doccomment'>/// uniquely within its graph. This ID may change when the graph is mutated.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_id</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
         <span class='self'>self</span>.<span class='ident'>id</span>.<span class='ident'>as_usize</span>()
+    }
+
+    <span class='doccomment'>/// Returns the canonical label that is used to address this `MutNode`.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Graph instances which project multiple labels to the same vertex will</span>
+    <span class='doccomment'>/// consistently return a single value, regardless of which value was used</span>
+    <span class='doccomment'>/// to obtain this node handle.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_label</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>T</span> {
+        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_state</span>(<span class='self'>self</span>.<span class='ident'>id</span>).<span class='ident'>unwrap</span>()
     }
 
     <span class='doccomment'>/// Returns the data at this vertex.</span>
@@ -725,6 +603,12 @@
     <span class='doccomment'>/// `self`. The source graph is still considered to have a mutable borrow in</span>
     <span class='doccomment'>/// play, but the resulting node can be cloned freely.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_node</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
+        <span class='ident'>make_node</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='self'>self</span>.<span class='ident'>id</span>)
+    }
+
+    <span class='doccomment'>/// Returns a non-mutating node obtained by borrowing this node. Returns a</span>
+    <span class='doccomment'>/// value whose lifetime is limited to a borrow of `self`.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
         <span class='ident'>make_node</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='self'>self</span>.<span class='ident'>id</span>)
     }
 
@@ -800,30 +684,39 @@
         <span class='self'>self</span>.<span class='ident'>get_source_node</span>().<span class='ident'>get_child_list</span>().<span class='ident'>iter</span>()
     }
 
-    <span class='doccomment'>/// Appends an unexpanded edge to this list of children and returns a mutable handle to</span>
-    <span class='doccomment'>/// it. Its lifetime will be limited to a local borrow of `self`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// An unexpanded edge is one with known source but unknown target. Unexpanded</span>
-    <span class='doccomment'>/// edges may be expanded by resolving their target (which will be a</span>
-    <span class='doccomment'>/// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>add_child</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>arc_id</span> <span class='op'>=</span> <span class='ident'>EdgeId</span>(<span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>arcs</span>.<span class='ident'>len</span>());
-        <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_arc</span>(<span class='ident'>data</span>, <span class='self'>self</span>.<span class='ident'>id</span>, <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(()));
-        <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>arc_id</span>, }
+    <span class='doccomment'>/// Adds a child edge to the vertex labeled by `child_label`. If no such</span>
+    <span class='doccomment'>/// vertex exists, it is created and associated with the data returned by</span>
+    <span class='doccomment'>/// `f`. Returns a mutable edge handle for the new edge, with a lifetime</span>
+    <span class='doccomment'>/// limited to a borrow of `self`.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>add_child</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>child_label</span>: <span class='ident'>T</span>, <span class='ident'>f</span>: <span class='ident'>F</span>, <span class='ident'>edge_data</span>: <span class='ident'>A</span>)
+                            <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>S</span> {
+        <span class='kw'>let</span> <span class='ident'>target_id</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>state_ids</span>.<span class='ident'>get_or_insert</span>(<span class='ident'>child_label</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='op'>*</span><span class='ident'>s</span>.<span class='ident'>id</span>()) {
+            <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>id</span>,
+            <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> {
+                <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_vertex</span>(<span class='ident'>f</span>());
+                <span class='ident'>id</span>
+            },
+        };
+        <span class='kw'>let</span> <span class='ident'>edge_id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_edge</span>(<span class='ident'>edge_data</span>, <span class='self'>self</span>.<span class='ident'>id</span>, <span class='ident'>target_id</span>);
+        <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>edge_id</span>, }
     }
 
-    <span class='doccomment'>/// Appends unexpanded an edge to the vertex&#39;s&#39; children and returns a</span>
-    <span class='doccomment'>/// mutable handle to it. `self` will be consumed, and the return value&#39;s</span>
-    <span class='doccomment'>/// lifetime will be equal to that of `self`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// An unexpanded edge is one with known source but unknown target. Unexpanded</span>
-    <span class='doccomment'>/// edges may be expanded by resolving their target (which will be a</span>
-    <span class='doccomment'>/// `Target::Unexpanded(EdgeExpander)`) and expanding the edge.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_add</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>arc_id</span> <span class='op'>=</span> <span class='ident'>EdgeId</span>(<span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>arcs</span>.<span class='ident'>len</span>());
-        <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_arc</span>(<span class='ident'>data</span>, <span class='self'>self</span>.<span class='ident'>id</span>, <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(()));
-        <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>arc_id</span>, }
-    }
+    <span class='doccomment'>/// Adds a child edge to the vertex labeled by `child_label`. If no such</span>
+    <span class='doccomment'>/// vertex exists, it is created and associated with the data returned by</span>
+    <span class='doccomment'>/// `f`. Returns a mutable edge handle for the new edge.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_add_child</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>child_label</span>: <span class='ident'>T</span>, <span class='ident'>f</span>: <span class='ident'>F</span>, <span class='ident'>edge_data</span>: <span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>S</span> {
+            <span class='kw'>let</span> <span class='ident'>target_id</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>state_ids</span>.<span class='ident'>get_or_insert</span>(<span class='ident'>child_label</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='op'>*</span><span class='ident'>s</span>.<span class='ident'>id</span>()) {
+                <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>id</span>,
+                <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> {
+                    <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_vertex</span>(<span class='ident'>f</span>());
+                    <span class='ident'>id</span>
+                },
+            };
+            <span class='kw'>let</span> <span class='ident'>edge_id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_edge</span>(<span class='ident'>edge_data</span>, <span class='self'>self</span>.<span class='ident'>id</span>, <span class='ident'>target_id</span>);
+            <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>edge_id</span>, }
+        }
 }
 
 <span class='doccomment'>/// A traversible list of a vertex&#39;s incoming edges.</span>
@@ -890,6 +783,40 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>ParentListIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>get_target_node</span>().<span class='ident'>get_parent_list</span>().<span class='ident'>iter</span>()
     }
+
+    <span class='doccomment'>/// Adds a parent edge to the vertex labeled by `parent_label`. If no such</span>
+    <span class='doccomment'>/// vertex exists, it is created and associated with the data returned by</span>
+    <span class='doccomment'>/// `f`. Returns a mutable edge handle for the new edge, with a lifetime</span>
+    <span class='doccomment'>/// limited to a borrow of `self`.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>add_parent</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>parent_label</span>: <span class='ident'>T</span>, <span class='ident'>f</span>: <span class='ident'>F</span>, <span class='ident'>edge_data</span>: <span class='ident'>A</span>)
+                            <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>S</span> {
+            <span class='kw'>let</span> <span class='ident'>source_id</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>state_ids</span>.<span class='ident'>get_or_insert</span>(<span class='ident'>parent_label</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='op'>*</span><span class='ident'>s</span>.<span class='ident'>id</span>()) {
+                <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>id</span>,
+                <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> {
+                    <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_vertex</span>(<span class='ident'>f</span>());
+                    <span class='ident'>id</span>
+                },
+            };
+            <span class='kw'>let</span> <span class='ident'>edge_id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_edge</span>(<span class='ident'>edge_data</span>, <span class='ident'>source_id</span>, <span class='self'>self</span>.<span class='ident'>id</span>);
+            <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>edge_id</span>, }
+        }
+
+    <span class='doccomment'>/// Adds a parent edge to the vertex labeled by `parent_label`. If no such</span>
+    <span class='doccomment'>/// vertex exists, it is created and associated with the data returned by</span>
+    <span class='doccomment'>/// `f`. Returns a mutable edge handle for the new edge.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_add_parent</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>parent_label</span>: <span class='ident'>T</span>, <span class='ident'>f</span>: <span class='ident'>F</span>, <span class='ident'>edge_data</span>: <span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>S</span> {
+            <span class='kw'>let</span> <span class='ident'>source_id</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>state_ids</span>.<span class='ident'>get_or_insert</span>(<span class='ident'>parent_label</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='op'>*</span><span class='ident'>s</span>.<span class='ident'>id</span>()) {
+                <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>id</span>,
+                <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> {
+                    <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_vertex</span>(<span class='ident'>f</span>());
+                    <span class='ident'>id</span>
+                },
+            };
+            <span class='kw'>let</span> <span class='ident'>edge_id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_raw_edge</span>(<span class='ident'>edge_data</span>, <span class='ident'>source_id</span>, <span class='self'>self</span>.<span class='ident'>id</span>);
+            <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>edge_id</span>, }
+        }
 }
 
 <span class='doccomment'>/// Mutable handle to a graph edge (&quot;edge handle&quot;) when edge expansion state is</span>
@@ -943,220 +870,26 @@
     <span class='doccomment'>/// Returns the target of this edge. If the edge is unexpanded, no data will</span>
     <span class='doccomment'>/// be available. If it is expanded, a node handle will be available, with</span>
     <span class='doccomment'>/// its lifetime limited to a local borrow of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_target</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>, ()<span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span> {
-            <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(_) <span class='op'>=&gt;</span> <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(()),
-            <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>make_node</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>)),
-        }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_target</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
+        <span class='ident'>make_node</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span>)
     }
 
     <span class='doccomment'>/// Returns the target of this edge. If the edge is unexpanded, an</span>
     <span class='doccomment'>/// `EdgeExpander` will be provided. If it is expanded, a mutable node</span>
     <span class='doccomment'>/// handle will be available. In both cases, lifetimes will be limited to a</span>
     <span class='doccomment'>/// local borrow of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_target_mut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>, <span class='ident'>EdgeExpander</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span> {
-            <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(_) <span class='op'>=&gt;</span> <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(<span class='ident'>EdgeExpander</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='self'>self</span>.<span class='ident'>id</span>, }),
-            <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, }),
-        }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_target_mut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span>;
+        <span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, }
     }
 
     <span class='doccomment'>/// Returns the target of this edge. If the edge is unexpanded, an</span>
     <span class='doccomment'>/// `EdgeExpander` will be provided. If it is expanded, a mutable node</span>
     <span class='doccomment'>/// handle will be available. In both cases `self` is consumed, and the</span>
     <span class='doccomment'>/// return value&#39;s lifetime will be the same as that of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_target</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Target</span><span class='op'>&lt;</span><span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>, <span class='ident'>EdgeExpander</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span> {
-            <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(_) <span class='op'>=&gt;</span> <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(<span class='ident'>EdgeExpander</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='self'>self</span>.<span class='ident'>id</span>, }),
-            <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span>
-                <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, }),
-        }
-    }
-
-    <span class='doccomment'>/// Returns a node handle for the source of this edge. Its lifetime will be</span>
-    <span class='doccomment'>/// limited to a local borrow of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_source</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='ident'>make_node</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>source</span>)
-    }
-
-    <span class='doccomment'>/// Returns a mutable node handle for the source of this edge. Its lifetime</span>
-    <span class='doccomment'>/// will be limited to a local borrow of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_source_mut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>source</span>;
-        <span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, }
-    }
-
-    <span class='doccomment'>/// Returns a mutable node handle for the source of this edge. `self` is</span>
-    <span class='doccomment'>/// consumed, and the return value&#39;s lifetime will be equal to that of</span>
-    <span class='doccomment'>/// `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_source</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>source</span>;
-        <span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, }
-    }
-
-    <span class='doccomment'>/// Returns a non-mutating edge obtained by converting this edge. `self` is</span>
-    <span class='doccomment'>/// consumed, and the return value&#39;s lifetime will be the same as that of</span>
-    <span class='doccomment'>/// `self`. The source graph is still considered to have a mutable borrow in</span>
-    <span class='doccomment'>/// play, but the resulting edge can be cloned freely.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_edge</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Edge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='ident'>make_edge</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='self'>self</span>.<span class='ident'>id</span>)
-    }
-}
-
-<span class='doccomment'>/// Modifies graph topology by connecting an unexpanded edge to its target</span>
-<span class='doccomment'>/// vertex.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// An unexpanded edge is one with known source but unknown target. Expanding an</span>
-<span class='doccomment'>/// edge may connect it to an existing vertex or create a new one.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>EdgeExpander</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
-    <span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
-    <span class='ident'>id</span>: <span class='ident'>EdgeId</span>,
-}
-
-<span class='doccomment'>/// The result of edge expansion. This wraps the resulting handle to the graph</span>
-<span class='doccomment'>/// component, with each variant indicating whether the expansion created a new</span>
-<span class='doccomment'>/// vertex or connected an edge to an existing one.</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Expanded</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Edge expansion created a new vertex.</span>
-    <span class='ident'>New</span>(<span class='ident'>T</span>),
-    <span class='doccomment'>/// Edge expansion connected to an existing vertex.</span>
-    <span class='ident'>Extant</span>(<span class='ident'>T</span>),
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>EdgeExpander</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
-    <span class='kw'>fn</span> <span class='ident'>arc_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>RawEdge</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_arc_mut</span>(<span class='self'>self</span>.<span class='ident'>id</span>)
-    }
-
-    <span class='doccomment'>/// Returns an edge handle for the edge that this expander would expand. Its</span>
-    <span class='doccomment'>/// lifetime will be limited to a local borrow of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_edge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Edge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='ident'>make_edge</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='self'>self</span>.<span class='ident'>id</span>)
-    }
-
-    <span class='doccomment'>/// Returns a mutable edge handle for the edge that this expander would</span>
-    <span class='doccomment'>/// expand. Its lifetime will be limited to a local borrow of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_edge_mut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='self'>self</span>.<span class='ident'>id</span>, }
-    }
-
-    <span class='doccomment'>/// Returns a mutable edge handle for the edge that this expander would</span>
-    <span class='doccomment'>/// expand. `self` is consumed, and the return value&#39;s lifetime will be the</span>
-    <span class='doccomment'>/// same as that of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_edge</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>MutEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='ident'>MutEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='self'>self</span>.<span class='ident'>id</span>, }
-    }
-
-    <span class='doccomment'>/// Expands this expander&#39;s edge, by connecting to the vertex associated</span>
-    <span class='doccomment'>/// with the game state `state`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If `state` does not correspond to an extant vertex, a new vertex will be</span>
-    <span class='doccomment'>/// added for `state`, initialized with the data produced by `g`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns an edge handle for the newly expanded edge.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>expand_to_edge</span><span class='op'>&lt;</span><span class='ident'>G</span><span class='op'>&gt;</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>state</span>: <span class='ident'>T</span>, <span class='ident'>g</span>: <span class='ident'>G</span>) <span class='op'>-&gt;</span> <span class='ident'>Expanded</span><span class='op'>&lt;</span><span class='ident'>MutExpandedEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span>
-        <span class='kw'>where</span> <span class='ident'>G</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>S</span> {
-            <span class='kw'>let</span> (<span class='ident'>target_id</span>, <span class='ident'>new_vertex</span>) <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>state_ids</span>.<span class='ident'>get_or_insert</span>(<span class='ident'>state</span>) {
-                <span class='ident'>NamespaceInsertion</span>::<span class='ident'>Present</span>(<span class='ident'>target_id</span>) <span class='op'>=&gt;</span> {
-                    <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_vertex_mut</span>(<span class='ident'>target_id</span>).<span class='ident'>parents</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>id</span>);
-                    (<span class='ident'>target_id</span>, <span class='boolval'>false</span>)
-                },
-                <span class='ident'>NamespaceInsertion</span>::<span class='ident'>New</span>(<span class='ident'>target_id</span>) <span class='op'>=&gt;</span> {
-                    <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>add_vertex</span>(<span class='ident'>g</span>()).<span class='ident'>parents</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>id</span>);
-                    (<span class='ident'>target_id</span>, <span class='boolval'>true</span>)
-                },
-            };
-            <span class='self'>self</span>.<span class='ident'>arc_mut</span>().<span class='ident'>target</span> <span class='op'>=</span> <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>target_id</span>);
-            <span class='kw'>if</span> <span class='ident'>new_vertex</span> {
-                <span class='ident'>Expanded</span>::<span class='ident'>New</span>(<span class='ident'>MutExpandedEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='self'>self</span>.<span class='ident'>id</span>, })
-            } <span class='kw'>else</span> {
-                <span class='ident'>Expanded</span>::<span class='ident'>Extant</span>(<span class='ident'>MutExpandedEdge</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='self'>self</span>.<span class='ident'>id</span>, })
-            }
-        }
-
-    <span class='doccomment'>/// Expands this expander&#39;s edge, by connecting to the vertex associated</span>
-    <span class='doccomment'>/// with the game state `state`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If `state` does not correspond to an extant vertex, a new vertex will be</span>
-    <span class='doccomment'>/// added for `state`, initialized with the data produced by `g`. A parent</span>
-    <span class='doccomment'>/// edge pointing back to the vertex that this edge originates from will</span>
-    <span class='doccomment'>/// also be added, with initial data the value returned by `h`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns a node handle for the newly expanded edge&#39;s target.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>expand_to_target</span><span class='op'>&lt;</span><span class='ident'>G</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>state</span>: <span class='ident'>T</span>, <span class='ident'>g</span>: <span class='ident'>G</span>) <span class='op'>-&gt;</span> <span class='ident'>Expanded</span><span class='op'>&lt;</span><span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;&gt;</span>
-        <span class='kw'>where</span> <span class='ident'>G</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>S</span> {
-            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>expand_to_edge</span>(<span class='ident'>state</span>, <span class='ident'>g</span>) {
-                <span class='ident'>Expanded</span>::<span class='ident'>New</span>(<span class='ident'>edge</span>) <span class='op'>=&gt;</span> <span class='ident'>Expanded</span>::<span class='ident'>New</span>(<span class='ident'>edge</span>.<span class='ident'>to_target</span>()),
-                <span class='ident'>Expanded</span>::<span class='ident'>Extant</span>(<span class='ident'>edge</span>) <span class='op'>=&gt;</span> <span class='ident'>Expanded</span>::<span class='ident'>Extant</span>(<span class='ident'>edge</span>.<span class='ident'>to_target</span>()),
-            }
-        }
-}
-
-<span class='doccomment'>/// Mutable handle to a graph edge (&quot;edge handle&quot;) when edge expansion state is</span>
-<span class='doccomment'>/// known.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This zipper-like type enables traversal of a graph along the edge&#39;s source</span>
-<span class='doccomment'>/// and target vertices.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// It enables local graph mutation, whether via mutation of edge data or</span>
-<span class='doccomment'>/// mutation of graph topology (adding vertices). Vertices may be added to</span>
-<span class='doccomment'>/// unexpanded edges using the handle returned by `get_target_mut` or</span>
-<span class='doccomment'>/// `to_target`.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>MutExpandedEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
-    <span class='ident'>graph</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Graph</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span>,
-    <span class='ident'>id</span>: <span class='ident'>EdgeId</span>,
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>MutExpandedEdge</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Clone</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span>, <span class='ident'>S</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> {
-    <span class='kw'>fn</span> <span class='ident'>arc</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>RawEdge</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_arc</span>(<span class='self'>self</span>.<span class='ident'>id</span>)
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>arc_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>RawEdge</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>graph</span>.<span class='ident'>get_arc_mut</span>(<span class='self'>self</span>.<span class='ident'>id</span>)
-    }
-
-    <span class='doccomment'>/// Returns an immutable ID that is guaranteed to identify this vertex</span>
-    <span class='doccomment'>/// uniquely within its graph. This ID may change when the graph is mutated.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_id</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='self'>self</span>.<span class='ident'>id</span>.<span class='ident'>as_usize</span>()
-    }
-
-    <span class='doccomment'>/// Returns the data at this edge.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_data</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>A</span> {
-        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>data</span>
-    }
-
-    <span class='doccomment'>/// Returns the data at this edge, mutably.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_data_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>A</span> {
-        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>arc_mut</span>().<span class='ident'>data</span>
-    }
-
-    <span class='doccomment'>/// Returns the target of this edge. Its lifetime limited to a local borrow</span>
-    <span class='doccomment'>/// of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_target</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span> {
-            <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(_) <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;expanded edge isn&#39;t&quot;</span>),
-            <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>make_node</span>(<span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>),
-        }
-    }
-
-    <span class='doccomment'>/// Returns the target of this edge. Its lifetime will be limited to a local</span>
-    <span class='doccomment'>/// borrow of `self`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_target_mut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span> {
-            <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(_) <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;expanded edge isn&#39;t&quot;</span>),
-            <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, },
-        }
-    }
-
-    <span class='doccomment'>/// Returns the target of this edge. `self` is consumed, and the return</span>
-    <span class='doccomment'>/// value&#39;s lifetime will be the same as that of `self`.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_target</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>MutNode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>S</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span> {
-            <span class='ident'>Target</span>::<span class='ident'>Unexpanded</span>(_) <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;expanded edge isn&#39;t&quot;</span>),
-            <span class='ident'>Target</span>::<span class='ident'>Expanded</span>(<span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, },
-        }
+        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>arc</span>().<span class='ident'>target</span>;
+        <span class='ident'>MutNode</span> { <span class='ident'>graph</span>: <span class='self'>self</span>.<span class='ident'>graph</span>, <span class='ident'>id</span>: <span class='ident'>id</span>, }
     }
 
     <span class='doccomment'>/// Returns a node handle for the source of this edge. Its lifetime will be</span>
@@ -1212,6 +945,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
