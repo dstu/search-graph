@@ -1,4 +1,4 @@
-use ::symbol_table;
+use ::symbol_map;
 
 /// Internal edge identifier.
 ///
@@ -30,7 +30,7 @@ impl Default for VertexId {
     fn default() -> Self { VertexId(0) }
 }
 
-impl symbol_table::SymbolId for VertexId {
+impl symbol_map::SymbolId for VertexId {
     fn next(&self) -> Self { VertexId(self.0 + 1) }
     fn as_usize(&self) -> usize { self.0 }
 }

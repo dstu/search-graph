@@ -14,8 +14,8 @@ use std::ptr;
 
 use ::Graph;
 use ::hidden::base::{EdgeId, VertexId};
-use ::symbol_table::SymbolId;
-use ::symbol_table::indexing::{HashIndexing, Indexing};
+use ::symbol_map::SymbolId;
+use ::symbol_map::indexing::{HashIndexing, Indexing};
 
 /// Permutes `data` so that element `i` of data is reassigned to be at index
 /// `f(i)`.
@@ -215,7 +215,7 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
 mod test {
     use super::Collector;
     use ::hidden::base::{EdgeId, VertexId, RawEdge, RawVertex};
-    use ::symbol_table::indexing::{HashIndexing, Indexing};
+    use ::symbol_map::indexing::{HashIndexing, Indexing};
 
     use std::collections::HashMap;
     use std::mem;

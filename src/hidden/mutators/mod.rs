@@ -6,8 +6,8 @@ use ::Graph;
 use ::hidden::base::*;
 use ::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
 use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
-use ::symbol_table::SymbolId;
-use ::symbol_table::indexing::{Indexing, Insertion};
+use ::symbol_map::SymbolId;
+use ::symbol_map::indexing::{Indexing, Insertion};
 
 pub mod path;
 pub mod mark_compact;

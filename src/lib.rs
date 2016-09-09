@@ -1,4 +1,4 @@
-extern crate symbol_table;
+extern crate symbol_map;
 #[cfg(test)] extern crate crossbeam;
 
 mod hidden;
@@ -11,8 +11,8 @@ use std::hash::Hash;
 use self::hidden::base::*;
 use self::hidden::nav::{Node, make_node};
 use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
-use ::symbol_table::indexing::{Indexing, Insertion};
-use ::symbol_table::SymbolId;
+use ::symbol_map::indexing::{Indexing, Insertion};
+use ::symbol_map::SymbolId;
 
 /// A search graph.
 ///
@@ -32,7 +32,7 @@ use ::symbol_table::SymbolId;
 /// `add_root` and retrieve extant vertices with `get_node_mut`.
 pub struct Graph<T, S, A> where T: Hash + Eq + Clone {
     /// Lookup table that maps from game states to `VertexId`.
-    state_ids: symbol_table::indexing::HashIndexing<T, VertexId>,
+    state_ids: symbol_map::indexing::HashIndexing<T, VertexId>,
     vertices: Vec<RawVertex<S>>,  // Indexed by VertexId.
     arcs: Vec<RawEdge<A>>,  // Indexed by EdgeId.
 }

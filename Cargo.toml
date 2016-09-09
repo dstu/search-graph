@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Stu Black"]
 
 [dependencies]
-symbol-table = { git = "https://github.com/dstu/symbol-table.git", branch = "master" }
+symbol-map = "1.0"
 
 [dev-dependencies]
 crossbeam = "0.2.*"
