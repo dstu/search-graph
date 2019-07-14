@@ -9,12 +9,12 @@ use symbol_map;
 pub(crate) struct EdgeId(pub usize);
 
 impl EdgeId {
-    /// Converts an `EdgeId` to a usize that is guaranteed to be unique within a
-    /// graph.
-    pub fn as_usize(self) -> usize {
-        let EdgeId(x) = self;
-        x
-    }
+  /// Converts an `EdgeId` to a usize that is guaranteed to be unique within a
+  /// graph.
+  pub fn as_usize(self) -> usize {
+    let EdgeId(x) = self;
+    x
+  }
 }
 
 /// Internal vertex identifier.
@@ -27,12 +27,18 @@ impl EdgeId {
 pub(crate) struct VertexId(pub usize);
 
 impl Default for VertexId {
-    fn default() -> Self { VertexId(0) }
+  fn default() -> Self {
+    VertexId(0)
+  }
 }
 
 impl symbol_map::SymbolId for VertexId {
-    fn next(&self) -> Self { VertexId(self.0 + 1) }
-    fn as_usize(&self) -> usize { self.0 }
+  fn next(&self) -> Self {
+    VertexId(self.0 + 1)
+  }
+  fn as_usize(&self) -> usize {
+    self.0
+  }
 }
 
 /// Internal type for graph edges.
@@ -41,21 +47,21 @@ impl symbol_map::SymbolId for VertexId {
 /// identical statistics.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub(crate) struct RawEdge<A> {
-    /// Edge data.
-    pub data: A,
-    /// Source vertex.
-    pub source: VertexId,
-    /// Target vertex.
-    pub target: VertexId,
+  /// Edge data.
+  pub data: A,
+  /// Source vertex.
+  pub source: VertexId,
+  /// Target vertex.
+  pub target: VertexId,
 }
 
 /// Internal type for graph vertices.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub(crate) struct RawVertex<S> {
-    /// Vertex data.
-    pub data: S,
-    /// Parent edges pointing into this vertex.
-    pub parents: Vec<EdgeId>,
-    /// Child edges pointing out of this vertex.
-    pub children: Vec<EdgeId>,
+  /// Vertex data.
+  pub data: S,
+  /// Parent edges pointing into this vertex.
+  pub parents: Vec<EdgeId>,
+  /// Child edges pointing out of this vertex.
+  pub children: Vec<EdgeId>,
 }
