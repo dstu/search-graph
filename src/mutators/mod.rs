@@ -1,16 +1,21 @@
+//! Support for navigation of a graph that allows modifications to graph
+//! topology and full read-write access to graph data.
+//!
+//! The data structures in this module require a read-write borrow of an
+//! underlying graph. As a result, only one handle may be active at any given
+//! time.
+
 use std::clone::Clone;
 use std::cmp::Eq;
 use std::hash::Hash;
 
-use ::Graph;
-use ::hidden::base::*;
-use ::hidden::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
-use ::hidden::nav::{make_child_list, make_edge, make_node, make_parent_list};
-use ::symbol_map::SymbolId;
-use ::symbol_map::indexing::{Indexing, Insertion};
+use crate::Graph;
+use crate::base::{EdgeId, RawEdge, RawVertex, VertexId};
+use crate::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
+use symbol_map::SymbolId;
+use symbol_map::indexing::{Indexing, Insertion};
 
-pub mod path;
-pub mod mark_compact;
+pub(crate) mod mark_compact;
 
 /// Mutable handle to a graph vertex ("node handle").
 ///
@@ -21,19 +26,18 @@ pub mod mark_compact;
 /// mutation of graph topology (adding edges). Edges may be added
 /// using the handle returned by `get_child_adder` or `to_child_adder`.
 pub struct MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-    graph: &'a mut Graph<T, S, A>,
-    id: VertexId,
+    pub(crate) graph: &'a mut Graph<T, S, A>,
+    pub(crate) id: VertexId,
 }
 
-/// Creates a new `MutNode` for the given graph and gamestate. This method is
-/// not exported by the crate because it exposes implementation details. It is
-/// used to provide a public cross-module interface for creating new `MutNode`s.
-pub fn make_mut_node<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: VertexId) -> MutNode<'a, T, S, A>
-    where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-        MutNode { graph: graph, id: id, }
-    }
 
 impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    /// Creates a new `MutNode` for the given graph and gamestate. This method is
+    /// not exported by the crate because it exposes implementation details.
+    pub(crate) fn new(graph: &'a mut Graph<T, S, A>, id: VertexId) -> Self {
+        MutNode { graph, id }
+    }
+
     fn vertex<'s>(&'s self) -> &'s RawVertex<S> {
         self.graph.get_vertex(self.id)
     }
@@ -81,7 +85,7 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// Returns a traversible list of outgoing edges. Its lifetime will be
     /// limited to a local borrow of `self`.
     pub fn get_child_list<'s>(&'s self) -> ChildList<'s, T, S, A> {
-        make_child_list(self.graph, self.id)
+        ChildList::new(self.graph, self.id)
     }
 
     /// Returns a traversible list of outgoing edges. Its lifetime will be
@@ -99,7 +103,7 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// Returns a traversible list of incoming edges. Its lifetime will be
     /// limited to a local borrow of `self`.
     pub fn get_parent_list<'s>(&'s self) -> ParentList<'s, T, S, A> {
-        make_parent_list(self.graph, self.id)
+        ParentList::new(self.graph, self.id)
     }
 
     /// Returns a traversible list of incoming edges. Its lifetime will be
@@ -119,13 +123,13 @@ impl<'a, T, S, A> MutNode<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// `self`. The source graph is still considered to have a mutable borrow in
     /// play, but the resulting node can be cloned freely.
     pub fn to_node(self) -> Node<'a, T, S, A> {
-        make_node(self.graph, self.id)
+        Node::new(self.graph, self.id)      
     }
 
     /// Returns a non-mutating node obtained by borrowing this node. Returns a
     /// value whose lifetime is limited to a borrow of `self`.
     pub fn get_node<'s>(&'s self) -> Node<'s, T, S, A> {
-        make_node(self.graph, self.id)
+        Node::new(self.graph, self.id)
     }
 
     /// Prunes the underlying graph by removing components not reachable from
@@ -159,7 +163,7 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
 
     /// Returns an edge handle for the `i`th edge.
     pub fn get_edge<'s>(&'s self, i: usize) -> Edge<'s, T, S, A> {
-        make_edge(self.graph, self.vertex().children[i])
+        Edge::new(self.graph, self.vertex().children[i])
     }
     
     /// Returns an edge handle for the `i`th edge. Its lifetime will be limited
@@ -179,7 +183,7 @@ impl<'a, T, S, A> MutChildList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 
     /// Returns a node handle for the vertex these edges originate from. Its
     /// lifetime will be limited to a local borrow of `self`.
     pub fn get_source_node<'s>(&'s self) -> Node<'s, T, S, A> {
-        make_node(self.graph, self.id)
+        Node::new(self.graph, self.id)
     }
 
     /// Returns a mutable node handle for the vertex these edges originate
@@ -259,7 +263,7 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
     /// Returns a node handle for the vertex these edges originate terminate
     /// on. Its lifetime will be limited to a local borrow of `self`.
     pub fn get_target_node<'s>(&'s self) -> Node<'s, T, S, A> {
-        make_node(self.graph, self.id)
+        Node::new(self.graph, self.id)
     }
 
     /// Returns a mutable node handle for the vertex these edges terminate
@@ -278,7 +282,7 @@ impl<'a, T, S, A> MutParentList<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S:
     /// Returns a handle to the `i`th edge. Its lifetime will be limited to a
     /// local borrow of `self`.
     pub fn get_edge<'s>(&'s self, i: usize) -> Edge<'s, T, S, A> {
-        make_edge(self.graph, self.vertex().parents[i])
+        Edge::new(self.graph, self.vertex().parents[i])
     }
 
     /// Returns a mutable handle to the `i`th edge. Its lifetime will be limited
@@ -350,15 +354,13 @@ pub struct MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     id: EdgeId,
 }
 
-/// Creates a new `MutEdge` for the given graph and gamestate. This method is
-/// not exported by the crate because it exposes implementation details. It is
-/// used to provide a public cross-module interface for creating new `MutNode`s.
-pub fn make_mut_edge<'a, T, S, A>(graph: &'a mut Graph<T, S, A>, id: EdgeId) -> MutEdge<'a, T, S, A>
-    where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
-        MutEdge { graph: graph, id: id, }
+impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
+    /// Creates a new `MutEdge` for the given graph and gamestate. This method is
+    /// not exported by the crate because it exposes implementation details.
+    pub(crate) fn new(graph: &'a mut Graph<T, S, A>, id: EdgeId) -> Self {
+        MutEdge { graph, id }
     }
 
-impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A: 'a {
     fn arc(&self) -> &RawEdge<A> {
         self.graph.get_arc(self.id)
     }
@@ -387,7 +389,7 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// be available. If it is expanded, a node handle will be available, with
     /// its lifetime limited to a local borrow of `self`.
     pub fn get_target<'s>(&'s self) -> Node<'s, T, S, A> {
-        make_node(self.graph, self.arc().target)
+        Node::new(self.graph, self.arc().target)
     }
 
     /// Returns the target of this edge. If the edge is unexpanded, an
@@ -411,7 +413,7 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// Returns a node handle for the source of this edge. Its lifetime will be
     /// limited to a local borrow of `self`.
     pub fn get_source<'s>(&'s self) -> Node<'s, T, S, A> {
-        make_node(self.graph, self.arc().source)
+        Node::new(self.graph, self.arc().source)
     }
 
     /// Returns a mutable node handle for the source of this edge. Its lifetime
@@ -434,6 +436,7 @@ impl<'a, T, S, A> MutEdge<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a, A
     /// `self`. The source graph is still considered to have a mutable borrow in
     /// play, but the resulting edge can be cloned freely.
     pub fn to_edge(self) -> Edge<'a, T, S, A> {
-        make_edge(self.graph, self.id)
+        Edge::new(self.graph, self.id)
     }
 }
+

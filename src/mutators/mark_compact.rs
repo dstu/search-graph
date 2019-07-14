@@ -12,10 +12,10 @@ use std::hash::Hash;
 use std::mem;
 use std::ptr;
 
-use ::Graph;
-use ::hidden::base::{EdgeId, VertexId};
-use ::symbol_map::SymbolId;
-use ::symbol_map::indexing::{HashIndexing, Indexing};
+use crate::Graph;
+use crate::base::{EdgeId, VertexId};
+use symbol_map::SymbolId;
+use symbol_map::indexing::{HashIndexing, Indexing};
 
 /// Permutes `data` so that element `i` of data is reassigned to be at index
 /// `f(i)`.
@@ -65,7 +65,7 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
     /// function is not exported by the crate, so you probably want the
     /// `retain_reachable()` method of `MutNode` or the `retain_reachable_from`
     /// method of `Graph`.
-    pub fn retain_reachable(graph: &'a mut Graph<T, S, A>, roots: &[VertexId]) {
+    pub(crate) fn retain_reachable(graph: &'a mut Graph<T, S, A>, roots: &[VertexId]) {
         let mut c = Collector::new(graph);
         c.mark(roots);
         c.sweep();
@@ -182,7 +182,7 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
         // Drop unmarked vertices.
         self.graph.vertices.truncate(self.marked_state_count);
         // Reassign and compact vertex parents.
-        for mut vertex in self.graph.vertices.iter_mut() {
+        for vertex in self.graph.vertices.iter_mut() {
             let mut store_index = 0;
             for scan_index in 0..vertex.parents.len() {
                 let old_arc_id = vertex.parents[scan_index];
@@ -214,13 +214,13 @@ impl<'a, T, S, A> Collector<'a, T, S, A> where T: Hash + Eq + Clone + 'a, S: 'a,
 #[cfg(test)]
 mod test {
     use super::Collector;
-    use ::hidden::base::{EdgeId, VertexId, RawEdge, RawVertex};
-    use ::symbol_map::indexing::{HashIndexing, Indexing};
+    use crate::base::{EdgeId, VertexId, RawEdge, RawVertex};
+    use symbol_map::indexing::{HashIndexing, Indexing};
 
     use std::collections::HashMap;
     use std::mem;
 
-    type Graph = ::Graph<&'static str, &'static str, &'static str>;
+    type Graph = crate::Graph<&'static str, &'static str, &'static str>;
 
     fn empty_graph() -> Graph {
         let g = Graph::new();

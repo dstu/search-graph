@@ -1,18 +1,15 @@
-extern crate symbol_map;
-#[cfg(test)] extern crate crossbeam;
-
-mod hidden;
+pub(crate) mod base;
 pub mod mutators;
 pub mod nav;
 pub mod search;
 
 use std::hash::Hash;
 
-use self::hidden::base::*;
-use self::hidden::nav::{Node, make_node};
-use self::hidden::mutators::{MutEdge, MutNode, make_mut_edge, make_mut_node};
-use ::symbol_map::indexing::{Indexing, Insertion};
-use ::symbol_map::SymbolId;
+use base::{EdgeId, RawEdge, RawVertex, VertexId};
+use mutators::{MutEdge, MutNode};
+use nav::Node;
+use symbol_map::indexing::{Indexing, Insertion};
+use symbol_map::SymbolId;
 
 /// A search graph.
 ///
@@ -30,14 +27,20 @@ use ::symbol_map::SymbolId;
 /// Vertices are addressed by content. To examine graph contents, obtain a node
 /// handle with `get_node`. To modify graph contents, add new root vertices with
 /// `add_root` and retrieve extant vertices with `get_node_mut`.
-pub struct Graph<T, S, A> where T: Hash + Eq + Clone {
+pub struct Graph<T, S, A>
+where
+    T: Hash + Eq + Clone,
+{
     /// Lookup table that maps from game states to `VertexId`.
     state_ids: symbol_map::indexing::HashIndexing<T, VertexId>,
-    vertices: Vec<RawVertex<S>>,  // Indexed by VertexId.
-    arcs: Vec<RawEdge<A>>,  // Indexed by EdgeId.
+    vertices: Vec<RawVertex<S>>, // Indexed by VertexId.
+    arcs: Vec<RawEdge<A>>,       // Indexed by EdgeId.
 }
 
-impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
+impl<T, S, A> Graph<T, S, A>
+where
+    T: Hash + Eq + Clone,
+{
     /// Creates an empty `Graph` with no vertices or edges.
     pub fn new() -> Self {
         Graph {
@@ -92,7 +95,11 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
         let arc_id = EdgeId(self.arcs.len());
         self.get_vertex_mut(source).children.push(arc_id);
         self.get_vertex_mut(target).parents.push(arc_id);
-        self.arcs.push(RawEdge { data: data, source: source, target: target, });
+        self.arcs.push(RawEdge {
+            data: data,
+            source: source,
+            target: target,
+        });
         arc_id
     }
 
@@ -101,7 +108,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// If `state` does not correspond to a known game state, returns `None`.
     pub fn get_node<'s>(&'s self, state: &T) -> Option<Node<'s, T, S, A>> {
         match self.state_ids.get(state) {
-            Some(symbol) => Some(make_node(self, *symbol.id())),
+            Some(symbol) => Some(Node::new(self, *symbol.id())),
             None => None,
         }
     }
@@ -111,7 +118,7 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// If `state` does not correspond to a known game state, returns `None`.
     pub fn get_node_mut<'s>(&'s mut self, state: &T) -> Option<MutNode<'s, T, S, A>> {
         match self.state_ids.get(state).map(|s| s.id().clone()) {
-            Some(id) => Some(make_mut_node(self, id)),
+            Some(id) => Some(MutNode::new(self, id)),
             None => None,
         }
     }
@@ -129,9 +136,9 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
             Insertion::New(id) => {
                 self.add_raw_vertex(data);
                 id
-            },
+            }
         };
-        make_mut_node(self, node_id)
+        MutNode::new(self, node_id)
     }
 
     /// Adds an edge from the vertex with state data `source` to the vertex with
@@ -141,28 +148,37 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     ///
     /// The edge that is created will have the data `edge_data`. Returns a
     /// mutable edge handle for that edge.
-    pub fn add_edge<'s, F, G>(&'s mut self, source: T, source_data: F, dest: T, dest_data: G,
-                              edge_data: A) -> MutEdge<'s, T, S, A>
-        where F: for<'b> FnOnce(Node<'b, T, S, A>) -> S, G: for<'b> FnOnce(Node<'b, T, S, A>) -> S {
-            let source_id = match self.state_ids.get_or_insert(source).map(|s| s.id().clone()) {
-                Insertion::Present(id) => id,
-                Insertion::New(id) => {
-                    let data = source_data(make_node(self, id));
-                    self.add_raw_vertex(data);
-                    id
-                },
-            };
-            let dest_id = match self.state_ids.get_or_insert(dest).map(|s| s.id().clone()) {
-                Insertion::Present(id) => id,
-                Insertion::New(id) => {
-                    let data = dest_data(make_node(self, id));
-                    self.add_raw_vertex(data);
-                    id
-                },
-            };
-            let edge_id = self.add_raw_edge(edge_data, source_id, dest_id);
-            make_mut_edge(self, edge_id)
-        }
+    pub fn add_edge<'s, F, G>(
+        &'s mut self,
+        source: T,
+        source_data: F,
+        dest: T,
+        dest_data: G,
+        edge_data: A,
+    ) -> MutEdge<'s, T, S, A>
+    where
+        F: for<'b> FnOnce(Node<'b, T, S, A>) -> S,
+        G: for<'b> FnOnce(Node<'b, T, S, A>) -> S,
+    {
+        let source_id = match self.state_ids.get_or_insert(source).map(|s| s.id().clone()) {
+            Insertion::Present(id) => id,
+            Insertion::New(id) => {
+                let data = source_data(Node::new(self, id));
+                self.add_raw_vertex(data);
+                id
+            }
+        };
+        let dest_id = match self.state_ids.get_or_insert(dest).map(|s| s.id().clone()) {
+            Insertion::Present(id) => id,
+            Insertion::New(id) => {
+                let data = dest_data(Node::new(self, id));
+                self.add_raw_vertex(data);
+                id
+            }
+        };
+        let edge_id = self.add_raw_edge(edge_data, source_id, dest_id);
+        MutEdge::new(self, edge_id)
+    }
 
     /// Returns the number of vertices in the graph.
     pub fn vertex_count(&self) -> usize {
@@ -194,40 +210,38 @@ impl<T, S, A> Graph<T, S, A> where T: Hash + Eq + Clone {
     /// As `retain_reachable_from`, but working over raw `VertexId`s instead of
     /// root data.
     fn retain_reachable_from_ids(&mut self, root_ids: &[VertexId]) {
-        self::hidden::mutators::mark_compact::Collector::retain_reachable(self, root_ids);
+        mutators::mark_compact::Collector::retain_reachable(self, root_ids);
     }
 }
 
 #[cfg(test)]
 mod test {
-    use ::crossbeam;
+    use crossbeam_utils::thread;
     use std::sync::Arc;
-    use std::thread;
 
-    type Graph = ::Graph<&'static str, &'static str, &'static str>;
+    type Graph = crate::Graph<&'static str, &'static str, &'static str>;
 
     #[test]
     fn send_to_thread_safe_ok() {
         let mut g = Graph::new();
         g.add_edge("root", |_| "root_data", "0", |_| "0_data", "root_0_data");
         g.add_edge("root", |_| "root_data", "1", |_| "1_data", "root_1_data");
-        let g = Arc::new(g);
-        let t1 = {
-            let g = g.clone();
-            thread::spawn(move || g.get_node(&"root").map(|n| n.get_id()))
-        };
-        let t2 = {
-            let g = g.clone();
-            thread::spawn(move || g.get_node(&"1").map(|n| n.get_id()))
-        };
-        match t1.join() {
-            Ok(Some(id)) => assert_eq!(id, 0),
-            _ => panic!(),
-        }
-        match t2.join() {
-            Ok(Some(id)) => assert_eq!(id, 2),
-            _ => panic!(),
-        }
+        let graph = Arc::new(g);
+        thread::scope(move |s| {
+            let g = graph.clone();
+            let t1 = s.spawn(move |_| g.get_node(&"root").map(|n| n.get_id()));
+            let g = graph.clone();
+            let t2 = s.spawn(move |_| g.get_node(&"1").map(|n| n.get_id()));
+            match t1.join() {
+                Ok(Some(id)) => assert_eq!(id, 0),
+                _ => panic!(),
+            }
+            match t2.join() {
+                Ok(Some(id)) => assert_eq!(id, 2),
+                _ => panic!(),
+            }
+        })
+        .unwrap();
     }
 
     #[test]
@@ -236,22 +250,18 @@ mod test {
         g.add_edge("root", |_| "root_data", "0", |_| "0_data", "root_0_data");
         g.add_edge("root", |_| "root_data", "1", |_| "1_data", "root_1_data");
         let g = &g;
-        let t1 = crossbeam::scope(
-            move |scope|
-            scope.spawn(move ||
-                        g.get_node(&"root").map(|n| n.get_id())));
-        let t2 = crossbeam::scope(
-            move |scope|
-            scope.spawn(move ||
-                        g.get_node(&"1").map(|n| n.get_id())));
-        match t1.join() {
-            Some(id) => assert_eq!(id, 0),
-            _ => panic!(),
-        }
-        match t2.join() {
-            Some(id) => assert_eq!(id, 2),
-            _ => panic!(),
-        }
-
+        thread::scope(|s| {
+            let t1 = s.spawn(move |_| g.get_node(&"root").map(|n| n.get_id()));
+            let t2 = s.spawn(move |_| g.get_node(&"1").map(|n| n.get_id()));
+            match t1.join() {
+                Ok(Some(id)) => assert_eq!(id, 0),
+                _ => panic!(),
+            }
+            match t2.join() {
+                Ok(Some(id)) => assert_eq!(id, 2),
+                _ => panic!(),
+            }
+        })
+        .unwrap();
     }
 }

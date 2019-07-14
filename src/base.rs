@@ -1,4 +1,4 @@
-use ::symbol_map;
+use symbol_map;
 
 /// Internal edge identifier.
 ///
@@ -6,7 +6,7 @@ use ::symbol_map;
 /// graph that it belongs to, which makes it only slightly less dangerous than a
 /// pointer with no lifetime.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct EdgeId(pub usize);
+pub(crate) struct EdgeId(pub usize);
 
 impl EdgeId {
     /// Converts an `EdgeId` to a usize that is guaranteed to be unique within a
@@ -24,7 +24,7 @@ impl EdgeId {
 /// the graph that it belongs to, which makes it only slightly less dangerous
 /// than a pointer with no lifetime.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct VertexId(pub usize);
+pub(crate) struct VertexId(pub usize);
 
 impl Default for VertexId {
     fn default() -> Self { VertexId(0) }
@@ -40,7 +40,7 @@ impl symbol_map::SymbolId for VertexId {
 /// The Hash, Ord, and Eq implementations will conflate parallel edges with
 /// identical statistics.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct RawEdge<A> {
+pub(crate) struct RawEdge<A> {
     /// Edge data.
     pub data: A,
     /// Source vertex.
@@ -51,7 +51,7 @@ pub struct RawEdge<A> {
 
 /// Internal type for graph vertices.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct RawVertex<S> {
+pub(crate) struct RawVertex<S> {
     /// Vertex data.
     pub data: S,
     /// Parent edges pointing into this vertex.
