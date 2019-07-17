@@ -18,6 +18,7 @@ use symbol_map::SymbolId;
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's
 /// incoming and outgoing edges.
+#[derive(Clone, Copy)]
 pub struct Node<'a, T, S, A>
 where
   T: Hash + Eq + Clone + 'a,
@@ -97,6 +98,7 @@ where
 }
 
 /// A traversible list of a vertex's outgoing edges.
+#[derive(Clone, Copy)]
 pub struct ChildList<'a, T, S, A>
 where
   T: Hash + Eq + Clone + 'a,
@@ -212,6 +214,7 @@ where
 }
 
 /// A traversible list of a vertex's incoming edges.
+#[derive(Clone, Copy)]
 pub struct ParentList<'a, T, S, A>
 where
   T: Hash + Eq + Clone + 'a,
@@ -331,6 +334,7 @@ where
 ///
 /// This zipper-like type enables traversal of a graph along the edge's source
 /// and target vertices.
+#[derive(Clone, Copy)]
 pub struct Edge<'a, T, S, A>
 where
   T: Hash + Eq + Clone + 'a,
