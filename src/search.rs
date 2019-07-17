@@ -345,7 +345,7 @@ mod test {
   #[test]
   fn instantiation_ok() {
     let mut g = Graph::new();
-    let root = g.add_root("root", "root");
+    let root = g.add_node("root", "root");
 
     let path = Stack::new(root);
     assert_eq!(1, path.len());
@@ -355,7 +355,7 @@ mod test {
   #[test]
   fn push_no_children_ok() {
     let mut g = Graph::new();
-    let root = g.add_root("root", "root");
+    let root = g.add_node("root", "root");
 
     let mut path = Stack::new(root);
     assert_eq!(1, path.len());
@@ -377,7 +377,7 @@ mod test {
   #[test]
   fn push_no_children_err() {
     let mut g = Graph::new();
-    let root = g.add_root("root", "root");
+    let root = g.add_node("root", "root");
 
     let mut path = Stack::new(root);
     assert_eq!(1, path.len());
@@ -478,7 +478,7 @@ mod test {
   #[test]
   fn push_no_parents_ok() {
     let mut g = Graph::new();
-    let root = g.add_root("root", "root");
+    let root = g.add_node("root", "root");
 
     let mut path = Stack::new(root);
     assert_eq!(1, path.len());
@@ -500,7 +500,7 @@ mod test {
   #[test]
   fn push_no_parents_err() {
     let mut g = Graph::new();
-    let root = g.add_root("root", "root");
+    let root = g.add_node("root", "root");
 
     let mut path = Stack::new(root);
     assert_eq!(1, path.len());
@@ -633,9 +633,9 @@ mod test {
   #[test]
   fn search_path_iter_empty_ok() {
     let mut g = Graph::new();
-    g.add_root("root", "root");
+    g.add_node("root", "root");
 
-    let path = Stack::new(g.add_root("root", "root"));
+    let path = Stack::new(g.add_node("root", "root"));
     assert_eq!(1, path.len());
     assert_eq!("root", *path.head().get_data());
 
@@ -651,7 +651,7 @@ mod test {
   #[test]
   fn search_path_iter_items_ok() {
     let mut g = Graph::new();
-    g.add_root("root", "root");
+    g.add_node("root", "root");
     add_edge(&mut g, "root", "A");
     add_edge(&mut g, "A", "B");
 
@@ -706,7 +706,7 @@ mod test {
   fn pop_empty_is_none_ok() {
     let mut g = Graph::new();
 
-    let mut path = Stack::new(g.add_root("root", "root"));
+    let mut path = Stack::new(g.add_node("root", "root"));
     assert_eq!(1, path.len());
     assert!(path.pop().is_none());
   }

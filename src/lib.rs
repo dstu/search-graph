@@ -3,11 +3,13 @@ pub mod mutators;
 pub mod nav;
 pub mod search;
 
+use std::cell::UnsafeCell;
 use std::hash::Hash;
+use std::ops::Deref;
 
 use base::{EdgeId, RawEdge, RawVertex, VertexId};
 use mutators::{MutEdge, MutNode};
-use nav::Node;
+use nav::{Edge, Node};
 use symbol_map::indexing::{Indexing, Insertion};
 use symbol_map::SymbolId;
 
@@ -26,7 +28,7 @@ use symbol_map::SymbolId;
 ///
 /// Vertices are addressed by content. To examine graph contents, obtain a node
 /// handle with `get_node`. To modify graph contents, add new root vertices with
-/// `add_root` and retrieve extant vertices with `get_node_mut`.
+/// `add_node` and retrieve extant vertices with `get_node_mut`.
 pub struct Graph<T, S, A>
 where
   T: Hash + Eq + Clone,
@@ -123,14 +125,14 @@ where
     }
   }
 
-  /// Adds a root vertex (one with no parents) for the given game state and
+  /// Adds a vertex (with no parents or children) for the given game state and
   /// data and returns a mutable handle for it.
   ///
   /// If `state` is already known, returns a mutable handle to that state,
   /// ignoring the `data` parameter. As a result, this method is guaranteed to
   /// return a handle for a root vertex only when `state` is a novel game
   /// state.
-  pub fn add_root<'s>(&'s mut self, state: T, data: S) -> MutNode<'s, T, S, A> {
+  pub fn add_node<'s>(&'s mut self, state: T, data: S) -> MutNode<'s, T, S, A> {
     let node_id = match self.state_ids.get_or_insert(state).map(|s| s.id().clone()) {
       Insertion::Present(id) => id,
       Insertion::New(id) => {
@@ -211,6 +213,94 @@ where
   /// root data.
   fn retain_reachable_from_ids(&mut self, root_ids: &[VertexId]) {
     mutators::mark_compact::Collector::retain_reachable(self, root_ids);
+  }
+}
+
+/// Allows both read-only references into a `Graph` and operations that modify
+/// the graph but do not invalidate family of types defined in the `nav`
+/// module.
+///
+/// All methods on `Graph` that take a `&self` parameter may also be called on
+/// an `AppendOnlyGraph`. The `add_node` and `add_edge` methods may also be
+/// called, because they do not invalidate `Node`, `Edge`, or other such smart
+/// pointers into the underlying graph. Unlike the analogous methods on `Graph`,
+/// these methods return a read-only view of the graph topology, instead of
+/// granting read-write access.
+///
+/// For example:
+///
+/// ```rust
+/// # use search_graph::{AppendOnlyGraph, Graph};
+/// # use search_graph::nav::{Node, Edge};
+/// # fn main() {
+/// let appendable: AppendOnlyGraph<u32, String, ()> = Graph::new().into();
+/// let root1 = appendable.add_node(0, "data1".to_string());
+/// // If appendable were a Graph, we could not call add_node while root1 is alive.
+/// let root2 = appendable.add_node(1, "data2".to_string());
+/// assert_eq!("data1", appendable.get_node(&0).unwrap().get_data());
+/// # }
+/// ```
+pub struct AppendOnlyGraph<T, S, A>
+where
+  T: Hash + Eq + Clone,
+{
+  graph: UnsafeCell<Graph<T, S, A>>,
+}
+
+impl<T, S, A> AppendOnlyGraph<T, S, A>
+where
+  T: Hash + Eq + Clone,
+{
+  pub fn add_node<'s>(&'s self, state: T, data: S) -> Node<'s, T, S, A> {
+    unsafe { (*self.graph.get()).add_node(state, data).to_node() }
+  }
+
+  pub fn add_edge<'s, F, G>(
+    &'s mut self,
+    source: T,
+    source_data: F,
+    dest: T,
+    dest_data: G,
+    edge_data: A,
+  ) -> Edge<'s, T, S, A>
+  where
+    F: for<'b> FnOnce(Node<'b, T, S, A>) -> S,
+    G: for<'b> FnOnce(Node<'b, T, S, A>) -> S,
+  {
+    unsafe {
+      (*self.graph.get())
+        .add_edge(source, source_data, dest, dest_data, edge_data)
+        .to_edge()
+    }
+  }
+}
+
+impl<T, S, A> Deref for AppendOnlyGraph<T, S, A>
+where
+  T: Hash + Eq + Clone,
+{
+  type Target = Graph<T, S, A>;
+
+  fn deref(&self) -> &Graph<T, S, A> {
+    unsafe { &*self.graph.get() }
+  }
+}
+
+impl<T, S, A> From<AppendOnlyGraph<T, S, A>> for Graph<T, S, A>
+where
+  T: Hash + Eq + Clone,
+{
+  fn from(graph: AppendOnlyGraph<T, S, A>) -> Self {
+    graph.graph.into_inner()
+  }
+}
+
+impl<T, S, A> From<Graph<T, S, A>> for AppendOnlyGraph<T, S, A>
+where
+  T: Hash + Eq + Clone,
+{
+  fn from(graph: Graph<T, S, A>) -> Self {
+    AppendOnlyGraph { graph: UnsafeCell::new(graph) }
   }
 }
 

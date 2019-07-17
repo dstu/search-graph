@@ -290,9 +290,9 @@ mod test {
   #[test]
   fn mark_roots_ok() {
     let mut g = empty_graph();
-    g.add_root("0", "");
-    g.add_root("1", "");
-    g.add_root("2", "");
+    g.add_node("0", "");
+    g.add_node("1", "");
+    g.add_node("2", "");
     assert_eq!(3, g.vertex_count());
     assert_eq!(0, g.edge_count());
     let root_ids = [VertexId(0), VertexId(1), VertexId(2)];
