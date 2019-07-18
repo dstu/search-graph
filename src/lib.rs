@@ -4,6 +4,8 @@ pub mod nav;
 pub mod search;
 
 use std::cell::UnsafeCell;
+use std::error::Error;
+use std::fmt;
 use std::hash::Hash;
 use std::ops::Deref;
 
@@ -233,11 +235,16 @@ where
 /// # use search_graph::{AppendOnlyGraph, Graph};
 /// # use search_graph::nav::{Node, Edge};
 /// # fn main() {
-/// let appendable: AppendOnlyGraph<u32, String, ()> = Graph::new().into();
-/// let root1 = appendable.add_node(0, "data1".to_string());
-/// // If appendable were a Graph, we could not call add_node while root1 is alive.
-/// let root2 = appendable.add_node(1, "data2".to_string());
+/// let appendable: AppendOnlyGraph<u32, String, f32> = Graph::new().into();
+/// let root1 = appendable.append_node(0, "data1".to_string());
+/// // If appendable were a Graph, we could not call append_node while root1 is alive.
+/// let root2 = appendable.append_node(1, "data2".to_string());
 /// assert_eq!("data1", appendable.get_node(&0).unwrap().get_data());
+/// assert!(root1.is_leaf());
+/// let edge = appendable.append_edge(root1.clone(), root2.clone(), 3.3).unwrap();
+/// assert_eq!(*edge.get_source().get_label(), 0);
+/// assert_eq!(*edge.get_target().get_label(), 1);
+/// assert!(!root1.is_leaf());
 /// # }
 /// ```
 pub struct AppendOnlyGraph<T, S, A>
@@ -247,30 +254,46 @@ where
   graph: UnsafeCell<Graph<T, S, A>>,
 }
 
+#[derive(Debug)]
+pub enum AppendEdgeError {
+  GraphMismatch,
+}
+
+impl fmt::Display for AppendEdgeError {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{:?}", self)
+  }
+}
+
+impl Error for AppendEdgeError {
+  fn description(&self) -> &'static str {
+    match *self {
+      AppendEdgeError::GraphMismatch => "Underlying graph mismatch",
+    }
+  }
+}
+
 impl<T, S, A> AppendOnlyGraph<T, S, A>
 where
   T: Hash + Eq + Clone,
 {
-  pub fn add_node<'s>(&'s self, state: T, data: S) -> Node<'s, T, S, A> {
-    unsafe { (*self.graph.get()).add_node(state, data).to_node() }
+  pub fn append_node<'s>(&'s self, state: T, data: S) -> Node<'s, T, S, A> {
+    let graph: &mut Graph<T, S, A> = unsafe { &mut *self.graph.get() };
+    graph.add_node(state, data).to_node()
   }
 
-  pub fn add_edge<'s, F, G>(
+  pub fn append_edge<'s, 'a>(
     &'s self,
-    source: T,
-    source_data: F,
-    dest: T,
-    dest_data: G,
+    source: Node<'a, T, S, A>,
+    target: Node<'a, T, S, A>,
     edge_data: A,
-  ) -> Edge<'s, T, S, A>
-  where
-    F: for<'b> FnOnce(Node<'b, T, S, A>) -> S,
-    G: for<'b> FnOnce(Node<'b, T, S, A>) -> S,
-  {
-    unsafe {
-      (*self.graph.get())
-        .add_edge(source, source_data, dest, dest_data, edge_data)
-        .to_edge()
+  ) -> Result<Edge<'s, T, S, A>, AppendEdgeError> {
+    if std::ptr::eq(source.graph, target.graph) {
+      let graph: &mut Graph<T, S, A> = unsafe { &mut *self.graph.get() };
+      let id = graph.add_raw_edge(edge_data, source.id, target.id);
+      Ok(Edge { graph, id })
+    } else {
+      Err(AppendEdgeError::GraphMismatch)
     }
   }
 }
@@ -300,7 +323,9 @@ where
   T: Hash + Eq + Clone,
 {
   fn from(graph: Graph<T, S, A>) -> Self {
-    AppendOnlyGraph { graph: UnsafeCell::new(graph) }
+    AppendOnlyGraph {
+      graph: UnsafeCell::new(graph),
+    }
   }
 }
 

@@ -25,8 +25,8 @@ where
   S: 'a,
   A: 'a,
 {
-  graph: &'a Graph<T, S, A>,
-  id: VertexId,
+  pub(crate) graph: &'a Graph<T, S, A>,
+  pub(crate) id: VertexId,
 }
 
 impl<'a, T, S, A> Node<'a, T, S, A>
@@ -341,8 +341,8 @@ where
   S: 'a,
   A: 'a,
 {
-  graph: &'a Graph<T, S, A>,
-  id: EdgeId,
+  pub(crate) graph: &'a Graph<T, S, A>,
+  pub(crate) id: EdgeId,
 }
 
 impl<'a, T, S, A> Edge<'a, T, S, A>
