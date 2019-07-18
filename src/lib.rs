@@ -256,7 +256,7 @@ where
   }
 
   pub fn add_edge<'s, F, G>(
-    &'s mut self,
+    &'s self,
     source: T,
     source_data: F,
     dest: T,
