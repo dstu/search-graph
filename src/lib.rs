@@ -268,7 +268,9 @@ impl fmt::Display for AppendEdgeError {
 impl Error for AppendEdgeError {
   fn description(&self) -> &'static str {
     match *self {
-      AppendEdgeError::GraphMismatch => "Underlying graph mismatch",
+      AppendEdgeError::GraphMismatch => {
+        "Underlying graph mismatch (cannot create an edge between vertices in two different graphs)"
+      }
     }
   }
 }
