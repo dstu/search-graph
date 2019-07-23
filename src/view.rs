@@ -9,10 +9,10 @@ use std::cmp;
 use std::fmt;
 use std::hash::Hash;
 use std::marker::PhantomData;
-use std::ops::{Deref, DerefMut};
+use std::ops::{Deref, DerefMut, Index, IndexMut};
 
 #[derive(Clone, Copy)]
-pub(crate) struct InvariantLifetime<'id>(pub(crate) PhantomData<*mut &'id ()>);
+pub(crate) struct InvariantLifetime<'id>(pub PhantomData<*mut &'id ()>);
 
 /// An editable view of a graph.
 ///
@@ -24,9 +24,12 @@ pub(crate) struct InvariantLifetime<'id>(pub(crate) PhantomData<*mut &'id ()>);
 ///
 /// To create a `View`, use one of the functions defined in this module
 /// (`of_graph`, `of_node`, or `of_edge`).
-pub struct View<'a, T: Hash + Eq + Clone, S, A> {
+pub struct View<'a, 'id, T: Hash + Eq + Clone, S, A>
+where
+  'a: 'id,
+{
   graph: &'a mut Graph<T, S, A>,
-  lifetime: InvariantLifetime<'a>,
+  lifetime: InvariantLifetime<'id>,
 }
 
 /// Applies a function over a view of `graph` and returns its result.
@@ -38,13 +41,22 @@ pub struct View<'a, T: Hash + Eq + Clone, S, A> {
 /// let mut graph: Graph<String, String, String> = Graph::new();
 /// assert_eq!(graph.vertex_count(), 0);
 /// assert_eq!(graph.edge_count(), 0);
-/// view::of_graph(&mut graph, |mut v| v.append_node("state".into(), "data".into()));
+/// view::of_graph(&mut graph, |mut v| {
+///   v.append_node("state".into(), "data".into());
+/// });
 /// assert_eq!(graph.vertex_count(), 1);
 /// assert_eq!(graph.edge_count(), 0);
 /// assert_eq!(graph.find_node(&"state".into()).unwrap().get_data(), "data");
 /// # }
 /// ```
-pub fn of_graph<'a, T: Hash + Eq + Clone, S, A, U, F: FnOnce(View<'a, T, S, A>) -> U>(
+pub fn of_graph<
+  'a,
+  T: Hash + Eq + Clone,
+  S,
+  A,
+  U,
+  F: for<'id> FnOnce(View<'a, 'id, T, S, A>) -> U,
+>(
   graph: &'a mut Graph<T, S, A>,
   closure: F,
 ) -> U {
@@ -54,8 +66,8 @@ pub fn of_graph<'a, T: Hash + Eq + Clone, S, A, U, F: FnOnce(View<'a, T, S, A>) 
   })
 }
 
-/// Applies a function over a `MutNode` and a view of its containing graph,
-/// returning its result.
+/// Applies a function over a node and a view of its containing graph and
+/// returns the function's result.
 ///
 /// ```rust
 /// # use search_graph::Graph;
@@ -74,7 +86,7 @@ pub fn of_node<
   S,
   A,
   U,
-  F: FnOnce(View<'a, T, S, A>, NodeRef<'a>) -> U,
+  F: for<'id> FnOnce(View<'a, 'id, T, S, A>, NodeRef<'id>) -> U,
 >(
   node: mutators::MutNode<'a, T, S, A>,
   closure: F,
@@ -92,8 +104,8 @@ pub fn of_node<
   )
 }
 
-/// Applies a function over a `MutEdge` and a view of its containing graph,
-/// returning its result.
+/// Applies a function over a `MutEdge` and a view of its containing graph and
+/// returns the function's result.
 ///
 /// ```rust
 /// # use search_graph::Graph;
@@ -114,7 +126,7 @@ pub fn of_edge<
   S,
   A,
   U,
-  F: FnOnce(View<'a, T, S, A>, EdgeRef<'a>) -> U,
+  F: for<'id> FnOnce(View<'a, 'id, T, S, A>, EdgeRef<'id>) -> U,
 >(
   edge: mutators::MutEdge<'a, T, S, A>,
   closure: F,
@@ -132,7 +144,10 @@ pub fn of_edge<
   )
 }
 
-impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> View<'a, 'id, T, S, A>
+where
+  'a: 'id,
+{
   // Unsafe operations that reference into the underlying graph structure. A
   // NodeRef or EdgeRef will only have the same invariant lifetime as a View if
   // it was created for that view, and we only create NodeRef/EdgeRef instances
@@ -141,35 +156,47 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   // Because vertices/edges cannot be deleted or re-ordered without consuming a
   // View, it should always be safe to follow reference indices without doing
   // bounds-checking.
-  fn raw_vertex(&self, node: NodeRef<'a>) -> &RawVertex<S> {
+  fn raw_vertex(&self, node: NodeRef<'id>) -> &RawVertex<S> {
     unsafe { self.graph.vertices.get_unchecked(node.id.0) }
   }
 
-  fn raw_vertex_mut(&mut self, node: NodeRef<'a>) -> &mut RawVertex<S> {
+  fn raw_vertex_mut(&mut self, node: NodeRef<'id>) -> &mut RawVertex<S> {
     unsafe { self.graph.vertices.get_unchecked_mut(node.id.0) }
   }
 
-  fn raw_edge(&self, edge: EdgeRef<'a>) -> &RawEdge<A> {
+  fn raw_edge(&self, edge: EdgeRef<'id>) -> &RawEdge<A> {
     unsafe { self.graph.arcs.get_unchecked(edge.id.0) }
   }
 
-  fn raw_edge_mut(&mut self, edge: EdgeRef<'a>) -> &mut RawEdge<A> {
+  fn raw_edge_mut(&mut self, edge: EdgeRef<'id>) -> &mut RawEdge<A> {
     unsafe { self.graph.arcs.get_unchecked_mut(edge.id.0) }
   }
 
   /// Returns a reference to the node for the given game state that is already
   /// in the graph, or `None` if there is no such node.
-  pub fn find_node(&self, state: &T) -> Option<NodeRef<'a>> {
+  pub fn find_node(&self, state: &T) -> Option<NodeRef<'id>> {
     self.graph.find_node(state).map(|n| NodeRef {
       id: n.id,
       _lifetime: self.lifetime,
     })
   }
 
+  /// Returns a reference to an edge between the given nodes that is already in
+  /// the graph, or `None` if there is no such edge.
+  pub fn find_edge(&self, source: NodeRef<'id>, target: NodeRef<'id>) -> Option<EdgeRef<'id>> {
+    for child in self.children(source) {
+      if self.raw_edge(child).target == target.id {
+        return Some(child);
+      }
+    }
+    None
+  }
+
   /// Adds a node for the given game state with the given data, returning a
-  /// reference to it after it is added. If such a node already exists, no node
-  /// is added to the graph, and a reference to the existing node is returned.
-  pub fn append_node(&mut self, state: T, data: S) -> NodeRef<'a> {
+  /// reference to the node after it is added. If such a node already exists, no
+  /// node is added to the graph, and a reference to the existing node is
+  /// returned.
+  pub fn append_node(&mut self, state: T, data: S) -> NodeRef<'id> {
     NodeRef {
       id: self.graph.add_node(state, data).id,
       _lifetime: self.lifetime,
@@ -190,10 +217,10 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   /// is added.
   pub fn append_edge(
     &mut self,
-    source: NodeRef<'a>,
-    target: NodeRef<'a>,
+    source: NodeRef<'id>,
+    target: NodeRef<'id>,
     edge_data: A,
-  ) -> EdgeRef<'a> {
+  ) -> EdgeRef<'id> {
     let id = self.graph.add_raw_edge(edge_data, source.id, target.id);
     EdgeRef {
       id,
@@ -205,8 +232,8 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   /// called. Returns a `MutEdge` that points to the edge that is created.
   pub fn into_append_edge(
     self,
-    source: NodeRef<'a>,
-    target: NodeRef<'a>,
+    source: NodeRef<'id>,
+    target: NodeRef<'id>,
     edge_data: A,
   ) -> mutators::MutEdge<'a, T, S, A> {
     let id = self.graph.add_raw_edge(edge_data, source.id, target.id);
@@ -217,7 +244,7 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   }
 
   /// Returns a reference to the game state that `node` is associated with.
-  pub fn node_state(&self, node: NodeRef<'a>) -> &T {
+  pub fn node_state(&self, node: NodeRef<'id>) -> &T {
     &self
       .graph
       .state_ids
@@ -229,30 +256,30 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
 
   /// Returns a reference to the data (usually statistics or payout information)
   /// for `node`.
-  pub fn node_data(&self, node: NodeRef<'a>) -> &S {
+  pub fn node_data(&self, node: NodeRef<'id>) -> &S {
     &self.raw_vertex(node).data
   }
 
   /// Returns a mutable reference to the data (usually statistics or payout
   /// information) for `node`.
-  pub fn node_data_mut(&mut self, node: NodeRef<'a>) -> &mut S {
+  pub fn node_data_mut(&mut self, node: NodeRef<'id>) -> &mut S {
     &mut self.raw_vertex_mut(node).data
   }
 
   /// Returns a reference to the data (usually statistics or payout information)
   /// for `edge`.
-  pub fn edge_data(&self, edge: EdgeRef<'a>) -> &A {
+  pub fn edge_data(&self, edge: EdgeRef<'id>) -> &A {
     &self.raw_edge(edge).data
   }
 
   /// Returns a mutable reference to the data (usually statistics or payout
   /// information) for `edge`.
-  pub fn edge_data_mut(&mut self, edge: EdgeRef<'a>) -> &mut A {
+  pub fn edge_data_mut(&mut self, edge: EdgeRef<'id>) -> &mut A {
     &mut self.raw_edge_mut(edge).data
   }
 
   /// Returns a reference to the node that `edge` originates from.
-  pub fn edge_source(&self, edge: EdgeRef<'a>) -> NodeRef<'a> {
+  pub fn edge_source(&self, edge: EdgeRef<'id>) -> NodeRef<'id> {
     NodeRef {
       id: self.raw_edge(edge).source,
       _lifetime: self.lifetime,
@@ -260,7 +287,7 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   }
 
   /// Returns a reference to the node that `edge` terminates on.
-  pub fn edge_target(&self, edge: EdgeRef<'a>) -> NodeRef<'a> {
+  pub fn edge_target(&self, edge: EdgeRef<'id>) -> NodeRef<'id> {
     NodeRef {
       id: self.raw_edge(edge).target,
       _lifetime: self.lifetime,
@@ -268,7 +295,7 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   }
 
   /// Returns the number of children (outgoing edges) that `node` has.
-  pub fn child_count(&self, node: NodeRef<'a>) -> usize {
+  pub fn child_count(&self, node: NodeRef<'id>) -> usize {
     self.raw_vertex(node).children.len()
   }
 
@@ -295,13 +322,13 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   /// });
   /// # }
   /// ```
-  pub fn children<'s>(&'s self, node: NodeRef<'a>) -> impl Iterator<Item = EdgeRef<'a>> + 's {
+  pub fn children<'s>(&'s self, node: NodeRef<'id>) -> impl Iterator<Item = EdgeRef<'id>> + 's {
     iterate!(for id in self.raw_vertex(node).children.iter();
              yield EdgeRef { id: *id, _lifetime: self.lifetime, })
   }
 
   /// Returns the number of parents (incoming edges) that `node` has.
-  pub fn parent_count(&self, node: NodeRef<'a>) -> usize {
+  pub fn parent_count(&self, node: NodeRef<'id>) -> usize {
     self.raw_vertex(node).parents.len()
   }
 
@@ -328,14 +355,14 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   /// });
   /// # }
   /// ```
-  pub fn parents<'s>(&'s self, node: NodeRef<'a>) -> impl Iterator<Item = EdgeRef<'a>> + 's {
+  pub fn parents<'s>(&'s self, node: NodeRef<'id>) -> impl Iterator<Item = EdgeRef<'id>> + 's {
     iterate!(for id in self.raw_vertex(node).parents.iter();
              yield EdgeRef { id: *id, _lifetime: self.lifetime, })
   }
 
   /// Deletes all graph components that are not reachable by a traversal
   /// starting from each of `roots`.
-  pub fn retain_reachable_from<I: IntoIterator<Item = NodeRef<'a>>>(&mut self, roots: I) {
+  pub fn retain_reachable_from<I: IntoIterator<Item = NodeRef<'id>>>(&mut self, roots: I) {
     let root_ids: Vec<VertexId> = roots.into_iter().map(|n| n.id).collect();
     self.retain_reachable_from_ids(&root_ids);
   }
@@ -346,7 +373,10 @@ impl<'a, T: Hash + Eq + Clone, S, A> View<'a, T, S, A> {
   }
 }
 
-impl<'a, T: Hash + Eq + Clone, S, A> Deref for View<'a, T, S, A> {
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> Deref for View<'a, 'id, T, S, A>
+where
+  'a: 'id,
+{
   type Target = Graph<T, S, A>;
 
   fn deref(&self) -> &Graph<T, S, A> {
@@ -354,53 +384,121 @@ impl<'a, T: Hash + Eq + Clone, S, A> Deref for View<'a, T, S, A> {
   }
 }
 
-impl<'a, T: Hash + Eq + Clone, S, A> DerefMut for View<'a, T, S, A> {
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> DerefMut for View<'a, 'id, T, S, A>
+where
+  'a: 'id,
+{
   fn deref_mut(&mut self) -> &mut Graph<T, S, A> {
     self.graph
   }
 }
 
-impl<'a, T: Hash + Eq + Clone, S, A> From<View<'a, T, S, A>> for &'a mut Graph<T, S, A> {
-  fn from(view: View<'a, T, S, A>) -> &'a mut Graph<T, S, A> {
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> From<View<'a, 'id, T, S, A>> for &'a mut Graph<T, S, A>
+where
+  'a: 'id,
+{
+  fn from(view: View<'a, 'id, T, S, A>) -> &'a mut Graph<T, S, A> {
     view.graph
   }
 }
 
-#[derive(Clone, Copy)]
-pub struct NodeRef<'a> {
-  pub(crate) id: VertexId,
-  pub(crate) _lifetime: InvariantLifetime<'a>,
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> Index<NodeRef<'id>> for View<'a, 'id, T, S, A> {
+  type Output = S;
+
+  fn index(&self, node: NodeRef<'id>) -> &S {
+    self.node_data(node)
+  }
 }
 
-impl<'a> cmp::PartialEq for NodeRef<'a> {
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> IndexMut<NodeRef<'id>> for View<'a, 'id, T, S, A>
+where
+  'a: 'id,
+{
+  fn index_mut(&mut self, node: NodeRef<'id>) -> &mut S {
+    self.node_data_mut(node)
+  }
+}
+
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> Index<EdgeRef<'id>> for View<'a, 'id, T, S, A>
+where
+  'a: 'id,
+{
+  type Output = A;
+
+  fn index(&self, edge: EdgeRef<'id>) -> &A {
+    self.edge_data(edge)
+  }
+}
+
+impl<'a, 'id, T: Hash + Eq + Clone, S, A> IndexMut<EdgeRef<'id>> for View<'a, 'id, T, S, A>
+where
+  'a: 'id,
+{
+  fn index_mut(&mut self, edge: EdgeRef<'id>) -> &mut A {
+    self.edge_data_mut(edge)
+  }
+}
+
+/// Reference to a graph vertex that is licensed by a `View`. Only the `View`
+/// that a `NodeRef` is associated with can dereference that `NodeRef`.
+///
+/// ```rust
+/// # use search_graph::Graph;
+/// # use search_graph::view;
+/// # fn main() {
+/// let mut g1: Graph<String, String, String> = Graph::new();
+/// let mut g2: Graph<String, String, String> = Graph::new();
+/// view::of_graph(&mut g1, |mut v1| {
+///   let root1 = v1.append_node("root1_state".into(), "root1_data".into());
+///   assert_eq!(v1[root1], "root1_data");
+///   let escaped = view::of_graph(&mut g2, |mut v2| {
+///     let root2 = v2.append_node("root2_state".into(), "root2_data".into());
+///     assert_eq!(v2[root2], "root2_data");
+///
+///     // A NodeRef from one view cannot be used with another. This will not compile.
+///     // assert_eq!(v2[root1], "internal");
+///
+///     // A NodeRef cannot escape the closure defining its associated view.
+///     // Returning root2 will not compile.
+///     // root2
+///   });
+/// });
+/// # }
+#[derive(Clone, Copy)]
+pub struct NodeRef<'id> {
+  pub(crate) id: VertexId,
+  pub(crate) _lifetime: InvariantLifetime<'id>,
+}
+
+impl<'id> cmp::PartialEq for NodeRef<'id> {
   fn eq(&self, other: &Self) -> bool {
     self.id == other.id
   }
 }
 
-impl<'a> cmp::Eq for NodeRef<'a> {}
+impl<'id> cmp::Eq for NodeRef<'id> {}
 
-impl<'a> fmt::Debug for NodeRef<'a> {
+impl<'id> fmt::Debug for NodeRef<'id> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "NodeRef({:?})", self.id)
   }
 }
 
 #[derive(Clone, Copy)]
-pub struct EdgeRef<'a> {
+pub struct EdgeRef<'id> {
   pub(crate) id: EdgeId,
-  pub(crate) _lifetime: InvariantLifetime<'a>,
+  pub(crate) _lifetime: InvariantLifetime<'id>,
 }
 
-impl<'a> cmp::PartialEq for EdgeRef<'a> {
+impl<'id> cmp::PartialEq for EdgeRef<'id> {
   fn eq(&self, other: &Self) -> bool {
     self.id == other.id
   }
 }
 
-impl<'a> cmp::Eq for EdgeRef<'a> {}
+impl<'id> cmp::Eq for EdgeRef<'id> {}
 
-impl<'a> fmt::Debug for EdgeRef<'a> {
+impl<'id> fmt::Debug for EdgeRef<'id> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "EdgeRef({:?})", self.id)
   }

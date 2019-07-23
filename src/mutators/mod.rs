@@ -147,13 +147,14 @@ impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutNode<'a, T, S, A> {
 
   /// Prunes the underlying graph by removing components not reachable from
   /// this node.
-  pub fn retain_reachable(self) -> MutNode<'a, T, S, A>{
+  pub fn retain_reachable(self) -> MutNode<'a, T, S, A> {
+    let consumed = MutNode { id: self.id, graph: self.graph, };
+    view::of_node(consumed, |mut v, n| {
+      v.retain_reachable_from(iterate!(yield n));
+    });
     MutNode {
       id: VertexId(0),
-      graph: view::of_node(self, |mut v, n| {
-        v.retain_reachable_from(iterate!(yield n));
-        v.into()
-      }),
+      graph: self.graph,
     }
   }
 }
