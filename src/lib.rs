@@ -13,6 +13,7 @@
 //! * [mutators](mutators/index.html) is a read-write analogue of `nav`.
 
 pub(crate) mod base;
+pub(crate) mod mark_compact;
 pub mod mutators;
 pub mod nav;
 pub mod search;

@@ -14,8 +14,6 @@ use crate::Graph;
 use symbol_map::indexing::{Indexing, Insertion};
 use symbol_map::SymbolId;
 
-pub(crate) mod mark_compact;
-
 /// Mutable handle to a graph vertex ("node handle").
 ///
 /// This zipper-like type enables traversal of a graph along the vertex's

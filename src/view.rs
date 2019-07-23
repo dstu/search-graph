@@ -473,7 +473,7 @@ where
 
   /// As `retain_reachable_from`, but working over raw `VertexId`s.
   fn retain_reachable_from_ids(mut self, root_ids: &[VertexId]) {
-    mutators::mark_compact::Collector::retain_reachable(&mut self.graph, root_ids);
+    crate::mark_compact::Collector::retain_reachable(&mut self.graph, root_ids);
   }
 }
 
