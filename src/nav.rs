@@ -69,8 +69,7 @@ where
     &self.graph.get_vertex(self.id).data
   }
 
-  /// Returns true iff this vertex has no outgoing edges (regardless of
-  /// whether they are expanded).
+  /// Returns true iff this vertex has no outgoing edges.
   pub fn is_leaf(&self) -> bool {
     self.children().is_empty()
   }
@@ -380,8 +379,7 @@ where
     }
   }
 
-  /// Returns the target of this edge. If the edge is unexpanded, no data will
-  /// be available. If it is expanded, a node handle will be available.
+  /// Returns the target of this edge.
   pub fn get_target(&self) -> Node<'a, T, S, A> {
     Node {
       graph: self.graph,

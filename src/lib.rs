@@ -2,6 +2,7 @@ pub(crate) mod base;
 pub mod mutators;
 pub mod nav;
 pub mod search;
+pub mod view;
 
 use std::cell::UnsafeCell;
 use std::error::Error;
@@ -29,12 +30,9 @@ use symbol_map::SymbolId;
 /// - `A`: The type of graph edge data.
 ///
 /// Vertices are addressed by content. To examine graph contents, obtain a node
-/// handle with `get_node`. To modify graph contents, add new root vertices with
-/// `add_node` and retrieve extant vertices with `get_node_mut`.
-pub struct Graph<T, S, A>
-where
-  T: Hash + Eq + Clone,
-{
+/// handle with `find_node`. To modify graph contents, add new root vertices with
+/// `add_node` and retrieve extant vertices with `find_node_mut`.
+pub struct Graph<T: Hash + Eq + Clone, S, A> {
   /// Lookup table that maps from game states to `VertexId`.
   state_ids: symbol_map::indexing::HashIndexing<T, VertexId>,
   vertices: Vec<RawVertex<S>>, // Indexed by VertexId.
@@ -110,7 +108,7 @@ where
   /// Gets a node handle for the given game state.
   ///
   /// If `state` does not correspond to a known game state, returns `None`.
-  pub fn get_node<'s>(&'s self, state: &T) -> Option<Node<'s, T, S, A>> {
+  pub fn find_node<'s>(&'s self, state: &T) -> Option<Node<'s, T, S, A>> {
     match self.state_ids.get(state) {
       Some(symbol) => Some(Node::new(self, *symbol.id())),
       None => None,
@@ -120,7 +118,7 @@ where
   /// Gets a mutable node handle for the given game state.
   ///
   /// If `state` does not correspond to a known game state, returns `None`.
-  pub fn get_node_mut<'s>(&'s mut self, state: &T) -> Option<MutNode<'s, T, S, A>> {
+  pub fn find_node_mut<'s>(&'s mut self, state: &T) -> Option<MutNode<'s, T, S, A>> {
     match self.state_ids.get(state).map(|s| s.id().clone()) {
       Some(id) => Some(MutNode::new(self, id)),
       None => None,
@@ -195,27 +193,6 @@ where
     // TODO: This is actually the number of edges we have allocated.
     self.arcs.len()
   }
-
-  /// Deletes all graph components that are not reachable by traversal
-  /// starting from each vertex corresponding to the game states in `roots`.
-  ///
-  /// Game states in `roots` which do not have a corresponding vertex are
-  /// ignored.
-  pub fn retain_reachable_from(&mut self, roots: &[&T]) {
-    let mut root_ids = Vec::with_capacity(roots.len());
-    for state in roots.iter() {
-      if let Some(symbol) = self.state_ids.get(state) {
-        root_ids.push(*symbol.id());
-      }
-    }
-    self.retain_reachable_from_ids(&root_ids);
-  }
-
-  /// As `retain_reachable_from`, but working over raw `VertexId`s instead of
-  /// root data.
-  fn retain_reachable_from_ids(&mut self, root_ids: &[VertexId]) {
-    mutators::mark_compact::Collector::retain_reachable(self, root_ids);
-  }
 }
 
 /// Allows both read-only references into a `Graph` and operations that modify
@@ -239,7 +216,7 @@ where
 /// let root1 = appendable.append_node(0, "data1".to_string());
 /// // If appendable were a Graph, we could not call append_node while root1 is alive.
 /// let root2 = appendable.append_node(1, "data2".to_string());
-/// assert_eq!("data1", appendable.get_node(&0).unwrap().get_data());
+/// assert_eq!("data1", appendable.find_node(&0).unwrap().get_data());
 /// assert!(root1.is_leaf());
 /// let edge = appendable.append_edge(root1.clone(), root2.clone(), 3.3).unwrap();
 /// assert_eq!(*edge.get_source().get_label(), 0);
@@ -346,9 +323,9 @@ mod test {
     let graph = Arc::new(g);
     thread::scope(move |s| {
       let g = graph.clone();
-      let t1 = s.spawn(move |_| g.get_node(&"root").map(|n| n.get_id()));
+      let t1 = s.spawn(move |_| g.find_node(&"root").map(|n| n.get_id()));
       let g = graph.clone();
-      let t2 = s.spawn(move |_| g.get_node(&"1").map(|n| n.get_id()));
+      let t2 = s.spawn(move |_| g.find_node(&"1").map(|n| n.get_id()));
       match t1.join() {
         Ok(Some(id)) => assert_eq!(id, 0),
         _ => panic!(),
@@ -368,8 +345,8 @@ mod test {
     g.add_edge("root", |_| "root_data", "1", |_| "1_data", "root_1_data");
     let g = &g;
     thread::scope(|s| {
-      let t1 = s.spawn(move |_| g.get_node(&"root").map(|n| n.get_id()));
-      let t2 = s.spawn(move |_| g.get_node(&"1").map(|n| n.get_id()));
+      let t1 = s.spawn(move |_| g.find_node(&"root").map(|n| n.get_id()));
+      let t2 = s.spawn(move |_| g.find_node(&"1").map(|n| n.get_id()));
       match t1.join() {
         Ok(Some(id)) => assert_eq!(id, 0),
         _ => panic!(),

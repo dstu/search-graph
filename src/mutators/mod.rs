@@ -11,7 +11,9 @@ use std::hash::Hash;
 
 use crate::base::{EdgeId, RawEdge, RawVertex, VertexId};
 use crate::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
+use crate::view;
 use crate::Graph;
+use r4::iterate;
 use symbol_map::indexing::{Indexing, Insertion};
 use symbol_map::SymbolId;
 
@@ -25,22 +27,12 @@ pub(crate) mod mark_compact;
 /// It enables local graph mutation, whether via mutation of vertex data or
 /// mutation of graph topology (adding edges). Edges may be added
 /// using the handle returned by `get_child_adder` or `to_child_adder`.
-pub struct MutNode<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
+pub struct MutNode<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> {
   pub(crate) graph: &'a mut Graph<T, S, A>,
   pub(crate) id: VertexId,
 }
 
-impl<'a, T, S, A> MutNode<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
+impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutNode<'a, T, S, A> {
   /// Creates a new `MutNode` for the given graph and gamestate. This method is
   /// not exported by the crate because it exposes implementation details.
   pub(crate) fn new(graph: &'a mut Graph<T, S, A>, id: VertexId) -> Self {
@@ -155,29 +147,24 @@ where
 
   /// Prunes the underlying graph by removing components not reachable from
   /// this node.
-  pub fn retain_reachable(&mut self) {
-    self.graph.retain_reachable_from_ids(&[self.id]);
-    self.id = VertexId(0);
+  pub fn retain_reachable(self) -> MutNode<'a, T, S, A>{
+    MutNode {
+      id: VertexId(0),
+      graph: view::of_node(self, |mut v, n| {
+        v.retain_reachable_from(iterate!(yield n));
+        v.into()
+      }),
+    }
   }
 }
 
 /// A traversible list of a vertex's outgoing edges.
-pub struct MutChildList<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
+pub struct MutChildList<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> {
   graph: &'a mut Graph<T, S, A>,
   id: VertexId,
 }
 
-impl<'a, T, S, A> MutChildList<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
+impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutChildList<'a, T, S, A> {
   fn vertex<'s>(&'s self) -> &'s RawVertex<S> {
     self.graph.get_vertex(self.id)
   }
@@ -302,22 +289,12 @@ where
 }
 
 /// A traversible list of a vertex's incoming edges.
-pub struct MutParentList<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
+pub struct MutParentList<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> {
   graph: &'a mut Graph<T, S, A>,
   id: VertexId,
 }
 
-impl<'a, T, S, A> MutParentList<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
+impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutParentList<'a, T, S, A> {
   fn vertex<'s>(&'s self) -> &'s RawVertex<S> {
     self.graph.get_vertex(self.id)
   }
@@ -457,22 +434,12 @@ where
 /// mutation of graph topology (adding vertices). Vertices may be added to
 /// unexpanded edges using the handle returned by `get_target_mut` or
 /// `to_target`.
-pub struct MutEdge<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
-  graph: &'a mut Graph<T, S, A>,
-  id: EdgeId,
+pub struct MutEdge<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> {
+  pub(crate) graph: &'a mut Graph<T, S, A>,
+  pub(crate) id: EdgeId,
 }
 
-impl<'a, T, S, A> MutEdge<'a, T, S, A>
-where
-  T: Hash + Eq + Clone + 'a,
-  S: 'a,
-  A: 'a,
-{
+impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutEdge<'a, T, S, A> {
   /// Creates a new `MutEdge` for the given graph and gamestate. This method is
   /// not exported by the crate because it exposes implementation details.
   pub(crate) fn new(graph: &'a mut Graph<T, S, A>, id: EdgeId) -> Self {

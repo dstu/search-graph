@@ -420,7 +420,7 @@ mod test {
       Ok(Some(Traversal::Child(1)))
     }
 
-    let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
+    let mut path = Stack::new(g.find_node_mut(&"A").unwrap());
     assert_eq!(1, path.len());
 
     match path.push(traverse_second_child) {
@@ -464,7 +464,7 @@ mod test {
       Err(MockError(()))
     }
 
-    let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
+    let mut path = Stack::new(g.find_node_mut(&"A").unwrap());
     assert_eq!(1, path.len());
 
     match path.push(traverse_err) {
@@ -544,7 +544,7 @@ mod test {
       Ok(Some(Traversal::Child(1)))
     }
 
-    let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
+    let mut path = Stack::new(g.find_node_mut(&"A").unwrap());
     assert_eq!(1, path.len());
 
     match path.push(traverse_second_child) {
@@ -619,7 +619,7 @@ mod test {
       Err(MockError(()))
     }
 
-    let mut path = Stack::new(g.get_node_mut(&"A").unwrap());
+    let mut path = Stack::new(g.find_node_mut(&"A").unwrap());
     assert_eq!(1, path.len());
 
     match path.push(traverse_err) {
@@ -659,7 +659,7 @@ mod test {
       Ok(Some(Traversal::Child(0)))
     }
 
-    let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
+    let mut path = Stack::new(g.find_node_mut(&"root").unwrap());
     match path.push(traverse_first_child) {
       Ok(Some(e)) => assert_eq!("root", *e.get_source().get_data()),
       _ => panic!(),
@@ -716,7 +716,7 @@ mod test {
     let mut g = Graph::new();
     add_edge(&mut g, "root", "A");
 
-    let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
+    let mut path = Stack::new(g.find_node_mut(&"root").unwrap());
     assert_eq!(1, path.len());
 
     fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
@@ -746,7 +746,7 @@ mod test {
     let mut g = Graph::new();
     add_edge(&mut g, "root", "A");
 
-    let path = Stack::new(g.get_node_mut(&"root").unwrap());
+    let path = Stack::new(g.find_node_mut(&"root").unwrap());
     assert_eq!(1, path.len());
 
     assert_eq!("root", *path.to_head().get_data());
@@ -757,7 +757,7 @@ mod test {
     let mut g = Graph::new();
     add_edge(&mut g, "root", "A");
 
-    let mut path = Stack::new(g.get_node_mut(&"root").unwrap());
+    let mut path = Stack::new(g.find_node_mut(&"root").unwrap());
     assert_eq!(1, path.len());
 
     fn traverse_first_child<'a>(n: &Node<'a>) -> Result<Option<Traversal>, MockError> {
