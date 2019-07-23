@@ -5,6 +5,7 @@ use crate::base::{EdgeId, RawEdge, RawVertex, VertexId};
 use crate::mutators;
 use crate::Graph;
 
+use std::fmt;
 use std::hash::Hash;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
@@ -370,8 +371,20 @@ pub struct NodeRef<'a> {
   pub(crate) _lifetime: InvariantLifetime<'a>,
 }
 
+impl<'a> fmt::Debug for NodeRef<'a> {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "NodeRef({:?})", self.id)
+  }
+}
+
 #[derive(Clone, Copy)]
 pub struct EdgeRef<'a> {
   pub(crate) id: EdgeId,
   pub(crate) _lifetime: InvariantLifetime<'a>,
+}
+
+impl<'a> fmt::Debug for EdgeRef<'a> {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "EdgeRef({:?})", self.id)
+  }
 }
