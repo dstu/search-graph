@@ -45,12 +45,10 @@ pub enum SearchError<E: Error> {
 /// series of (vertex, edge) pairs, and a `Stack` encapsulates this
 /// history.
 ///
-/// A `Stack` points to a head, which is either a graph vertex (whose
-/// incidental edges can then be traversed) or an unexpanded edge (if a
-/// traversal operation chose to follow an unexpanded edge). Operations which
-/// modify graph topology (such as expanding edges) may cause the search path's
-/// internal state to fall out of sync with the graph's state, so graph elements
-/// exposed using the read-only `Node` and `Edge` types.
+/// A `Stack` points to a graph vertex, whose incidental edges can then be
+/// traversed. Operations which modify graph topology may cause the search
+/// path's internal state to fall out of sync with the graph's state, so graph
+/// elements are exposed using the read-only `Node` and `Edge` types.
 ///
 /// A path may be consumed to yield a read-write view of the underlying graph
 /// with the `to_head` method.
@@ -90,7 +88,7 @@ where
 pub enum StackItem<'a, T: 'a + Hash + Eq + Clone, S: 'a, A: 'a> {
   /// Non-head item, a (vertex, edge) pair.
   Item(Edge<'a, T, S, A>),
-  /// The path head, which may resolve to a vertex or an unexpanded edge.
+  /// The path head, which resolves to a vertex.
   Head(Node<'a, T, S, A>),
 }
 

@@ -1,3 +1,90 @@
+//! Provides an editable view of both graph topology and data, while
+//! simultaneously allowing multiple live references into the graph.
+//!
+//! References into the graph are provided by [NodeRef](struct.NodeRef.html) and
+//! [EdgeRef](struct.EdgeRef.html). They are created with respect to a
+//! [View](struct.View.html), which wraps around a mutable borrow of a
+//! [Graph](../struct.Graph.html). They may only be dereferenced with respect to
+//! the view that created them, and operations on a `View` that would invalidate
+//! these references consume the `View`.
+//!
+//! # Basic usage
+//!
+//! To create a `View`, use one of the functions defined in this module:
+//! [of_graph](fn.of_graph.html), [of_node](fn.of_node.html), or
+//! [of_edge](fn.of_edge.html).
+//!
+//! To use a `NodeRef` or `EdgeRef` with a `View`, pass the reference to an
+//! appropriate function on the `View` or index into the `View` directly:
+//!
+//! ```rust
+//! # use search_graph::Graph;
+//! # use search_graph::view;
+//! # fn main() {
+//! let mut graph: Graph<u32, String, String> = Graph::new();
+//! view::of_graph(&mut graph, |mut view| {
+//!   let root: view::NodeRef<'_> = view.append_node(0, "root_data".into());
+//!   assert_eq!(view[root], "root_data");
+//!   let child: view::NodeRef<'_> = view.append_node(10, "child_data".into());
+//!   assert_eq!(view.node_data(child), "child_data");
+//!   let edge: view::EdgeRef<'_> = view.append_edge(root, child, "edge_data".into());
+//!   assert_eq!(view[edge], "edge_data");
+//! });
+//! # }
+//! ```
+//!
+//! # Relationship with `search_graph::mutators`
+//!
+//! The [mutators](../mutators/index.html) module provides another read-write
+//! interface to a `Graph`, in which cursors into the graph directly own a
+//! mutable reference to it. Because these cursors own a mutable reference to a
+//! common underlying `Graph`, it is difficult to have more than one cursor
+//! active at a time while still satisfying the borrow checker. This makes it
+//! tricky to retain multiple cursors into a graph if even one of them allows
+//! the graph to be mutated.
+//!
+//! The cursors in `mutators` may be converted into a `View` by the
+//! [of_node](fn.of_node.html) and [of_edge](fn.of_edge.html) functions. For
+//! example:
+//!
+//! ```rust
+//! # use search_graph::Graph;
+//! # use search_graph::view;
+//! # use search_graph::mutators::MutNode;
+//! # fn main() {
+//! let mut graph: Graph<u32, String, String> = Graph::new();
+//! let root: MutNode<'_, u32, String, String> =
+//!   graph.add_node(0, "root_data".into());
+//! view::of_node(root, |view, node| {
+//!   assert_eq!(view[node], "root_data");
+//! });
+//! # }
+//! ```
+//!
+//! A `View` may be transformed into a cursor from `mutators` by calling
+//! [into_node](struct.View.html#method.into_node),
+//! [into_edge](struct.View.html#method.into_edge),
+//! [into_append_node](struct.View.html#method.into_append_node) or
+//! [into_append_edge](struct.View.html#method.into_append_edge). These methods
+//! consume a `View` and release its borrow of a `Graph` back to a stand-alone
+//! cursor type. For example:
+//!
+//! ```rust
+//! # use search_graph::Graph;
+//! # use search_graph::view;
+//! # use search_graph::mutators::MutNode;
+//! # fn main() {
+//! let mut graph: Graph<u32, String, String> = Graph::new();
+//! let mut node: MutNode<'_, u32, String, String> =
+//!   graph.add_node(0, "root_data".into());
+//! node = view::of_node(node, |view, node| {
+//!   assert_eq!(view[node], "root_data");
+//!   view.into_append_node(100, "child_data".into())
+//! });
+//! assert_eq!(node.get_data(), "child_data");
+//! # }
+//! ```
+
 use r4::iterate;
 use symbol_map::indexing::Indexing;
 
@@ -32,7 +119,8 @@ where
   lifetime: InvariantLifetime<'id>,
 }
 
-/// Applies a function over a view of `graph` and returns its result.
+/// Applies a function over a view of [Graph](../struct.Graph.html) and returns
+/// its result.
 ///
 /// ```rust
 /// # use search_graph::Graph;
@@ -66,8 +154,8 @@ pub fn of_graph<
   })
 }
 
-/// Applies a function over a node and a view of its containing graph and
-/// returns the function's result.
+/// Applies a function over a [MutNode](../mutators/struct.MutNode.html) and a
+/// view of its containing graph and returns the function's result.
 ///
 /// ```rust
 /// # use search_graph::Graph;
@@ -104,8 +192,8 @@ pub fn of_node<
   )
 }
 
-/// Applies a function over a `MutEdge` and a view of its containing graph and
-/// returns the function's result.
+/// Applies a function over a [MutEdge](../mutators/struct.MutEdge.html) and a
+/// view of its containing graph and returns the function's result.
 ///
 /// ```rust
 /// # use search_graph::Graph;
@@ -203,6 +291,14 @@ where
     }
   }
 
+  /// Consumes this view and returns a `MutNode`.
+  pub fn into_node(self, node: NodeRef<'id>) -> mutators::MutNode<'a, T, S, A> {
+    mutators::MutNode {
+      graph: self.graph,
+      id: node.id,
+    }
+  }
+
   /// Consumes this view and adds a node as if `append_node` had been
   /// called. Returns a `MutNode` that points to the node that is created.
   pub fn into_append_node(self, state: T, data: S) -> mutators::MutNode<'a, T, S, A> {
@@ -210,6 +306,14 @@ where
     mutators::MutNode {
       graph: self.graph,
       id,
+    }
+  }
+
+  /// Consumes this view and returns a `MutEdge`.
+  pub fn into_edge(self, edge: EdgeRef<'id>) -> mutators::MutEdge<'a, T, S, A> {
+    mutators::MutEdge {
+      graph: self.graph,
+      id: edge.id,
     }
   }
 
@@ -362,14 +466,14 @@ where
 
   /// Deletes all graph components that are not reachable by a traversal
   /// starting from each of `roots`.
-  pub fn retain_reachable_from<I: IntoIterator<Item = NodeRef<'id>>>(&mut self, roots: I) {
+  pub fn retain_reachable_from<I: IntoIterator<Item = NodeRef<'id>>>(self, roots: I) {
     let root_ids: Vec<VertexId> = roots.into_iter().map(|n| n.id).collect();
     self.retain_reachable_from_ids(&root_ids);
   }
 
   /// As `retain_reachable_from`, but working over raw `VertexId`s.
-  fn retain_reachable_from_ids(&mut self, root_ids: &[VertexId]) {
-    mutators::mark_compact::Collector::retain_reachable(self, root_ids);
+  fn retain_reachable_from_ids(mut self, root_ids: &[VertexId]) {
+    mutators::mark_compact::Collector::retain_reachable(&mut self.graph, root_ids);
   }
 }
 
@@ -484,6 +588,35 @@ impl<'id> fmt::Debug for NodeRef<'id> {
   }
 }
 
+/// Reference to a graph edge that is licensed by a `View`. Only the `View` that
+/// an `EdgeRef` is associated with can dereference that `EdgeRef`.
+///
+/// ```rust
+/// # use search_graph::Graph;
+/// # use search_graph::view;
+/// # fn main() {
+/// let mut g1: Graph<String, String, String> = Graph::new();
+/// let mut g2: Graph<String, String, String> = Graph::new();
+/// view::of_graph(&mut g1, |mut v1| {
+///   let root1 = v1.append_node("root1_state".into(), "root1_data".into());
+///   let child1 = v1.append_node("child1_state".into(), "child1_data".into());
+///   let edge1 = v1.append_edge(root1, child1, "edge1_data".into());
+///   assert_eq!(v1[edge1], "edge1_data");
+///   let escaped = view::of_graph(&mut g2, |mut v2| {
+///     let root2 = v2.append_node("root2_state".into(), "root2_data".into());
+///     let child2 = v2.append_node("child2_state".into(), "child2_data".into());
+///     let edge2 = v2.append_edge(root2, child2, "edge2_data".into());
+///
+///     // An EdgeRef from one view cannot be used with another. This will not compile.
+///     // assert_eq!(v2[edge1], "internal");
+///
+///     // An EdgeRef cannot escape the closure defining its associated view.
+///     // Returning edge2 will not compile.
+///     // edge2
+///   });
+/// });
+/// # }
+/// ```
 #[derive(Clone, Copy)]
 pub struct EdgeRef<'id> {
   pub(crate) id: EdgeId,

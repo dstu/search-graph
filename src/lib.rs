@@ -1,3 +1,17 @@
+//! This crate provides support for search (in the sense of AI or optimization)
+//! over a space of discrete, enumerated states. Its main data structure is
+//! [Graph](struct.Graph.html), a directed graph with content-addressable
+//! vertices.
+//!
+//! Several efficient, type-safe interfaces are provided in submodules:
+//!
+//! * [view](view/index.html) provides a type- and memory-safe view of a `Graph`.
+//! * [nav](nav/index.html) provides a read-only cursor-based view of a
+//!   `Graph`. (If you have seen
+//!   [zippers](https://en.wikipedia.org/wiki/Zipper_(data_structure)) in other
+//!   contexts, this pattern should be familiar).
+//! * [mutators](mutators/index.html) is a read-write analogue of `nav`.
+
 pub(crate) mod base;
 pub mod mutators;
 pub mod nav;
@@ -10,22 +24,34 @@ use base::{EdgeId, RawEdge, RawVertex, VertexId};
 use symbol_map::indexing::{Indexing, Insertion};
 use symbol_map::SymbolId;
 
-/// A search graph.
+/// A directed graph over a space of discrete, enumerated states.
 ///
-/// Supports incremental rollout of game state topology and vertex
-/// de-duplication with transposition tables. Limited support is provided for
-/// deletion of components and compaction in memory after deletion.
+/// In typical usage, vertices in the graph will correspond to game states, and
+/// edges will correspond to game actions. Vertices have an associated state
+/// (e.g., the configuration of pieces on a chessboard) and data (e.g., upper
+/// and lower bounds of the score of the outcomes that can be reached from that
+/// state), while edges simply have an associated data item (which may include
+/// additional statistics statistics or game-specific data about the action that
+/// the edge represents).
+///
+/// A `Graph` is parameterized by three types:
 ///
 /// - `T`: The type of game states. It is required to derive `Hash` and `Eq` to
 ///   so that it may be stored in a hashtable, where game states are looked up to
 ///   support de-duplication of game states. It is required to derive `Clone` to
 ///   accommodate a limitation of the `HashMap` interface.
-/// - `S`: The type of graph vertex data.
-/// - `A`: The type of graph edge data.
+/// - `S`: The vertex data type.
+/// - `A`: The edge data type.
 ///
-/// Vertices are addressed by content. To examine graph contents, obtain a node
-/// handle with `find_node`. To modify graph contents, add new root vertices with
-/// `add_node` and retrieve extant vertices with `find_node_mut`.
+/// Vertices are addressable by content. Cursors into the graph may be obtained
+/// with [find_node](struct.Graph.html#method.find_node) or
+/// [find_node_mut](struct.Graph.html#method.find_node_mut).
+///
+/// Content can be added to a `Graph` directly with the
+/// [add_node](struct.Graph.html#method.add_node and
+/// [add_edge](struct.Graph.html#method.add_edge) methods. It may also be added
+/// through the interfaces provided by the [mutators/index.html](mutators) and
+/// [view/index.html](view) modules.
 pub struct Graph<T: Hash + Eq + Clone, S, A> {
   /// Lookup table that maps from game states to `VertexId`.
   state_ids: symbol_map::indexing::HashIndexing<T, VertexId>,
@@ -70,9 +96,8 @@ impl<T: Hash + Eq + Clone, S, A> Graph<T, S, A> {
 
   /// Adds a new vertex with the given data, returning a mutable reference to it.
   ///
-  /// This method does not add incoming or outgoing edges (expanded or
-  /// not). That must be done by calling `add_arc` with the new vertex
-  /// `VertexId`.
+  /// This method does not add incoming or outgoing edges. That must be done by
+  /// calling `add_arc` with the new vertex `VertexId`.
   fn add_raw_vertex(&mut self, data: S) -> &mut RawVertex<S> {
     self.vertices.push(RawVertex {
       data: data,

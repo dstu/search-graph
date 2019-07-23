@@ -1,9 +1,8 @@
 //! Support for navigation of a graph that allows modifications to graph
 //! topology and full read-write access to graph data.
 //!
-//! The data structures in this module require a read-write borrow of an
-//! underlying graph. As a result, only one handle may be active at any given
-//! time.
+//! The data structures in this module own a read-write borrow of an underlying
+//! graph. As a result, only one handle may be active at any given time.
 
 use std::clone::Clone;
 use std::cmp::Eq;
@@ -11,9 +10,7 @@ use std::hash::Hash;
 
 use crate::base::{EdgeId, RawEdge, RawVertex, VertexId};
 use crate::nav::{ChildList, ChildListIter, Edge, Node, ParentList, ParentListIter};
-use crate::view;
 use crate::Graph;
-use r4::iterate;
 use symbol_map::indexing::{Indexing, Insertion};
 use symbol_map::SymbolId;
 
@@ -72,8 +69,7 @@ impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutNode<'a, T, S, A> {
     &mut self.vertex_mut().data
   }
 
-  /// Returns true iff this vertex has no outgoing edges (regardless of
-  /// whether they are expanded).
+  /// Returns true iff this vertex has no outgoing edges.
   pub fn is_leaf(&self) -> bool {
     self.vertex().children.is_empty()
   }
@@ -143,19 +139,6 @@ impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutNode<'a, T, S, A> {
   /// value whose lifetime is limited to a borrow of `self`.
   pub fn get_node<'s>(&'s self) -> Node<'s, T, S, A> {
     Node::new(self.graph, self.id)
-  }
-
-  /// Prunes the underlying graph by removing components not reachable from
-  /// this node.
-  pub fn retain_reachable(self) -> MutNode<'a, T, S, A> {
-    let consumed = MutNode { id: self.id, graph: self.graph, };
-    view::of_node(consumed, |mut v, n| {
-      v.retain_reachable_from(iterate!(yield n));
-    });
-    MutNode {
-      id: VertexId(0),
-      graph: self.graph,
-    }
   }
 }
 
@@ -425,16 +408,13 @@ impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutParentList<'a, T, S, A> {
   }
 }
 
-/// Mutable handle to a graph edge ("edge handle") when edge expansion state is
-/// unknown.
+/// Mutable handle to a graph edge ("edge handle").
 ///
 /// This zipper-like type enables traversal of a graph along the edge's source
 /// and target vertices.
 ///
 /// It enables local graph mutation, whether via mutation of edge data or
-/// mutation of graph topology (adding vertices). Vertices may be added to
-/// unexpanded edges using the handle returned by `get_target_mut` or
-/// `to_target`.
+/// mutation of graph topology (adding vertices).
 pub struct MutEdge<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> {
   pub(crate) graph: &'a mut Graph<T, S, A>,
   pub(crate) id: EdgeId,
@@ -471,17 +451,14 @@ impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutEdge<'a, T, S, A> {
     &mut self.arc_mut().data
   }
 
-  /// Returns the target of this edge. If the edge is unexpanded, no data will
-  /// be available. If it is expanded, a node handle will be available, with
-  /// its lifetime limited to a local borrow of `self`.
+  /// Returns the target of this edge. Returns a node handle, whose lifetime is
+  /// limited to a local borrow of `self`.
   pub fn get_target<'s>(&'s self) -> Node<'s, T, S, A> {
     Node::new(self.graph, self.arc().target)
   }
 
-  /// Returns the target of this edge. If the edge is unexpanded, an
-  /// `EdgeExpander` will be provided. If it is expanded, a mutable node
-  /// handle will be available. In both cases, lifetimes will be limited to a
-  /// local borrow of `self`.
+  /// Returns the target of this edge. Returns a mutable node handle will be
+  /// available, whose lifetime is limited to a local borrow of `self`.
   pub fn get_target_mut<'s>(&'s mut self) -> MutNode<'s, T, S, A> {
     let id = self.arc().target;
     MutNode {
@@ -490,10 +467,8 @@ impl<'a, T: Hash + Eq + Clone + 'a, S: 'a, A: 'a> MutEdge<'a, T, S, A> {
     }
   }
 
-  /// Returns the target of this edge. If the edge is unexpanded, an
-  /// `EdgeExpander` will be provided. If it is expanded, a mutable node
-  /// handle will be available. In both cases `self` is consumed, and the
-  /// return value's lifetime will be the same as that of `self`.
+  /// Returns the target of this edge. Consumes `self` and returns a mutable
+  /// node handle whose lifetime will be the same as that of `self`.
   pub fn to_target(self) -> MutNode<'a, T, S, A> {
     let id = self.arc().target;
     MutNode {
