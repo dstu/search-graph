@@ -33,10 +33,7 @@ pub struct Graph<T: Hash + Eq + Clone, S, A> {
   arcs: Vec<RawEdge<A>>,       // Indexed by EdgeId.
 }
 
-impl<T, S, A> Graph<T, S, A>
-where
-  T: Hash + Eq + Clone,
-{
+impl<T: Hash + Eq + Clone, S, A> Graph<T, S, A> {
   /// Creates an empty `Graph` with no vertices or edges.
   pub fn new() -> Self {
     Graph {

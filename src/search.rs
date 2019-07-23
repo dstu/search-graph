@@ -18,10 +18,7 @@ use crate::Graph;
 
 /// Errors that may arise during search.
 #[derive(Debug)]
-pub enum SearchError<E>
-where
-  E: Error,
-{
+pub enum SearchError<E: Error> {
   /// A search operation selected a child index that was out of bounds.
   ChildBounds {
     /// The index of the child that was requested.
@@ -57,12 +54,7 @@ where
 ///
 /// A path may be consumed to yield a read-write view of the underlying graph
 /// with the `to_head` method.
-pub struct Stack<'a, T, S, A>
-where
-  T: 'a + Hash + Eq + Clone,
-  S: 'a,
-  A: 'a,
-{
+pub struct Stack<'a, T: 'a + Hash + Eq + Clone, S: 'a, A: 'a> {
   /// The graph that is being searched.
   graph: &'a mut Graph<T, S, A>,
   /// The edges that have been traversed.
@@ -83,11 +75,8 @@ pub enum Traversal {
 
 /// Iterates over elements of a search path, in the order in which they were
 /// traversed, ending with the head.
-pub struct StackIter<'a, 's, T, S, A>
+pub struct StackIter<'a, 's, T: 'a + Hash + Eq + Clone, S: 'a, A: 'a>
 where
-  T: 'a + Hash + Eq + Clone,
-  S: 'a,
-  A: 'a,
   'a: 's,
 {
   /// The path being iterated over.
@@ -98,22 +87,14 @@ where
 
 /// Sum type for path elements. All elements except the head are represented
 /// with the `StackItem::Item` variant.
-pub enum StackItem<'a, T, S, A>
-where
-  T: 'a + Hash + Eq + Clone,
-  S: 'a,
-  A: 'a,
-{
+pub enum StackItem<'a, T: 'a + Hash + Eq + Clone, S: 'a, A: 'a> {
   /// Non-head item, a (vertex, edge) pair.
   Item(Edge<'a, T, S, A>),
   /// The path head, which may resolve to a vertex or an unexpanded edge.
   Head(Node<'a, T, S, A>),
 }
 
-impl<E> fmt::Display for SearchError<E>
-where
-  E: Error,
-{
+impl<E: Error> fmt::Display for SearchError<E> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match *self {
       SearchError::ChildBounds {
@@ -133,10 +114,7 @@ where
   }
 }
 
-impl<E> Error for SearchError<E>
-where
-  E: Error,
-{
+impl<E: Error> Error for SearchError<E> {
   fn description(&self) -> &str {
     match *self {
       SearchError::ChildBounds {
@@ -159,12 +137,7 @@ where
   }
 }
 
-impl<'a, T, S, A> Stack<'a, T, S, A>
-where
-  T: 'a + Hash + Eq + Clone,
-  S: 'a,
-  A: 'a,
-{
+impl<'a, T: 'a + Hash + Eq + Clone, S: 'a, A: 'a> Stack<'a, T, S, A> {
   /// Creates a new `Stack` from a mutable reference into a graph.
   pub fn new(node: MutNode<'a, T, S, A>) -> Self {
     Stack {
@@ -276,11 +249,8 @@ where
   }
 }
 
-impl<'a, 's, T, S, A> StackIter<'a, 's, T, S, A>
+impl<'a, 's, T: 'a + Hash + Eq + Clone, S: 'a, A: 'a> StackIter<'a, 's, T, S, A>
 where
-  T: 'a + Hash + Eq + Clone,
-  S: 'a,
-  A: 'a,
   'a: 's,
 {
   /// Creates a new path iterator from a borrow of a path.
