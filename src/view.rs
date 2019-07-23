@@ -5,6 +5,7 @@ use crate::base::{EdgeId, RawEdge, RawVertex, VertexId};
 use crate::mutators;
 use crate::Graph;
 
+use std::cmp;
 use std::fmt;
 use std::hash::Hash;
 use std::marker::PhantomData;
@@ -371,6 +372,14 @@ pub struct NodeRef<'a> {
   pub(crate) _lifetime: InvariantLifetime<'a>,
 }
 
+impl<'a> cmp::PartialEq for NodeRef<'a> {
+  fn eq(&self, other: &Self) -> bool {
+    self.id == other.id
+  }
+}
+
+impl<'a> cmp::Eq for NodeRef<'a> {}
+
 impl<'a> fmt::Debug for NodeRef<'a> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "NodeRef({:?})", self.id)
@@ -382,6 +391,14 @@ pub struct EdgeRef<'a> {
   pub(crate) id: EdgeId,
   pub(crate) _lifetime: InvariantLifetime<'a>,
 }
+
+impl<'a> cmp::PartialEq for EdgeRef<'a> {
+  fn eq(&self, other: &Self) -> bool {
+    self.id == other.id
+  }
+}
+
+impl<'a> cmp::Eq for EdgeRef<'a> {}
 
 impl<'a> fmt::Debug for EdgeRef<'a> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
