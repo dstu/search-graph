@@ -5,7 +5,7 @@ is building game state graphs for general game-playing or similar AI tasks.
 
 Vertices correspond to game states. They are addressed by unique game states
 (which may be de-duplicated as if by transposition table by implementing
-=std::hash::Hash= and =std::cmp::Eq= appropriately for your game state type).
+`std::hash::Hash` and `std::cmp::Eq` appropriately for your game state type).
 
 Edges correspond to game-modifying moves. They are bidirectional, so paths may
 be traced up and down the graph.
