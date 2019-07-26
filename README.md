@@ -1,4 +1,4 @@
-* Overview
+# Overview
 
 This package provides a rollout-based graphical data structure. Its intended use
 is building game state graphs for general game-playing or similar AI tasks.
@@ -10,14 +10,14 @@ Vertices correspond to game states. They are addressed by unique game states
 Edges correspond to game-modifying moves. They are bidirectional, so paths may
 be traced up and down the graph.
 
-The structure is /rollout-based/ in that edges are expanded lazily. This should
-make it easy to implement planning algorithms like A* and Monte Carlo tree
-search on top of the graph structure.
+Three different interfaces are provided to make it easy to navigate the graph
+and perform updates to it.
 
-At present, the graph topology may be grown but not pruned. Vertex and edge
-deletion may be supported in a future version.
+Graph topology may be grown by adding vertices and edges. A graph may be
+garbage-collected by pruning all elements that cannot be reached from an
+arbitrary set of vertices.
 
-* Copyright
+# Copyright
 
 Copyright 2015-2016, Donald S. Black.
 
