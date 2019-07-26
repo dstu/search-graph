@@ -107,10 +107,9 @@ pub(crate) struct InvariantLifetime<'id>(pub PhantomData<*mut &'id ()>);
 /// references into the graph and performing mutation operations on
 /// it. Mutations that invalidate references into the graph consume the view
 /// entirely. Generally speaking, it is possible to grow the graph (add nodes or
-/// edges) without invalidating references into it.
-///
-/// To create a `View`, use one of the functions defined in this module
-/// (`of_graph`, `of_node`, or `of_edge`).
+/// edges) without invalidating references into it. See [this module's
+/// documentation](index.html) for more details about how to create and use a
+/// `View`.
 pub struct View<'a, 'id, T: Hash + Eq + Clone, S, A>
 where
   'a: 'id,
@@ -543,31 +542,58 @@ where
   }
 }
 
-/// Reference to a graph vertex that is licensed by a `View`. Only the `View`
-/// that a `NodeRef` is associated with can dereference that `NodeRef`.
+/// Reference to a graph vertex that is licensed by a `View`.
+///
+/// A `NodeRef` may be used to retrieve the game state or data associated with a
+/// vertex:
 ///
 /// ```rust
 /// # use search_graph::Graph;
 /// # use search_graph::view;
-/// # fn main() {
-/// let mut g1: Graph<String, String, String> = Graph::new();
-/// let mut g2: Graph<String, String, String> = Graph::new();
+/// let mut graph: Graph<u32, String, String> = Graph::new();
+/// view::of_graph(&mut graph, |mut view| {
+///   let root = view.append_node(0, "root_data".into());
+///   assert_eq!(view[root], "root_data");
+///   assert_eq!(view.node_data(root), "root_data");
+///   *view.node_data_mut(root) = "root_data_modified".into();
+///   assert_eq!(view[root], "root_data_modified");
+///   assert_eq!(*view.node_state(root), 0);
+/// });
+/// ```
+///
+/// Only the `View` that a `NodeRef` is associated with can dereference that
+/// `NodeRef`:
+///
+/// ```compile_fail
+/// # use search_graph::Graph;
+/// # use search_graph::view;
+/// let mut g1: Graph<u32, String, String> = Graph::new();
+/// let mut g2: Graph<u32, String, String> = Graph::new();
 /// view::of_graph(&mut g1, |mut v1| {
-///   let root1 = v1.append_node("root1_state".into(), "root1_data".into());
+///   let root1 = v1.append_node(0, "root1_data".into());
 ///   assert_eq!(v1[root1], "root1_data");
 ///   let escaped = view::of_graph(&mut g2, |mut v2| {
-///     let root2 = v2.append_node("root2_state".into(), "root2_data".into());
+///     let root2 = v2.append_node(10, "root2_data".into());
 ///     assert_eq!(v2[root2], "root2_data");
 ///
 ///     // A NodeRef from one view cannot be used with another. This will not compile.
-///     // assert_eq!(v2[root1], "internal");
-///
-///     // A NodeRef cannot escape the closure defining its associated view.
-///     // Returning root2 will not compile.
-///     // root2
+///     assert_eq!(v2[root1], "internal");
 ///   });
 /// });
-/// # }
+/// ```
+///
+/// Furthermore, a `NodeRef` cannot outlive its associated `View`:
+///
+/// ```compile_fail
+/// # use search_graph::Graph;
+/// # use search_graph::view;
+/// let mut graph: Graph<u32, String, String> = Graph::new();
+/// // The value returned by append_node cannot be returned into a scope where
+/// // its view is inactive. This will not compile.
+/// let node: view::NodeRef<'_> = view::of_graph(&mut graph, |mut view| {
+///   view.append_node(0, "root1_data".into())
+/// });
+/// ```
 #[derive(Clone, Copy)]
 pub struct NodeRef<'id> {
   pub(crate) id: VertexId,
@@ -594,28 +620,52 @@ impl<'id> fmt::Debug for NodeRef<'id> {
 /// ```rust
 /// # use search_graph::Graph;
 /// # use search_graph::view;
-/// # fn main() {
-/// let mut g1: Graph<String, String, String> = Graph::new();
-/// let mut g2: Graph<String, String, String> = Graph::new();
+/// let mut graph: Graph<u32, String, String> = Graph::new();
+/// view::of_graph(&mut graph, |mut view| {
+///   let root = view.append_node(0, "root_data".into());
+///   let child = view.append_node(100, "child_data".into());
+///   let edge = view.append_edge(root, child, "edge_data".into());
+///   assert_eq!(view[edge], "edge_data");
+///   assert_eq!(view.edge_source(edge), root);
+///   assert_eq!(view.edge_target(edge), child);
+/// });
+/// ```
+///
+/// As with [NodeRef](struct.NodeRef.html), an `EdgeRef` can only be used with
+/// the [View](struct.View.html) for which it was generated:
+///
+/// ```compile_fail
+/// # use search_graph::Graph;
+/// # use search_graph::view;
+/// let mut g1: Graph<u32, String, String> = Graph::new();
+/// let mut g2: Graph<u32, String, String> = Graph::new();
 /// view::of_graph(&mut g1, |mut v1| {
-///   let root1 = v1.append_node("root1_state".into(), "root1_data".into());
-///   let child1 = v1.append_node("child1_state".into(), "child1_data".into());
+///   let root1 = v1.append_node(0, "root1_data".into());
+///   let child1 = v1.append_node(10, "child1_data".into());
 ///   let edge1 = v1.append_edge(root1, child1, "edge1_data".into());
-///   assert_eq!(v1[edge1], "edge1_data");
-///   let escaped = view::of_graph(&mut g2, |mut v2| {
-///     let root2 = v2.append_node("root2_state".into(), "root2_data".into());
-///     let child2 = v2.append_node("child2_state".into(), "child2_data".into());
+///   view::of_graph(&mut g2, |mut v2| {
+///     let root2 = v2.append_node(20, "root2_data".into());
+///     let child2 = v2.append_node(40, "child2_data".into());
 ///     let edge2 = v2.append_edge(root2, child2, "edge2_data".into());
-///
 ///     // An EdgeRef from one view cannot be used with another. This will not compile.
-///     // assert_eq!(v2[edge1], "internal");
-///
-///     // An EdgeRef cannot escape the closure defining its associated view.
-///     // Returning edge2 will not compile.
-///     // edge2
+///     assert_eq!(v2[edge1], "edge1_data");
 ///   });
 /// });
-/// # }
+/// ```
+///
+/// And an `EdgeRef` cannot outlive its associated `View`:
+///
+/// ```compile_fail
+/// # use search_graph::Graph;
+/// # use search_graph::view;
+/// let mut graph: Graph<u32, String, String> = Graph::new();
+/// // The value returned by append_edge cannot be returned into a scope where
+/// // its view is inactive. This will not compile.
+/// let edge: view::EdgeRef<'_> = view::of_graph(&mut graph, |mut view| {
+///   let root = view.append_node(0, "root_data".into());
+///   let child = view.append_node(100, "child_data".into());
+///   view.append_edge(root, child, "edge_data".into())
+/// });
 /// ```
 #[derive(Clone, Copy)]
 pub struct EdgeRef<'id> {
