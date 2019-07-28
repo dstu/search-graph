@@ -1,48 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/stu/.cargo/registry/src/github.com-1ecc6299db9ec823/symbol-map-1.0.0/src/table.rs`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang">
-
-    <title>table.rs.html -- source</title>
-
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css">
-    
-
-    
-    
-</head>
-<body class="rustdoc">
-    <!--[if lte IE 8]>
-    <div class="warning">
-        This old browser is unsupported and will most likely display funky
-        things.
-    </div>
-    <![endif]-->
-
-    
-
-    <nav class="sidebar">
-        
-        
-    </nav>
-
-    <nav class="sub">
-        <form class="search-form js-only">
-            <div class="search-container">
-                <input class="search-input" name="search"
-                       autocomplete="off"
-                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                       type="search">
-            </div>
-        </form>
-    </nav>
-
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/stu/.cargo/registry/src/github.com-1ecc6299db9ec823/symbol-map-1.0.2/src/table.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>table.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../symbol_map/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -555,582 +511,527 @@
 <span id="511">511</span>
 <span id="512">512</span>
 <span id="513">513</span>
-</pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::{<span class='ident'>Eq</span>, <span class='ident'>Ord</span>, <span class='ident'>Ordering</span>, <span class='ident'>PartialEq</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>hash</span>::{<span class='ident'>Hash</span>, <span class='ident'>Hasher</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Iterator</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+</pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::{<span class="ident">Eq</span>, <span class="ident">Ord</span>, <span class="ident">Ordering</span>, <span class="ident">PartialEq</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">iter</span>::<span class="ident">Iterator</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 
-<span class='doccomment'>/// A table entry that associates an instance of `T` with an atomic symbol.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Types `T` should not be mutated by any means once they are associated with a</span>
-<span class='doccomment'>/// `SymbolId` and stored in a `Table`. Doing so may invalidate any caching or</span>
-<span class='doccomment'>/// indexing that is done on top of the table.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='ident'>id</span>: <span class='ident'>D</span>,
-    <span class='ident'>data</span>: <span class='ident'>T</span>,
-    <span class='ident'>next</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// A table entry that associates an instance of `T` with an atomic symbol.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Types `T` should not be mutated by any means once they are associated with a</span>
+<span class="doccomment">/// `SymbolId` and stored in a `Table`. Doing so may invalidate any caching or</span>
+<span class="doccomment">/// indexing that is done on top of the table.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="ident">id</span>: <span class="ident">D</span>,
+    <span class="ident">data</span>: <span class="ident">T</span>,
+    <span class="ident">next</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='doccomment'>/// Returns the symbol&#39;s ID.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>id</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>D</span> {
-        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>id</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="doccomment">/// Returns the symbol&#39;s ID.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">D</span> {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">id</span>
     }
 
-    <span class='doccomment'>/// Returns a reference to the symbol&#39;s data.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// A `Symbol&lt;T&gt;` that is owned by a `Table` does not move in memory as long</span>
-    <span class='doccomment'>/// as it is not dropped from the table. As a result, you may retain a raw</span>
-    <span class='doccomment'>/// pointer to this data and dereference it as long as its parent</span>
-    <span class='doccomment'>/// `Symbol&lt;T&gt;` is not dropped.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>data</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>T</span> {
-        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>data</span>
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Hash</span> <span class='kw'>for</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>fn</span> <span class='ident'>hash</span><span class='op'>&lt;</span><span class='ident'>H</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>state</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>H</span>) <span class='kw'>where</span> <span class='ident'>H</span>: <span class='ident'>Hasher</span> {
-        <span class='self'>self</span>.<span class='ident'>data</span>.<span class='ident'>hash</span>(<span class='ident'>state</span>)
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>PartialEq</span> <span class='kw'>for</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>PartialEq</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>fn</span> <span class='ident'>eq</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>data</span>.<span class='ident'>eq</span>(<span class='kw-2'>&amp;</span><span class='ident'>other</span>.<span class='ident'>data</span>)
+    <span class="doccomment">/// Returns a reference to the symbol&#39;s data.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// A `Symbol&lt;T&gt;` that is owned by a `Table` does not move in memory as long</span>
+    <span class="doccomment">/// as it is not dropped from the table. As a result, you may retain a raw</span>
+    <span class="doccomment">/// pointer to this data and dereference it as long as its parent</span>
+    <span class="doccomment">/// `Symbol&lt;T&gt;` is not dropped.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">data</span>
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Eq</span> <span class='kw'>for</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Eq</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> { }
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>PartialOrd</span> <span class='kw'>for</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>PartialOrd</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>fn</span> <span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Ordering</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>data</span>.<span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>other</span>.<span class='ident'>data</span>)
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Hash</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) <span class="kw">where</span> <span class="ident">H</span>: <span class="ident">Hasher</span> {
+        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">hash</span>(<span class="ident">state</span>)
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Ord</span> <span class='kw'>for</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Ord</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>fn</span> <span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='ident'>Ordering</span> {
-        <span class='self'>self</span>.<span class='ident'>data</span>.<span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>other</span>.<span class='ident'>data</span>)
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialEq</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">data</span>)
     }
 }
 
-<span class='doccomment'>/// An atomic ID.</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>SymbolId</span>:
-<span class='ident'>Copy</span> <span class='op'>+</span> <span class='ident'>Clone</span> <span class='op'>+</span> <span class='ident'>fmt</span>::<span class='ident'>Debug</span> <span class='op'>+</span> <span class='ident'>Default</span> <span class='op'>+</span> <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Hash</span> <span class='op'>+</span> <span class='ident'>Ord</span> <span class='op'>+</span> <span class='ident'>PartialEq</span> <span class='op'>+</span> <span class='ident'>PartialOrd</span> <span class='op'>+</span> <span class='ident'>Send</span> <span class='op'>+</span> <span class='ident'>Sync</span> {
-    <span class='doccomment'>/// Returns the ID immediately subsequent to this one.</span>
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Eq</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> { }
 
-    <span class='doccomment'>/// Casts the ID to a `usize`.</span>
-    <span class='kw'>fn</span> <span class='ident'>as_usize</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">PartialOrd</span> <span class="kw">for</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialOrd</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Ordering</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">data</span>)
+    }
 }
 
-<span class='kw'>impl</span> <span class='ident'>SymbolId</span> <span class='kw'>for</span> <span class='ident'>usize</span> {
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> { <span class='op'>*</span><span class='self'>self</span> <span class='op'>+</span> <span class='number'>1</span> }
-    <span class='kw'>fn</span> <span class='ident'>as_usize</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> { <span class='op'>*</span><span class='self'>self</span> }
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Ord</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">data</span>)
+    }
 }
 
-<span class='kw'>impl</span> <span class='ident'>SymbolId</span> <span class='kw'>for</span> <span class='ident'>u8</span> {
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> { <span class='op'>*</span><span class='self'>self</span> <span class='op'>+</span> <span class='number'>1</span> }
+<span class="doccomment">/// An atomic ID.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SymbolId</span>:
+<span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
+    <span class="doccomment">/// Returns the ID immediately subsequent to this one.</span>
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>as_usize</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> { <span class='op'>*</span><span class='self'>self</span> <span class='kw'>as</span> <span class='ident'>usize</span> }
+    <span class="doccomment">/// Casts the ID to a `usize`.</span>
+    <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span>;
 }
 
-<span class='kw'>impl</span> <span class='ident'>SymbolId</span> <span class='kw'>for</span> <span class='ident'>u16</span> {
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> { <span class='op'>*</span><span class='self'>self</span> <span class='op'>+</span> <span class='number'>1</span> }
-    <span class='kw'>fn</span> <span class='ident'>as_usize</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> { <span class='op'>*</span><span class='self'>self</span> <span class='kw'>as</span> <span class='ident'>usize</span> }
+<span class="kw">impl</span> <span class="ident">SymbolId</span> <span class="kw">for</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="op">+</span> <span class="number">1</span> }
+    <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="kw-2">*</span><span class="self">self</span> }
 }
 
-<span class='kw'>impl</span> <span class='ident'>SymbolId</span> <span class='kw'>for</span> <span class='ident'>u32</span> {
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> { <span class='op'>*</span><span class='self'>self</span> <span class='op'>+</span> <span class='number'>1</span> }
-    <span class='kw'>fn</span> <span class='ident'>as_usize</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> { <span class='op'>*</span><span class='self'>self</span> <span class='kw'>as</span> <span class='ident'>usize</span> }
+<span class="kw">impl</span> <span class="ident">SymbolId</span> <span class="kw">for</span> <span class="ident">u8</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="op">+</span> <span class="number">1</span> }
+
+    <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="kw">as</span> <span class="ident">usize</span> }
 }
 
-<span class='kw'>impl</span> <span class='ident'>SymbolId</span> <span class='kw'>for</span> <span class='ident'>u64</span> {
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> { <span class='op'>*</span><span class='self'>self</span> <span class='op'>+</span> <span class='number'>1</span> }
-    <span class='kw'>fn</span> <span class='ident'>as_usize</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> { <span class='op'>*</span><span class='self'>self</span> <span class='kw'>as</span> <span class='ident'>usize</span> }
+<span class="kw">impl</span> <span class="ident">SymbolId</span> <span class="kw">for</span> <span class="ident">u16</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="op">+</span> <span class="number">1</span> }
+    <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="kw">as</span> <span class="ident">usize</span> }
 }
 
-<span class='doccomment'>/// The head of a linked list associating `T`s with `SymbolId`s. `SymbolId`</span>
-<span class='doccomment'>/// values start at 0 and increase by 1 for each `T` added to the table.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// The linked list owns instances of `Symbol&lt;T&gt;`, which wrap around a `T` and a</span>
-<span class='doccomment'>/// `SymbolId`. It satisfies the contract: *once allocated, a Symbol&lt;T&gt;&#39;s</span>
-<span class='doccomment'>/// address does not change as long as its parent table exists and it is not</span>
-<span class='doccomment'>/// dropped from the table*.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// As a result, a table index may retain a raw pointer to a `Symbol&lt;T&gt;` as long</span>
-<span class='doccomment'>/// as care is taken not to dereference or otherwise make use of such pointers</span>
-<span class='doccomment'>/// after the symbol they point to has been dropped by `retain()`.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='ident'>head</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span>,
-    <span class='ident'>next_id</span>: <span class='ident'>D</span>,
+<span class="kw">impl</span> <span class="ident">SymbolId</span> <span class="kw">for</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="op">+</span> <span class="number">1</span> }
+    <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="kw">as</span> <span class="ident">usize</span> }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='doccomment'>/// Creates a new, empty table.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>Table</span> {
-            <span class='ident'>head</span>: <span class='prelude-val'>None</span>,
-            <span class='ident'>next_id</span>: <span class='ident'>Default</span>::<span class='ident'>default</span>(),
+<span class="kw">impl</span> <span class="ident">SymbolId</span> <span class="kw">for</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="op">+</span> <span class="number">1</span> }
+    <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="kw-2">*</span><span class="self">self</span> <span class="kw">as</span> <span class="ident">usize</span> }
+}
+
+<span class="doccomment">/// The head of a linked list associating `T`s with `SymbolId`s. `SymbolId`</span>
+<span class="doccomment">/// values start at 0 and increase by 1 for each `T` added to the table.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The linked list owns instances of `Symbol&lt;T&gt;`, which wrap around a `T` and a</span>
+<span class="doccomment">/// `SymbolId`. It satisfies the contract: *once allocated, a Symbol&lt;T&gt;&#39;s</span>
+<span class="doccomment">/// address does not change as long as its parent table exists and it is not</span>
+<span class="doccomment">/// dropped from the table*.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// As a result, a table index may retain a raw pointer to a `Symbol&lt;T&gt;` as long</span>
+<span class="doccomment">/// as care is taken not to dereference or otherwise make use of such pointers</span>
+<span class="doccomment">/// after the symbol they point to has been dropped by `retain()`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Table</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="ident">head</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">next_id</span>: <span class="ident">D</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Table</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="doccomment">/// Creates a new, empty table.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Table</span> {
+            <span class="ident">head</span>: <span class="prelude-val">None</span>,
+            <span class="ident">next_id</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
         }
     }
 
-    <span class='doccomment'>/// Returns the number of symbols in the table.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>len</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='self'>self</span>.<span class='ident'>next_id</span>.<span class='ident'>as_usize</span>()
+    <span class="doccomment">/// Returns the number of symbols in the table.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">next_id</span>.<span class="ident">as_usize</span>()
     }
 
-    <span class='doccomment'>/// Inserts `value` into the table and assigns it an id. The same value may</span>
-    <span class='doccomment'>/// be inserted more than once. To prevent such operations, use the</span>
-    <span class='doccomment'>/// `get_or_insert()` method of `Indexing`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns a reference to the newly created symbol.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>insert</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>value</span>: <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>next_id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>next_id</span>;
-        <span class='self'>self</span>.<span class='ident'>next_id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>next_id</span>.<span class='ident'>next</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>new_head</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Symbol</span> {
-            <span class='ident'>id</span>: <span class='ident'>next_id</span>,
-            <span class='ident'>data</span>: <span class='ident'>value</span>,
-            <span class='ident'>next</span>: <span class='prelude-val'>None</span>,
+    <span class="doccomment">/// Inserts `value` into the table and assigns it an id. The same value may</span>
+    <span class="doccomment">/// be inserted more than once. To prevent such operations, use the</span>
+    <span class="doccomment">/// `get_or_insert()` method of `Indexing`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns a reference to the newly created symbol.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">next_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_id</span>;
+        <span class="self">self</span>.<span class="ident">next_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_id</span>.<span class="ident">next</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_head</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Symbol</span> {
+            <span class="ident">id</span>: <span class="ident">next_id</span>,
+            <span class="ident">data</span>: <span class="ident">value</span>,
+            <span class="ident">next</span>: <span class="prelude-val">None</span>,
         });
-        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>head</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>new_head</span>.<span class='ident'>next</span>);
-        <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>new_head</span>);
-        (<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>head</span>).<span class='ident'>as_ref</span>().<span class='ident'>unwrap</span>()
+        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">head</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">new_head</span>.<span class="ident">next</span>);
+        <span class="self">self</span>.<span class="ident">head</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">new_head</span>);
+        (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">head</span>).<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()
     }
 
-    <span class='doccomment'>/// Remaps associations between `T`s and `D`s, selectively dropping some</span>
-    <span class='doccomment'>/// associations entirely. The addresses of `Symbol&lt;T&gt;`s for entries which</span>
-    <span class='doccomment'>/// are retained do not change.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// `(T, D)` associations for which `f` returns `Some(d)` will be remapped</span>
-    <span class='doccomment'>/// to use `d`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// `(T, D)` associations for which `f` returns `None` will be dropped.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// It is the responsibility of the caller to maintain the following:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// - The final mapping should be a dense range of whole numbers starting at 0.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// - No two different `T`s are associated with the same `D`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>remap</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='kw-2'>mut</span> <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnMut</span>(<span class='kw-2'>&amp;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>D</span><span class='op'>&gt;</span> {
-        <span class='comment'>// Destructively walk linked list, selectively moving boxed symbols into</span>
-        <span class='comment'>// a new list and reassigning `SymbolId`s as we go. This is done in</span>
-        <span class='comment'>// place, without making new allocations for the elements that we</span>
-        <span class='comment'>// retain.</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>remapped</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>head</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>head</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>head</span>);
-        <span class='kw'>loop</span> {
-            <span class='ident'>head</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>head</span> {
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>break</span>,
-                <span class='prelude-val'>Some</span>(<span class='kw-2'>mut</span> <span class='ident'>symbol</span>) <span class='op'>=&gt;</span>
-                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>new_state_id</span>) <span class='op'>=</span> <span class='ident'>f</span>(<span class='kw-2'>&amp;</span><span class='ident'>symbol</span>) {
-                        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>next_head</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-                        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>next_head</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>symbol</span>.<span class='ident'>next</span>);
-                        <span class='ident'>symbol</span>.<span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>new_state_id</span>;
-                        <span class='ident'>remapped</span>.<span class='ident'>emplace_head</span>(<span class='ident'>symbol</span>);
-                        <span class='ident'>remapped</span>.<span class='ident'>next_id</span> <span class='op'>=</span> <span class='ident'>remapped</span>.<span class='ident'>next_id</span>.<span class='ident'>next</span>();
-                        <span class='ident'>next_head</span>
-                    } <span class='kw'>else</span> {
-                        <span class='ident'>symbol</span>.<span class='ident'>next</span>
+    <span class="doccomment">/// Remaps associations between `T`s and `D`s, selectively dropping some</span>
+    <span class="doccomment">/// associations entirely. The addresses of `Symbol&lt;T&gt;`s for entries which</span>
+    <span class="doccomment">/// are retained do not change.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `(T, D)` associations for which `f` returns `Some(d)` will be remapped</span>
+    <span class="doccomment">/// to use `d`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `(T, D)` associations for which `f` returns `None` will be dropped.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// It is the responsibility of the caller to maintain the following:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - The final mapping should be a dense range of whole numbers starting at 0.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - No two different `T`s are associated with the same `D`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remap</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> {
+        <span class="comment">// Destructively walk linked list, selectively moving boxed symbols into</span>
+        <span class="comment">// a new list and reassigning `SymbolId`s as we go. This is done in</span>
+        <span class="comment">// place, without making new allocations for the elements that we</span>
+        <span class="comment">// retain.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">remapped</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">head</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">head</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">head</span>);
+        <span class="kw">loop</span> {
+            <span class="ident">head</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">head</span> {
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">break</span>,
+                <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">symbol</span>) <span class="op">=&gt;</span>
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">new_state_id</span>) <span class="op">=</span> <span class="ident">f</span>(<span class="kw-2">&amp;</span><span class="ident">symbol</span>) {
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">next_head</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+                        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">next_head</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">symbol</span>.<span class="ident">next</span>);
+                        <span class="ident">symbol</span>.<span class="ident">id</span> <span class="op">=</span> <span class="ident">new_state_id</span>;
+                        <span class="ident">remapped</span>.<span class="ident">emplace_head</span>(<span class="ident">symbol</span>);
+                        <span class="ident">remapped</span>.<span class="ident">next_id</span> <span class="op">=</span> <span class="ident">remapped</span>.<span class="ident">next_id</span>.<span class="ident">next</span>();
+                        <span class="ident">next_head</span>
+                    } <span class="kw">else</span> {
+                        <span class="ident">symbol</span>.<span class="ident">next</span>
                     },
             }
         }
-        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>remapped</span>, <span class='self'>self</span>);
+        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">remapped</span>, <span class="self">self</span>);
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>into_iter</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>TableIntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> {
-        <span class='ident'>TableIntoIter</span> {
-            <span class='ident'>remaining</span>: <span class='self'>self</span>.<span class='ident'>len</span>(),
-            <span class='ident'>item</span>: <span class='self'>self</span>.<span class='ident'>head</span>,
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">TableIntoIter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> {
+        <span class="ident">TableIntoIter</span> {
+            <span class="ident">remaining</span>: <span class="self">self</span>.<span class="ident">len</span>(),
+            <span class="ident">item</span>: <span class="self">self</span>.<span class="ident">head</span>,
         }
     }
 
-    <span class='doccomment'>/// Returns an iterator over table entries.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>TableIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span>, <span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> {
-        <span class='ident'>TableIter</span> {
-            <span class='ident'>remaining</span>: <span class='self'>self</span>.<span class='ident'>len</span>(),
-            <span class='ident'>item</span>: (<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>head</span>).<span class='ident'>as_ref</span>(),
+    <span class="doccomment">/// Returns an iterator over table entries.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">TableIter</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> {
+        <span class="ident">TableIter</span> {
+            <span class="ident">remaining</span>: <span class="self">self</span>.<span class="ident">len</span>(),
+            <span class="ident">item</span>: (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">head</span>).<span class="ident">as_ref</span>(),
         }
     }
 
-    <span class='doccomment'>/// Sets `value` as the head of this list. If `value` is already the head of</span>
-    <span class='doccomment'>/// another list, its subsequent list elements are dropped.</span>
-    <span class='kw'>fn</span> <span class='ident'>emplace_head</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='kw-2'>mut</span> <span class='ident'>value</span>: <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span>) {
-        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>value</span>.<span class='ident'>next</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>head</span>);
-        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>head</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='prelude-val'>Some</span>(<span class='ident'>value</span>));
+    <span class="doccomment">/// Sets `value` as the head of this list. If `value` is already the head of</span>
+    <span class="doccomment">/// another list, its subsequent list elements are dropped.</span>
+    <span class="kw">fn</span> <span class="ident">emplace_head</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">value</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span>) {
+        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">value</span>.<span class="ident">next</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">head</span>);
+        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">head</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>));
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Hash</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='doccomment'>/// Converts `self` to a `HashMap` holding the same associations as</span>
-    <span class='doccomment'>/// `self`. If the same key occurs in `self` more than once, then duplicate</span>
-    <span class='doccomment'>/// occurrences will be dropped arbitrarily.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_hash_map</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>map</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>with_capacity</span>(<span class='self'>self</span>.<span class='ident'>len</span>());
-        <span class='kw'>loop</span> {
-            <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>head</span> {
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>break</span>,
-                <span class='prelude-val'>Some</span>(<span class='kw-2'>mut</span> <span class='ident'>symbol</span>) <span class='op'>=&gt;</span> {
-                    <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>symbol</span>.<span class='ident'>id</span>().<span class='ident'>clone</span>();
-                    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>next_head</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-                    <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>next_head</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>symbol</span>.<span class='ident'>next</span>);
-                    <span class='ident'>map</span>.<span class='ident'>insert</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>, <span class='ident'>id</span>);
-                    <span class='ident'>next_head</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Table</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="doccomment">/// Converts `self` to a `HashMap` holding the same associations as</span>
+    <span class="doccomment">/// `self`. If the same key occurs in `self` more than once, then duplicate</span>
+    <span class="doccomment">/// occurrences will be dropped arbitrarily.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_hash_map</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">with_capacity</span>(<span class="self">self</span>.<span class="ident">len</span>());
+        <span class="kw">loop</span> {
+            <span class="self">self</span>.<span class="ident">head</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">head</span> {
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">break</span>,
+                <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">symbol</span>) <span class="op">=&gt;</span> {
+                    <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">symbol</span>.<span class="ident">id</span>().<span class="ident">clone</span>();
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">next_head</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+                    <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">next_head</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">symbol</span>.<span class="ident">next</span>);
+                    <span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">symbol</span>.<span class="ident">data</span>, <span class="ident">id</span>);
+                    <span class="ident">next_head</span>
                 },
             }
         }
-        <span class='ident'>map</span>
+        <span class="ident">map</span>
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>IntoIterator</span> <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>D</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>SymbolId</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span>;
-    <span class='kw'>type</span> <span class='ident'>IntoIter</span> <span class='op'>=</span> <span class='ident'>TableIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Table</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">SymbolId</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">TableIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>into_iter</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span>::<span class='ident'>IntoIter</span> {
-        <span class='self'>self</span>.<span class='ident'>iter</span>()
+    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">IntoIter</span> {
+        <span class="self">self</span>.<span class="ident">iter</span>()
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>IntoIterator</span> <span class='kw'>for</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span>;
-    <span class='kw'>type</span> <span class='ident'>IntoIter</span> <span class='op'>=</span> <span class='ident'>TableIntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="ident">Table</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span>;
+    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">TableIntoIter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>into_iter</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span>::<span class='ident'>IntoIter</span> {
-        <span class='self'>self</span>.<span class='ident'>into_iter</span>()
+    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">IntoIter</span> {
+        <span class="self">self</span>.<span class="ident">into_iter</span>()
     }
 }
 
-<span class='doccomment'>/// Iterator over table contents.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>TableIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>D</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>SymbolId</span> {
-    <span class='ident'>remaining</span>: <span class='ident'>usize</span>,
-    <span class='ident'>item</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// Iterator over table contents.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TableIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">SymbolId</span> {
+    <span class="ident">remaining</span>: <span class="ident">usize</span>,
+    <span class="ident">item</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>TableIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span>, <span class='ident'>D</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>SymbolId</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">TableIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">SymbolId</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>item</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>item</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>item</span>);
-        <span class='kw'>match</span> <span class='ident'>item</span> {
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
-            <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>) <span class='op'>=&gt;</span> {
-                <span class='self'>self</span>.<span class='ident'>remaining</span> <span class='op'>-=</span> <span class='number'>1</span>;
-                <span class='self'>self</span>.<span class='ident'>item</span> <span class='op'>=</span> <span class='ident'>symbol</span>.<span class='ident'>next</span>.<span class='ident'>as_ref</span>();
-                <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>)
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">item</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">item</span>);
+        <span class="kw">match</span> <span class="ident">item</span> {
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">symbol</span>) <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">remaining</span> <span class="op">-=</span> <span class="number">1</span>;
+                <span class="self">self</span>.<span class="ident">item</span> <span class="op">=</span> <span class="ident">symbol</span>.<span class="ident">next</span>.<span class="ident">as_ref</span>();
+                <span class="prelude-val">Some</span>(<span class="ident">symbol</span>)
             },
         }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>size_hint</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> (<span class='ident'>usize</span>, <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>) {
-        (<span class='self'>self</span>.<span class='ident'>remaining</span>, <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>remaining</span>))
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+        (<span class="self">self</span>.<span class="ident">remaining</span>, <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">remaining</span>))
     }
 }
 
-<span class='doccomment'>/// Iterator that consumes a table.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>TableIntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='ident'>remaining</span>: <span class='ident'>usize</span>,
-    <span class='ident'>item</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// Iterator that consumes a table.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TableIntoIter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="ident">remaining</span>: <span class="ident">usize</span>,
+    <span class="ident">item</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>TableIntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">TableIntoIter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>item</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-        <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>item</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>item</span>);
-        <span class='kw'>match</span> <span class='ident'>item</span> {
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
-            <span class='prelude-val'>Some</span>(<span class='kw-2'>mut</span> <span class='ident'>symbol</span>) <span class='op'>=&gt;</span> {
-                <span class='self'>self</span>.<span class='ident'>remaining</span> <span class='op'>-=</span> <span class='number'>1</span>;
-                <span class='ident'>mem</span>::<span class='ident'>swap</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>item</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>symbol</span>.<span class='ident'>next</span>);
-                <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>)
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">item</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">item</span>);
+        <span class="kw">match</span> <span class="ident">item</span> {
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">symbol</span>) <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">remaining</span> <span class="op">-=</span> <span class="number">1</span>;
+                <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">item</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">symbol</span>.<span class="ident">next</span>);
+                <span class="prelude-val">Some</span>(<span class="ident">symbol</span>)
             },
         }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>size_hint</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> (<span class='ident'>usize</span>, <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>) {
-        (<span class='self'>self</span>.<span class='ident'>remaining</span>, <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>remaining</span>))
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+        (<span class="self">self</span>.<span class="ident">remaining</span>, <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">remaining</span>))
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>test</span> {
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>Symbol</span>, <span class='ident'>SymbolId</span>, <span class='ident'>Table</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">test</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Symbol</span>, <span class="ident">SymbolId</span>, <span class="ident">Table</span>};
 
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span>;
 
-    <span class='kw'>const</span> <span class='ident'>VALUES</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> [<span class='ident'>usize</span>] <span class='op'>=</span> <span class='kw-2'>&amp;</span>[<span class='number'>101</span>, <span class='number'>203</span>, <span class='number'>500</span>, <span class='number'>30</span>, <span class='number'>0</span>, <span class='number'>1</span>];
+    <span class="kw">const</span> <span class="ident">VALUES</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">usize</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="number">101</span>, <span class="number">203</span>, <span class="number">500</span>, <span class="number">30</span>, <span class="number">0</span>, <span class="number">1</span>];
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>symbol_id_ok</span>() {
-        <span class='kw'>let</span> <span class='ident'>id</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='ident'>Default</span>::<span class='ident'>default</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>id</span>.<span class='ident'>as_usize</span>(), <span class='number'>0</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>id</span>.<span class='ident'>next</span>().<span class='ident'>as_usize</span>(), <span class='number'>1</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>id</span>.<span class='ident'>next</span>().<span class='ident'>next</span>().<span class='ident'>as_usize</span>(), <span class='number'>2</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>id</span>.<span class='ident'>as_usize</span>(), <span class='number'>0</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">symbol_id_ok</span>() {
+        <span class="kw">let</span> <span class="ident">id</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">Default</span>::<span class="ident">default</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">id</span>.<span class="ident">as_usize</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">id</span>.<span class="ident">next</span>().<span class="ident">as_usize</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">id</span>.<span class="ident">next</span>().<span class="ident">next</span>().<span class="ident">as_usize</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">id</span>.<span class="ident">as_usize</span>(), <span class="number">0</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>new_table_empty_ok</span>() {
-        <span class='kw'>let</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>head</span>.<span class='ident'>is_none</span>());
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>next_id</span> <span class='op'>==</span> <span class='number'>0</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">new_table_empty_ok</span>() {
+        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">head</span>.<span class="ident">is_none</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">next_id</span> <span class="op">==</span> <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="number">0</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>table_insert_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='ident'>v</span>) <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>().<span class='ident'>enumerate</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>);
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>next_id</span>.<span class='ident'>as_usize</span>(), <span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>);
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>head</span>.<span class='ident'>as_ref</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span>.<span class='ident'>data</span>), <span class='prelude-val'>Some</span>(<span class='op'>*</span><span class='ident'>v</span>));
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">table_insert_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">next_id</span>.<span class="ident">as_usize</span>(), <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">head</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">data</span>), <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">v</span>));
         }
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='ident'>VALUES</span>.<span class='ident'>len</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>next_id</span>.<span class='ident'>as_usize</span>(), <span class='ident'>VALUES</span>.<span class='ident'>len</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="ident">VALUES</span>.<span class="ident">len</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">next_id</span>.<span class="ident">as_usize</span>(), <span class="ident">VALUES</span>.<span class="ident">len</span>());
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span> <span class='op'>=</span> <span class='ident'>t</span>.<span class='ident'>head</span>.<span class='ident'>as_ref</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>count</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>vs</span> <span class='op'>=</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>().<span class='ident'>rev</span>().<span class='ident'>enumerate</span>();
-        <span class='kw'>loop</span> {
-            <span class='ident'>x</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>x</span> {
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>break</span>,
-                <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>) <span class='op'>=&gt;</span> {
-                    <span class='kw'>let</span> (<span class='ident'>i</span>, <span class='ident'>v</span>) <span class='op'>=</span> <span class='ident'>vs</span>.<span class='ident'>next</span>().<span class='ident'>unwrap</span>();
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>, <span class='ident'>count</span>);
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>(), <span class='ident'>v</span>);
-                    <span class='ident'>count</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                    <span class='ident'>symbol</span>.<span class='ident'>next</span>.<span class='ident'>as_ref</span>()
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">head</span>.<span class="ident">as_ref</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vs</span> <span class="op">=</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>().<span class="ident">rev</span>().<span class="ident">enumerate</span>();
+        <span class="kw">loop</span> {
+            <span class="ident">x</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">x</span> {
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">break</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">symbol</span>) <span class="op">=&gt;</span> {
+                    <span class="kw">let</span> (<span class="ident">i</span>, <span class="ident">v</span>) <span class="op">=</span> <span class="ident">vs</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="ident">count</span>);
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">symbol</span>.<span class="ident">data</span>(), <span class="ident">v</span>);
+                    <span class="ident">count</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">symbol</span>.<span class="ident">next</span>.<span class="ident">as_ref</span>()
                 },
             }
         }
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>vs</span>.<span class='ident'>next</span>(), <span class='prelude-val'>None</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vs</span>.<span class="ident">next</span>(), <span class="prelude-val">None</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>table_empty_iter_ok</span>() {
-        <span class='kw'>let</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>t</span>.<span class='ident'>iter</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='number'>0</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)));
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>next</span>().<span class='ident'>is_none</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='number'>0</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)));
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">table_empty_iter_ok</span>() {
+        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">iter</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">next</span>().<span class="ident">is_none</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>table_iter_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u32</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">table_iter_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u32</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='ident'>VALUES</span>.<span class='ident'>len</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="ident">VALUES</span>.<span class="ident">len</span>());
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>t</span>.<span class='ident'>iter</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>expected_len</span> <span class='op'>=</span> <span class='ident'>t</span>.<span class='ident'>len</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>vs</span> <span class='op'>=</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>().<span class='ident'>rev</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='ident'>expected_len</span>, <span class='prelude-val'>Some</span>(<span class='ident'>expected_len</span>)));
-        <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>) <span class='op'>=</span> <span class='ident'>i</span>.<span class='ident'>next</span>() {
-            <span class='ident'>expected_len</span> <span class='op'>-=</span> <span class='number'>1</span>;
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='ident'>expected_len</span>, <span class='prelude-val'>Some</span>(<span class='ident'>expected_len</span>)));
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>()), <span class='ident'>vs</span>.<span class='ident'>next</span>());
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">iter</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_len</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">len</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vs</span> <span class="op">=</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>().<span class="ident">rev</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="ident">expected_len</span>, <span class="prelude-val">Some</span>(<span class="ident">expected_len</span>)));
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">symbol</span>) <span class="op">=</span> <span class="ident">i</span>.<span class="ident">next</span>() {
+            <span class="ident">expected_len</span> <span class="op">-=</span> <span class="number">1</span>;
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="ident">expected_len</span>, <span class="prelude-val">Some</span>(<span class="ident">expected_len</span>)));
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">symbol</span>.<span class="ident">data</span>()), <span class="ident">vs</span>.<span class="ident">next</span>());
         }
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='number'>0</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>moved_table_internal_address_unchanged_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>stack_table</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>original_data_addresses</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>original_symbol_addresses</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='kw'>let</span> <span class='ident'>symbol</span> <span class='op'>=</span> <span class='ident'>stack_table</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='op'>*</span><span class='ident'>symbol</span>.<span class='ident'>data</span>(), <span class='op'>*</span><span class='ident'>v</span>);
-            <span class='ident'>original_data_addresses</span>.<span class='ident'>push</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>usize</span>);
-            <span class='ident'>original_symbol_addresses</span>.<span class='ident'>push</span>(<span class='ident'>symbol</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">moved_table_internal_address_unchanged_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stack_table</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">original_data_addresses</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">original_symbol_addresses</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="kw">let</span> <span class="ident">symbol</span> <span class="op">=</span> <span class="ident">stack_table</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">symbol</span>.<span class="ident">data</span>(), <span class="kw-2">*</span><span class="ident">v</span>);
+            <span class="ident">original_data_addresses</span>.<span class="ident">push</span>(<span class="ident">symbol</span>.<span class="ident">data</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">usize</span>);
+            <span class="ident">original_symbol_addresses</span>.<span class="ident">push</span>(<span class="ident">symbol</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>);
         }
 
-        <span class='kw'>let</span> <span class='ident'>heap_table</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>stack_table</span>);
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>count</span> <span class='op'>=</span><span class='number'>0</span>;
-        <span class='kw'>for</span> (<span class='ident'>symbol</span>, (<span class='ident'>value</span>, (<span class='ident'>data_address</span>, <span class='ident'>symbol_address</span>))) <span class='kw'>in</span> <span class='ident'>heap_table</span>.<span class='ident'>iter</span>().<span class='ident'>zip</span>(
-            <span class='ident'>VALUES</span>.<span class='ident'>iter</span>().<span class='ident'>rev</span>().<span class='ident'>zip</span>(
-                <span class='ident'>original_data_addresses</span>.<span class='ident'>into_iter</span>().<span class='ident'>rev</span>().<span class='ident'>zip</span>(
-                    <span class='ident'>original_symbol_addresses</span>.<span class='ident'>into_iter</span>().<span class='ident'>rev</span>()))) {
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>(), <span class='ident'>value</span>);
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>usize</span>, <span class='ident'>data_address</span>);
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>symbol</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>symbol_address</span>);
-            <span class='ident'>count</span> <span class='op'>+=</span> <span class='number'>1</span>;
+        <span class="kw">let</span> <span class="ident">heap_table</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">stack_table</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span><span class="number">0</span>;
+        <span class="kw">for</span> (<span class="ident">symbol</span>, (<span class="ident">value</span>, (<span class="ident">data_address</span>, <span class="ident">symbol_address</span>))) <span class="kw">in</span> <span class="ident">heap_table</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(
+            <span class="ident">VALUES</span>.<span class="ident">iter</span>().<span class="ident">rev</span>().<span class="ident">zip</span>(
+                <span class="ident">original_data_addresses</span>.<span class="ident">into_iter</span>().<span class="ident">rev</span>().<span class="ident">zip</span>(
+                    <span class="ident">original_symbol_addresses</span>.<span class="ident">into_iter</span>().<span class="ident">rev</span>()))) {
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">symbol</span>.<span class="ident">data</span>(), <span class="ident">value</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">symbol</span>.<span class="ident">data</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">usize</span>, <span class="ident">data_address</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">symbol</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">symbol_address</span>);
+            <span class="ident">count</span> <span class="op">+=</span> <span class="number">1</span>;
         }
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>count</span>, <span class='ident'>VALUES</span>.<span class='ident'>len</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">count</span>, <span class="ident">VALUES</span>.<span class="ident">len</span>());
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>remap_empty_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
-        <span class='ident'>t</span>.<span class='ident'>remap</span>(<span class='op'>|</span><span class='ident'>symbol</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>.<span class='ident'>id</span>().<span class='ident'>clone</span>()));
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">remap_empty_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="ident">t</span>.<span class="ident">remap</span>(<span class="op">|</span><span class="ident">symbol</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">symbol</span>.<span class="ident">id</span>().<span class="ident">clone</span>()));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="number">0</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>remap_noop_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t1</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t1</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">remap_noop_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t1</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t1</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t2</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t2</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t2</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t2</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='ident'>t2</span>.<span class='ident'>remap</span>(<span class='op'>|</span><span class='ident'>symbol</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>.<span class='ident'>id</span>().<span class='ident'>clone</span>()));
+        <span class="ident">t2</span>.<span class="ident">remap</span>(<span class="op">|</span><span class="ident">symbol</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">symbol</span>.<span class="ident">id</span>().<span class="ident">clone</span>()));
 
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t2</span>.<span class='ident'>len</span>(), <span class='ident'>t1</span>.<span class='ident'>len</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t2</span>.<span class='ident'>to_hash_map</span>(), <span class='ident'>t1</span>.<span class='ident'>to_hash_map</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t2</span>.<span class="ident">len</span>(), <span class="ident">t1</span>.<span class="ident">len</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t2</span>.<span class="ident">to_hash_map</span>(), <span class="ident">t1</span>.<span class="ident">to_hash_map</span>());
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>remap_all_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">remap_all_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>new_id</span> <span class='op'>=</span> <span class='number'>0u8</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>expected_associations</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
-        <span class='ident'>t</span>.<span class='ident'>remap</span>(<span class='op'>|</span><span class='ident'>symbol</span><span class='op'>|</span> {
-            <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>new_id</span>;
-            <span class='ident'>new_id</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='ident'>expected_associations</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>symbol</span>.<span class='ident'>data</span>(), <span class='ident'>id</span>);
-            <span class='prelude-val'>Some</span>(<span class='ident'>id</span>)
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_id</span> <span class="op">=</span> <span class="number">0u8</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_associations</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+        <span class="ident">t</span>.<span class="ident">remap</span>(<span class="op">|</span><span class="ident">symbol</span><span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">new_id</span>;
+            <span class="ident">new_id</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">expected_associations</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">symbol</span>.<span class="ident">data</span>(), <span class="ident">id</span>);
+            <span class="prelude-val">Some</span>(<span class="ident">id</span>)
         });
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>to_hash_map</span>(), <span class='ident'>expected_associations</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">to_hash_map</span>(), <span class="ident">expected_associations</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>remap_some_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">remap_some_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>new_id</span> <span class='op'>=</span> <span class='number'>0u8</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>expected_associations</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>new</span>();
-        <span class='ident'>t</span>.<span class='ident'>remap</span>(<span class='op'>|</span><span class='ident'>symbol</span><span class='op'>|</span>
-                <span class='kw'>if</span> <span class='ident'>symbol</span>.<span class='ident'>id</span>() <span class='op'>%</span> <span class='number'>2</span> <span class='op'>==</span> <span class='number'>0</span> {
-                    <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>new_id</span>;
-                    <span class='ident'>new_id</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                    <span class='ident'>expected_associations</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>symbol</span>.<span class='ident'>data</span>(), <span class='ident'>id</span>);
-                    <span class='prelude-val'>Some</span>(<span class='ident'>id</span>)
-                } <span class='kw'>else</span> {
-                    <span class='prelude-val'>None</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_id</span> <span class="op">=</span> <span class="number">0u8</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_associations</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+        <span class="ident">t</span>.<span class="ident">remap</span>(<span class="op">|</span><span class="ident">symbol</span><span class="op">|</span>
+                <span class="kw">if</span> <span class="ident">symbol</span>.<span class="ident">id</span>() <span class="op">%</span> <span class="number">2</span> <span class="op">==</span> <span class="number">0</span> {
+                    <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">new_id</span>;
+                    <span class="ident">new_id</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">expected_associations</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">symbol</span>.<span class="ident">data</span>(), <span class="ident">id</span>);
+                    <span class="prelude-val">Some</span>(<span class="ident">id</span>)
+                } <span class="kw">else</span> {
+                    <span class="prelude-val">None</span>
                 });
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>to_hash_map</span>(), <span class='ident'>expected_associations</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">to_hash_map</span>(), <span class="ident">expected_associations</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>remap_none_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">remap_none_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='ident'>t</span>.<span class='ident'>remap</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='prelude-val'>None</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
+        <span class="ident">t</span>.<span class="ident">remap</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="number">0</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>table_empty_into_iter_ok</span>() {
-        <span class='kw'>let</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>into_iter</span>().<span class='ident'>next</span>().<span class='ident'>is_none</span>());
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">table_empty_into_iter_ok</span>() {
+        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">into_iter</span>().<span class="ident">next</span>().<span class="ident">is_none</span>());
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>table_into_iter_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>u32</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">table_into_iter_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u32</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='ident'>VALUES</span>.<span class='ident'>len</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="ident">VALUES</span>.<span class="ident">len</span>());
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>expected_len</span> <span class='op'>=</span> <span class='ident'>t</span>.<span class='ident'>len</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>t</span>.<span class='ident'>into_iter</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>vs</span> <span class='op'>=</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>().<span class='ident'>rev</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='ident'>expected_len</span>, <span class='prelude-val'>Some</span>(<span class='ident'>expected_len</span>)));
-        <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>) <span class='op'>=</span> <span class='ident'>i</span>.<span class='ident'>next</span>() {
-            <span class='ident'>expected_len</span> <span class='op'>-=</span> <span class='number'>1</span>;
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='ident'>expected_len</span>, <span class='prelude-val'>Some</span>(<span class='ident'>expected_len</span>)));
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>()), <span class='ident'>vs</span>.<span class='ident'>next</span>());
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_len</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">len</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">into_iter</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vs</span> <span class="op">=</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>().<span class="ident">rev</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="ident">expected_len</span>, <span class="prelude-val">Some</span>(<span class="ident">expected_len</span>)));
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">symbol</span>) <span class="op">=</span> <span class="ident">i</span>.<span class="ident">next</span>() {
+            <span class="ident">expected_len</span> <span class="op">-=</span> <span class="number">1</span>;
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="ident">expected_len</span>, <span class="prelude-val">Some</span>(<span class="ident">expected_len</span>)));
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="ident">symbol</span>.<span class="ident">data</span>()), <span class="ident">vs</span>.<span class="ident">next</span>());
         }
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>size_hint</span>(), (<span class='number'>0</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>)));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">size_hint</span>(), (<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)));
     }
 }
-</pre>
-</section>
-    <section id='search' class="content hidden"></section>
-
-    <section class="footer"></section>
-
-    <aside id="help" class="hidden">
-        <div>
-            <h1 class="hidden">Help</h1>
-
-            <div class="shortcuts">
-                <h2>Keyboard Shortcuts</h2>
-
-                <dl>
-                    <dt>?</dt>
-                    <dd>Show this help dialog</dd>
-                    <dt>S</dt>
-                    <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
-                    <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
-                    <dd>Move down in search results</dd>
-                    <dt>&#9166;</dt>
-                    <dd>Go to active search result</dd>
-                    <dt>+</dt>
-                    <dd>Collapse/expand all sections</dd>
-                </dl>
-            </div>
-
-            <div class="infos">
-                <h2>Search Tricks</h2>
-
-                <p>
-                    Prefix searches with a type followed by a colon (e.g.
-                    <code>fn:</code>) to restrict the search to a given type.
-                </p>
-
-                <p>
-                    Accepted types are: <code>fn</code>, <code>mod</code>,
-                    <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>type</code>, <code>macro</code>,
-                    and <code>const</code>.
-                </p>
-
-                <p>
-                    Search functions by type signature (e.g.
-                    <code>vec -> usize</code> or <code>* -> vec</code>)
-                </p>
-            </div>
-        </div>
-    </aside>
-
-    
-
-    <script>
-        window.rootPath = "../../";
-        window.currentCrate = "symbol_map";
-        window.playgroundUrl = "";
-    </script>
-    <script src="../../jquery.js"></script>
-    <script src="../../main.js"></script>
-    
-    <script defer src="../../search-index.js"></script>
-</body>
-</html>
+</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "symbol_map";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

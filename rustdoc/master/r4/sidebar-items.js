@@ -1,0 +1,1 @@
+initSidebarItems({"macro":[["iterate","Produces an iterator over values `yield`ed in a sequence of semicolon-separated expressions."]],"struct":[["FlatIter","Flat-maps an Option<I> where I: Iterator into the underlying iterator. You probably don't need to use this type directly. It is used internally by the `iterate!` macro."]]});

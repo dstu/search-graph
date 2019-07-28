@@ -1,48 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/stu/.cargo/registry/src/github.com-1ecc6299db9ec823/symbol-map-1.0.0/src/indexing.rs`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang">
-
-    <title>indexing.rs.html -- source</title>
-
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css">
-    
-
-    
-    
-</head>
-<body class="rustdoc">
-    <!--[if lte IE 8]>
-    <div class="warning">
-        This old browser is unsupported and will most likely display funky
-        things.
-    </div>
-    <![endif]-->
-
-    
-
-    <nav class="sidebar">
-        
-        
-    </nav>
-
-    <nav class="sub">
-        <form class="search-form js-only">
-            <div class="search-container">
-                <input class="search-input" name="search"
-                       autocomplete="off"
-                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                       type="search">
-            </div>
-        </form>
-    </nav>
-
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/stu/.cargo/registry/src/github.com-1ecc6299db9ec823/symbol-map-1.0.2/src/indexing.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>indexing.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../symbol_map/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -530,557 +486,498 @@
 <span id="486">486</span>
 <span id="487">487</span>
 <span id="488">488</span>
-</pre><pre class='rust '>
-<span class='doccomment'>//! Indexing on top of a `Table`.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! It is anticipated that most uses cases will be covered by</span>
-<span class='doccomment'>//! [HashIndexing](struct.HashIndexing.html), which owns a</span>
-<span class='doccomment'>//! [Table](../struct.Table.html) and provides bidirectional mappings between</span>
-<span class='doccomment'>//! data values and their symbols.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! The [Indexing](trait.Indexing.html) trait is provided in case another lookup</span>
-<span class='doccomment'>//! method is needed.</span>
+<span id="489">489</span>
+<span id="490">490</span>
+</pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! Indexing on top of a `Table`.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! It is anticipated that most uses cases will be covered by</span>
+<span class="doccomment">//! [HashIndexing](struct.HashIndexing.html), which owns a</span>
+<span class="doccomment">//! [Table](../struct.Table.html) and provides bidirectional mappings between</span>
+<span class="doccomment">//! data values and their symbols.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The [Indexing](trait.Indexing.html) trait is provided in case another lookup</span>
+<span class="doccomment">//! method is needed.</span>
 
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::{<span class='ident'>Eq</span>, <span class='ident'>Ord</span>, <span class='ident'>Ordering</span>, <span class='ident'>PartialEq</span>, <span class='ident'>PartialOrd</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>default</span>::<span class='ident'>Default</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>hash</span>::{<span class='ident'>Hash</span>, <span class='ident'>Hasher</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::{<span class="ident">Eq</span>, <span class="ident">Ord</span>, <span class="ident">Ordering</span>, <span class="ident">PartialEq</span>, <span class="ident">PartialOrd</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>};
 
-<span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>Symbol</span>, <span class='ident'>SymbolId</span>, <span class='ident'>Table</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Symbol</span>, <span class="ident">SymbolId</span>, <span class="ident">Table</span>};
 
-<span class='doccomment'>/// Indicates whether the result of a symbol lookup had to create a new table</span>
-<span class='doccomment'>/// entry.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>Ord</span>, <span class='ident'>Hash</span>, <span class='ident'>PartialEq</span>, <span class='ident'>PartialOrd</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Insertion</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>  {
-    <span class='doccomment'>/// Result came from an item that was already present in table.</span>
-    <span class='ident'>Present</span>(<span class='ident'>T</span>),
-    <span class='doccomment'>/// Result came from an item that was not present in table, and a new entry</span>
-    <span class='doccomment'>/// was created.</span>
-    <span class='ident'>New</span>(<span class='ident'>T</span>),
+<span class="doccomment">/// Indicates whether the result of a symbol lookup had to create a new table</span>
+<span class="doccomment">/// entry.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">PartialOrd</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Insertion</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>  {
+    <span class="doccomment">/// Result came from an item that was already present in table.</span>
+    <span class="ident">Present</span>(<span class="ident">T</span>),
+    <span class="doccomment">/// Result came from an item that was not present in table, and a new entry</span>
+    <span class="doccomment">/// was created.</span>
+    <span class="ident">New</span>(<span class="ident">T</span>),
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Insertion</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Maps over the type returned by an `Insertion` to produce a new value</span>
-    <span class='doccomment'>/// that may be of a different type.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Example</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// use symbol_map::indexing::{HashIndexing, Indexing, Insertion};</span>
-    <span class='doccomment'>/// use std::str::FromStr;</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// let mut index = HashIndexing::&lt;String, usize&gt;::default();</span>
-    <span class='doccomment'>/// let s1 = String::from_str(&quot;value1&quot;).unwrap();</span>
-    <span class='doccomment'>/// let s2 = String::from_str(&quot;value1&quot;).unwrap();</span>
-    <span class='doccomment'>/// let s3 = String::from_str(&quot;value2&quot;).unwrap();</span>
-    <span class='doccomment'>/// // get_or_insert normally returns an Insertion that borrows the</span>
-    <span class='doccomment'>/// // structure on which it was invoked. We map the symbol reference</span>
-    <span class='doccomment'>/// // returned after each insertion to a copy of the ID that was mapped to.</span>
-    <span class='doccomment'>/// let id1: Insertion&lt;usize&gt; = index.get_or_insert(s1).map(|symbol| *symbol.id());</span>
-    <span class='doccomment'>/// let id2: Insertion&lt;usize&gt; = index.get_or_insert(s2).map(|symbol| *symbol.id());</span>
-    <span class='doccomment'>/// let id3: Insertion&lt;usize&gt; = index.get_or_insert(s3).map(|symbol| *symbol.id());</span>
-    <span class='doccomment'>/// // The Insertion values are not the same because one was an insertion and</span>
-    <span class='doccomment'>/// // the other a retrieval.</span>
-    <span class='doccomment'>/// assert!(id1 != id2);</span>
-    <span class='doccomment'>/// assert!(id1 != id3);</span>
-    <span class='doccomment'>/// // But the symbol IDs for identical values are the same.</span>
-    <span class='doccomment'>/// assert!(id1.unwrap() == id2.unwrap());</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>map</span><span class='op'>&lt;</span><span class='ident'>F</span>, <span class='ident'>X</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Insertion</span><span class='op'>&lt;</span><span class='ident'>X</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>(<span class='kw-2'>&amp;</span><span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='ident'>X</span> {
-        <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
-            <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='kw-2'>ref</span> <span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='ident'>f</span>(<span class='ident'>s</span>)),
-            <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='kw-2'>ref</span> <span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>f</span>(<span class='ident'>s</span>)),
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Insertion</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Maps over the type returned by an `Insertion` to produce a new value</span>
+    <span class="doccomment">/// that may be of a different type.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Example</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use symbol_map::indexing::{HashIndexing, Indexing, Insertion};</span>
+    <span class="doccomment">/// use std::str::FromStr;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let mut index = HashIndexing::&lt;String, usize&gt;::default();</span>
+    <span class="doccomment">/// let s1 = String::from_str(&quot;value1&quot;).unwrap();</span>
+    <span class="doccomment">/// let s2 = String::from_str(&quot;value1&quot;).unwrap();</span>
+    <span class="doccomment">/// let s3 = String::from_str(&quot;value2&quot;).unwrap();</span>
+    <span class="doccomment">/// // get_or_insert normally returns an Insertion that borrows the</span>
+    <span class="doccomment">/// // structure on which it was invoked. We map the symbol reference</span>
+    <span class="doccomment">/// // returned after each insertion to a copy of the ID that was mapped to.</span>
+    <span class="doccomment">/// let id1: Insertion&lt;usize&gt; = index.get_or_insert(s1).map(|symbol| *symbol.id());</span>
+    <span class="doccomment">/// let id2: Insertion&lt;usize&gt; = index.get_or_insert(s2).map(|symbol| *symbol.id());</span>
+    <span class="doccomment">/// let id3: Insertion&lt;usize&gt; = index.get_or_insert(s3).map(|symbol| *symbol.id());</span>
+    <span class="doccomment">/// // The Insertion values are not the same because one was an insertion and</span>
+    <span class="doccomment">/// // the other a retrieval.</span>
+    <span class="doccomment">/// assert!(id1 != id2);</span>
+    <span class="doccomment">/// assert!(id1 != id3);</span>
+    <span class="doccomment">/// // But the symbol IDs for identical values are the same.</span>
+    <span class="doccomment">/// assert!(id1.unwrap() == id2.unwrap());</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">map</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">X</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">Insertion</span><span class="op">&lt;</span><span class="ident">X</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">X</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">Insertion</span>::<span class="ident">Present</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">Insertion</span>::<span class="ident">Present</span>(<span class="ident">f</span>(<span class="ident">s</span>)),
+            <span class="ident">Insertion</span>::<span class="ident">New</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">Insertion</span>::<span class="ident">New</span>(<span class="ident">f</span>(<span class="ident">s</span>)),
         }
     }
 
-    <span class='doccomment'>/// Unwraps an `Insertion` to produce the value which it wraps.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>unwrap</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>T</span> {
-        <span class='kw'>match</span> <span class='self'>self</span> {
-            <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>s</span>,
-            <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>s</span>,
-        }
-    }
-}
-
-<span class='doccomment'>/// Wrapper for a raw pointer which lets us treat it like a reference.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// You are strongly discouraged from exposing this type directly in your data</span>
-<span class='doccomment'>/// structures. This type is essentially a giant footgun. In particular:</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// - No safety checks or lifetimes protect this reference, so a `Ref&lt;T&gt;` may be</span>
-<span class='doccomment'>/// invalidated without warning. (You may use a `Ref&lt;T&gt;` safely by ensuring that</span>
-<span class='doccomment'>/// the references passed to `Ref&lt;T&gt;::new()` will never be dropped before the</span>
-<span class='doccomment'>/// wrappers. A good example of when you&#39;d be able to do this is in in a struct</span>
-<span class='doccomment'>/// that has `Ref&lt;T&gt;` references into a data structure that it also owns.)</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// - The impls for `Debug`, `Eq`, `Hash`, `Ord`, `PartialEq`, and `PartialOrd`</span>
-<span class='doccomment'>/// all dereference the raw pointer that this structure wraps. As a result, a</span>
-<span class='doccomment'>/// `Ref&lt;T&gt;` must be removed from any data structures that make use of any of</span>
-<span class='doccomment'>/// those interfaces *before* it is invalidated.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// - `Ref&lt;T&gt;` wraps a value of type `*const T`, which is not usually `Send` or</span>
-<span class='doccomment'>/// `Sync`. This restriction is overridden for a `Ref&lt;T&gt;` wrapper so that data</span>
-<span class='doccomment'>/// structures which encapsulate it may themselves be `Send` or `Sync`. This</span>
-<span class='doccomment'>/// makes it the responsibility of data structures using such wrappers to</span>
-<span class='doccomment'>/// satisfy the contracts of those types.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> { <span class='ident'>ptr</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>T</span>, }
-
-<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Send</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Send</span> { }
-
-<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Sync</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Sync</span> { }
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Casts `data` to `*const T` and retains the pointer for dereferencing at</span>
-    <span class='doccomment'>/// some point in the future.</span>
-    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>Ref</span> { <span class='ident'>ptr</span>: <span class='ident'>data</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>T</span>, }
-    }
-
-    <span class='doccomment'>/// Dereferences the wrapped pointer. The explicit lifetime parameter should</span>
-    <span class='doccomment'>/// match the lifetime of the parent `Table` that the wrapped pointer points</span>
-    <span class='doccomment'>/// into. Care should be taken not to call this method if the integrity of</span>
-    <span class='doccomment'>/// the reference passed to `new()` cannot be verified.</span>
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>deref</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>T</span> {
-        <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Clone</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>clone</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>Ref</span> { <span class='ident'>ptr</span>: <span class='self'>self</span>.<span class='ident'>ptr</span>, }
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Copy</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> { }
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>fmt</span>::<span class='ident'>Pointer</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
-        <span class='ident'>fmt</span>::<span class='ident'>Pointer</span>::<span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>ptr</span>, <span class='ident'>f</span>)
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>fmt</span>::<span class='ident'>Debug</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>fmt</span>::<span class='ident'>Debug</span> {
-    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
-        <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;Ref({:?})&quot;</span>, <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span>(<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>) })
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Eq</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Eq</span> { }
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Hash</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Hash</span> {
-    <span class='kw'>fn</span> <span class='ident'>hash</span><span class='op'>&lt;</span><span class='ident'>H</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>h</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>H</span>) <span class='kw'>where</span> <span class='ident'>H</span>: <span class='ident'>Hasher</span> {
-        <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>).<span class='ident'>hash</span>(<span class='ident'>h</span>) }
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Ord</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Ord</span> {
-    <span class='kw'>fn</span> <span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='ident'>Ordering</span> {
-        <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>).<span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span>(<span class='op'>*</span><span class='ident'>other</span>.<span class='ident'>ptr</span>)) }
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>PartialEq</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>PartialEq</span> {
-    <span class='kw'>fn</span> <span class='ident'>eq</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>).<span class='ident'>eq</span>(<span class='kw-2'>&amp;</span>(<span class='op'>*</span><span class='ident'>other</span>.<span class='ident'>ptr</span>)) }
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>PartialOrd</span> <span class='kw'>for</span> <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>PartialOrd</span> {
-    <span class='kw'>fn</span> <span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Ordering</span><span class='op'>&gt;</span> {
-        <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>).<span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span>(<span class='op'>*</span><span class='ident'>other</span>.<span class='ident'>ptr</span>)) }
-    }
-}
-
-<span class='doccomment'>/// Provides indexing for a `Table`, so that its elements may be retrieved</span>
-<span class='doccomment'>/// efficiently. Most table lookups should go through an implementation of this</span>
-<span class='doccomment'>/// trait structure instead of a `Table` directly.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// An `Indexing` should own an underlying `Table&lt;Indexing::Data&gt;`. This table</span>
-<span class='doccomment'>/// provides persistent storage for `Symbol&lt;Indexing::Data&gt;`s, which associate</span>
-<span class='doccomment'>/// instances of `Data` with a `SymbolId`.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This trait is provided for extensibility. Realistically speaking, however,</span>
-<span class='doccomment'>/// you should probably just use `HashIndexing`.</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Indexing</span>: <span class='ident'>Default</span> {
-    <span class='doccomment'>/// The type `T` of a `Table&lt;T, D&gt;`.</span>
-    <span class='kw'>type</span> <span class='ident'>Data</span>;
-
-    <span class='doccomment'>/// The type `D` of a `Table&lt;T, D&gt;`.</span>
-    <span class='kw'>type</span> <span class='ident'>Id</span>: <span class='ident'>SymbolId</span>;
-
-    <span class='doccomment'>/// Returns a new indexing method that has already indexed the contents of</span>
-    <span class='doccomment'>/// `table`.</span>
-    <span class='kw'>fn</span> <span class='ident'>from_table</span>(<span class='ident'>table</span>: <span class='ident'>Table</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span>;
-
-    <span class='doccomment'>/// Returns a read-only view of the underlying table.</span>
-    <span class='kw'>fn</span> <span class='ident'>table</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>Table</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;</span>;
-
-    <span class='doccomment'>/// Extracts the underlying table from the index, discarding all pointers</span>
-    <span class='doccomment'>/// into the table.</span>
-    <span class='kw'>fn</span> <span class='ident'>to_table</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;</span>;
-
-    <span class='doccomment'>/// Looks up `data` in the index. Returns `Some(&amp;symbol)` if a symbol is</span>
-    <span class='doccomment'>/// present, else `None`.</span>
-    <span class='kw'>fn</span> <span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>::<span class='ident'>Data</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;&gt;</span>;
-
-    <span class='doccomment'>/// Looks up `data` in the index, inserting it into the index and `table` if</span>
-    <span class='doccomment'>/// it isn&#39;t present. Returns the resulting `&amp;Symbol&lt;T&gt;` wrapped in an</span>
-    <span class='doccomment'>/// `Insertion` that indicates whether a new table entry had to be created.</span>
-    <span class='kw'>fn</span> <span class='ident'>get_or_insert</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='self'>Self</span>::<span class='ident'>Data</span>)
-                         <span class='op'>-&gt;</span> <span class='ident'>Insertion</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;&gt;</span>;
-
-    <span class='doccomment'>/// Looks up the symbol with id `i` in the index. Returns `Some(symbol)` if</span>
-    <span class='doccomment'>/// a symbol is present, else `None`.</span>
-    <span class='kw'>fn</span> <span class='ident'>get_symbol</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>, <span class='ident'>id</span>: <span class='kw-2'>&amp;</span><span class='self'>Self</span>::<span class='ident'>Id</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;&gt;</span>;
-}
-
-<span class='doccomment'>/// HashMap-backed table indexing.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>HashIndexing</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Hash</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='ident'>table</span>: <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span>,
-    <span class='ident'>by_symbol</span>: <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, <span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span>,
-    <span class='ident'>by_id</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Ref</span><span class='op'>&lt;</span><span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span>,
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Default</span> <span class='kw'>for</span> <span class='ident'>HashIndexing</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Hash</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>fn</span> <span class='ident'>default</span>() <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>HashIndexing</span> {
-            <span class='ident'>table</span>: <span class='ident'>Table</span>::<span class='ident'>new</span>(),
-            <span class='ident'>by_symbol</span>: <span class='ident'>HashMap</span>::<span class='ident'>new</span>(),
-            <span class='ident'>by_id</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
+    <span class="doccomment">/// Unwraps an `Insertion` to produce the value which it wraps.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unwrap</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">Insertion</span>::<span class="ident">Present</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">s</span>,
+            <span class="ident">Insertion</span>::<span class="ident">New</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">s</span>,
         }
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='ident'>Indexing</span> <span class='kw'>for</span> <span class='ident'>HashIndexing</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Eq</span> <span class='op'>+</span> <span class='ident'>Hash</span>, <span class='ident'>D</span>: <span class='ident'>SymbolId</span> {
-    <span class='kw'>type</span> <span class='ident'>Data</span> <span class='op'>=</span> <span class='ident'>T</span>;
-    <span class='kw'>type</span> <span class='ident'>Id</span> <span class='op'>=</span> <span class='ident'>D</span>;
+<span class="doccomment">/// Wrapper for a raw pointer which lets us treat it like a reference.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// You are strongly discouraged from exposing this type directly in your data</span>
+<span class="doccomment">/// structures. This type is essentially a giant footgun. In particular:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// - No safety checks or lifetimes protect this reference, so a `Ref&lt;T&gt;` may be</span>
+<span class="doccomment">/// invalidated without warning. (You may use a `Ref&lt;T&gt;` safely by ensuring that</span>
+<span class="doccomment">/// the references passed to `Ref&lt;T&gt;::new()` will never be dropped before the</span>
+<span class="doccomment">/// wrappers. A good example of when you&#39;d be able to do this is in in a struct</span>
+<span class="doccomment">/// that has `Ref&lt;T&gt;` references into a data structure that it also owns.)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// - The impls for `Debug`, `Eq`, `Hash`, `Ord`, `PartialEq`, and `PartialOrd`</span>
+<span class="doccomment">/// all dereference the raw pointer that this structure wraps. As a result, a</span>
+<span class="doccomment">/// `Ref&lt;T&gt;` must be removed from any data structures that make use of any of</span>
+<span class="doccomment">/// those interfaces *before* it is invalidated.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// - `Ref&lt;T&gt;` wraps a value of type `*const T`, which is not usually `Send` or</span>
+<span class="doccomment">/// `Sync`. This restriction is overridden for a `Ref&lt;T&gt;` wrapper so that data</span>
+<span class="doccomment">/// structures which encapsulate it may themselves be `Send` or `Sync`. This</span>
+<span class="doccomment">/// makes it the responsibility of data structures using such wrappers to</span>
+<span class="doccomment">/// satisfy the contracts of those types.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> { <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">T</span>, }
 
-    <span class='kw'>fn</span> <span class='ident'>from_table</span>(<span class='ident'>table</span>: <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>by_symbol</span> <span class='op'>=</span> <span class='ident'>HashMap</span>::<span class='ident'>with_capacity</span>(<span class='ident'>table</span>.<span class='ident'>len</span>());
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>by_id</span> <span class='op'>=</span>
-            <span class='kw'>match</span> <span class='ident'>table</span>.<span class='ident'>iter</span>().<span class='ident'>next</span>() {
-                <span class='prelude-val'>Some</span>(<span class='ident'>symbol</span>) <span class='op'>=&gt;</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>symbol</span>); <span class='ident'>table</span>.<span class='ident'>len</span>()],
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
+<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Send</span> { }
+
+<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Sync</span> { }
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Casts `data` to `*const T` and retains the pointer for dereferencing at</span>
+    <span class="doccomment">/// some point in the future.</span>
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Ref</span> { <span class="ident">ptr</span>: <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">T</span>, }
+    }
+
+    <span class="doccomment">/// Dereferences the wrapped pointer. The explicit lifetime parameter should</span>
+    <span class="doccomment">/// match the lifetime of the parent `Table` that the wrapped pointer points</span>
+    <span class="doccomment">/// into. Care should be taken not to call this method if the integrity of</span>
+    <span class="doccomment">/// the reference passed to `new()` cannot be verified.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">deref</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span> {
+        <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">ptr</span>
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Ref</span> { <span class="ident">ptr</span>: <span class="self">self</span>.<span class="ident">ptr</span>, }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Copy</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> { }
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Pointer</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="ident">fmt</span>::<span class="ident">Pointer</span>::<span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ptr</span>, <span class="ident">f</span>)
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">fmt</span>::<span class="ident">Debug</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Ref({:?})&quot;</span>, <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span>(<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">ptr</span>) })
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Eq</span> { }
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Hash</span> {
+    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">h</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) <span class="kw">where</span> <span class="ident">H</span>: <span class="ident">Hasher</span> {
+        <span class="kw">unsafe</span> { (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">ptr</span>).<span class="ident">hash</span>(<span class="ident">h</span>) }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Ord</span> {
+    <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+        <span class="kw">unsafe</span> { (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">ptr</span>).<span class="ident">cmp</span>(<span class="kw-2">&amp;</span>(<span class="kw-2">*</span><span class="ident">other</span>.<span class="ident">ptr</span>)) }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialEq</span> {
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">unsafe</span> { (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">ptr</span>).<span class="ident">eq</span>(<span class="kw-2">&amp;</span>(<span class="kw-2">*</span><span class="ident">other</span>.<span class="ident">ptr</span>)) }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">PartialOrd</span> <span class="kw">for</span> <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialOrd</span> {
+    <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Ordering</span><span class="op">&gt;</span> {
+        <span class="kw">unsafe</span> { (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">ptr</span>).<span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span>(<span class="kw-2">*</span><span class="ident">other</span>.<span class="ident">ptr</span>)) }
+    }
+}
+
+<span class="doccomment">/// Provides indexing for a `Table`, so that its elements may be retrieved</span>
+<span class="doccomment">/// efficiently. Most table lookups should go through an implementation of this</span>
+<span class="doccomment">/// trait structure instead of a `Table` directly.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// An `Indexing` should own an underlying `Table&lt;Indexing::Data&gt;`. This table</span>
+<span class="doccomment">/// provides persistent storage for `Symbol&lt;Indexing::Data&gt;`s, which associate</span>
+<span class="doccomment">/// instances of `Data` with a `SymbolId`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This trait is provided for extensibility. Realistically speaking, however,</span>
+<span class="doccomment">/// you should probably just use `HashIndexing`.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Indexing</span>: <span class="ident">Default</span> {
+    <span class="doccomment">/// The type `T` of a `Table&lt;T, D&gt;`.</span>
+    <span class="kw">type</span> <span class="ident">Data</span>;
+
+    <span class="doccomment">/// The type `D` of a `Table&lt;T, D&gt;`.</span>
+    <span class="kw">type</span> <span class="ident">Id</span>: <span class="ident">SymbolId</span>;
+
+    <span class="doccomment">/// Returns a new indexing method that has already indexed the contents of</span>
+    <span class="doccomment">/// `table`.</span>
+    <span class="kw">fn</span> <span class="ident">from_table</span>(<span class="ident">table</span>: <span class="ident">Table</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+
+    <span class="doccomment">/// Returns a read-only view of the underlying table.</span>
+    <span class="kw">fn</span> <span class="ident">table</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Table</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;</span>;
+
+    <span class="doccomment">/// Extracts the underlying table from the index, discarding all pointers</span>
+    <span class="doccomment">/// into the table.</span>
+    <span class="kw">fn</span> <span class="ident">to_table</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Table</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;</span>;
+
+    <span class="doccomment">/// Looks up `data` in the index. Returns `Some(&amp;symbol)` if a symbol is</span>
+    <span class="doccomment">/// present, else `None`.</span>
+    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Data</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;&gt;</span>;
+
+    <span class="doccomment">/// Looks up `data` in the index, inserting it into the index and `table` if</span>
+    <span class="doccomment">/// it isn&#39;t present. Returns the resulting `&amp;Symbol&lt;T&gt;` wrapped in an</span>
+    <span class="doccomment">/// `Insertion` that indicates whether a new table entry had to be created.</span>
+    <span class="kw">fn</span> <span class="ident">get_or_insert</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="self">Self</span>::<span class="ident">Data</span>)
+                         <span class="op">-&gt;</span> <span class="ident">Insertion</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;&gt;</span>;
+
+    <span class="doccomment">/// Looks up the symbol with id `i` in the index. Returns `Some(symbol)` if</span>
+    <span class="doccomment">/// a symbol is present, else `None`.</span>
+    <span class="kw">fn</span> <span class="ident">get_symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Id</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;&gt;</span>;
+}
+
+<span class="doccomment">/// HashMap-backed table indexing.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">HashIndexing</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="ident">table</span>: <span class="ident">Table</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>,
+    <span class="ident">by_symbol</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">by_id</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Ref</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">HashIndexing</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">HashIndexing</span> {
+            <span class="ident">table</span>: <span class="ident">Table</span>::<span class="ident">new</span>(),
+            <span class="ident">by_symbol</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
+            <span class="ident">by_id</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+        }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Indexing</span> <span class="kw">for</span> <span class="ident">HashIndexing</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span>, <span class="ident">D</span>: <span class="ident">SymbolId</span> {
+    <span class="kw">type</span> <span class="ident">Data</span> <span class="op">=</span> <span class="ident">T</span>;
+    <span class="kw">type</span> <span class="ident">Id</span> <span class="op">=</span> <span class="ident">D</span>;
+
+    <span class="kw">fn</span> <span class="ident">from_table</span>(<span class="ident">table</span>: <span class="ident">Table</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">by_symbol</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">with_capacity</span>(<span class="ident">table</span>.<span class="ident">len</span>());
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">by_id</span> <span class="op">=</span>
+            <span class="kw">match</span> <span class="ident">table</span>.<span class="ident">iter</span>().<span class="ident">next</span>() {
+                <span class="prelude-val">Some</span>(<span class="ident">symbol</span>) <span class="op">=&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">symbol</span>); <span class="ident">table</span>.<span class="ident">len</span>()],
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">Vec</span>::<span class="ident">new</span>(),
             };
-        <span class='kw'>for</span> <span class='ident'>symbol</span> <span class='kw'>in</span> <span class='ident'>table</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>by_symbol</span>.<span class='ident'>insert</span>(<span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>()), <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>symbol</span>));
-            <span class='ident'>by_id</span>[<span class='ident'>symbol</span>.<span class='ident'>id</span>().<span class='ident'>as_usize</span>()] <span class='op'>=</span> <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>symbol</span>);
+        <span class="kw">for</span> <span class="ident">symbol</span> <span class="kw">in</span> <span class="ident">table</span>.<span class="ident">iter</span>() {
+            <span class="ident">by_symbol</span>.<span class="ident">insert</span>(<span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">symbol</span>.<span class="ident">data</span>()), <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">symbol</span>));
+            <span class="ident">by_id</span>[<span class="ident">symbol</span>.<span class="ident">id</span>().<span class="ident">as_usize</span>()] <span class="op">=</span> <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">symbol</span>);
         }
-        <span class='ident'>HashIndexing</span> {
-            <span class='ident'>table</span>: <span class='ident'>table</span>,
-            <span class='ident'>by_symbol</span>: <span class='ident'>by_symbol</span>,
-            <span class='ident'>by_id</span>: <span class='ident'>by_id</span>,
+        <span class="ident">HashIndexing</span> {
+            <span class="ident">table</span>: <span class="ident">table</span>,
+            <span class="ident">by_symbol</span>: <span class="ident">by_symbol</span>,
+            <span class="ident">by_id</span>: <span class="ident">by_id</span>,
         }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>table</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>Table</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;</span> { <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>table</span> }
+    <span class="kw">fn</span> <span class="ident">table</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Table</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;</span> { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">table</span> }
 
-    <span class='kw'>fn</span> <span class='ident'>to_table</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Data</span>, <span class='self'>Self</span>::<span class='ident'>Id</span><span class='op'>&gt;</span> { <span class='self'>self</span>.<span class='ident'>table</span> }
+    <span class="kw">fn</span> <span class="ident">to_table</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Table</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Data</span>, <span class="self">Self</span>::<span class="ident">Id</span><span class="op">&gt;</span> { <span class="self">self</span>.<span class="ident">table</span> }
 
-    <span class='kw'>fn</span> <span class='ident'>get</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span> {
-        <span class='comment'>// Unsafe call to Ref::deref(): should be fine as because we own</span>
-        <span class='comment'>// self.table and the ref refers into that.</span>
-        <span class='self'>self</span>.<span class='ident'>by_symbol</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>data</span>)).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw'>unsafe</span> { <span class='ident'>x</span>.<span class='ident'>deref</span>() })
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span> {
+        <span class="comment">// Unsafe call to Ref::deref(): should be fine as because we own</span>
+        <span class="comment">// self.table and the ref refers into that.</span>
+        <span class="self">self</span>.<span class="ident">by_symbol</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">data</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw">unsafe</span> { <span class="ident">x</span>.<span class="ident">deref</span>() })
     }
 
-    <span class='kw'>fn</span> <span class='ident'>get_or_insert</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>data</span>: <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='ident'>Insertion</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>hash_map</span>::<span class='ident'>Entry</span>;
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='ident'>Entry</span>::<span class='ident'>Occupied</span>(<span class='ident'>e</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>by_symbol</span>.<span class='ident'>entry</span>(<span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>data</span>)) {
-            <span class='comment'>// Unsafe call to Ref::deref(): should be fine as because we own</span>
-            <span class='comment'>// self.table and the ref refers into that.</span>
-            <span class='kw'>return</span> <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='kw'>unsafe</span> { <span class='ident'>e</span>.<span class='ident'>get</span>().<span class='ident'>deref</span>() })
+    <span class="kw">fn</span> <span class="ident">get_or_insert</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">Insertion</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">hash_map</span>::<span class="ident">Entry</span>;
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">by_symbol</span>.<span class="ident">entry</span>(<span class="ident">Ref</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>)) {
+            <span class="comment">// Unsafe call to Ref::deref(): should be fine as because we own</span>
+            <span class="comment">// self.table and the ref refers into that.</span>
+            <span class="kw">return</span> <span class="ident">Insertion</span>::<span class="ident">Present</span>(<span class="kw">unsafe</span> { <span class="ident">e</span>.<span class="ident">get</span>().<span class="ident">deref</span>() })
         }
-        <span class='comment'>// TODO: when the HashMap API gets revised, we may be able to do this</span>
-        <span class='comment'>// without a second hashtable lookup.</span>
-        <span class='kw'>let</span> <span class='ident'>symbol</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>insert</span>(<span class='ident'>data</span>);
-        <span class='comment'>// The Ref that gets inserted has to be backed by data in the table, not</span>
-        <span class='comment'>// data on the stack (which is how we did the previous lookup).</span>
-        <span class='self'>self</span>.<span class='ident'>by_symbol</span>.<span class='ident'>insert</span>(<span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>()), <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>symbol</span>));
-        <span class='self'>self</span>.<span class='ident'>by_id</span>.<span class='ident'>push</span>(<span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='ident'>symbol</span>));
-        <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>symbol</span>)
+        <span class="comment">// TODO: when the HashMap API gets revised, we may be able to do this</span>
+        <span class="comment">// without a second hashtable lookup.</span>
+        <span class="kw">let</span> <span class="ident">symbol</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">table</span>.<span class="ident">insert</span>(<span class="ident">data</span>);
+        <span class="comment">// The Ref that gets inserted has to be backed by data in the table, not</span>
+        <span class="comment">// data on the stack (which is how we did the previous lookup).</span>
+        <span class="self">self</span>.<span class="ident">by_symbol</span>.<span class="ident">insert</span>(<span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">symbol</span>.<span class="ident">data</span>()), <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">symbol</span>));
+        <span class="self">self</span>.<span class="ident">by_id</span>.<span class="ident">push</span>(<span class="ident">Ref</span>::<span class="ident">new</span>(<span class="ident">symbol</span>));
+        <span class="ident">Insertion</span>::<span class="ident">New</span>(<span class="ident">symbol</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>get_symbol</span><span class='op'>&lt;</span><span class='lifetime'>&#39;s</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='self'>self</span>, <span class='ident'>id</span>: <span class='kw-2'>&amp;</span><span class='ident'>D</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Symbol</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>D</span><span class='op'>&gt;&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>by_id</span>.<span class='ident'>get</span>(<span class='ident'>id</span>.<span class='ident'>as_usize</span>()).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw'>unsafe</span> { <span class='ident'>x</span>.<span class='ident'>deref</span>() })
+    <span class="kw">fn</span> <span class="ident">get_symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span> {
+        <span class="self">self</span>.<span class="ident">by_id</span>.<span class="ident">get</span>(<span class="ident">id</span>.<span class="ident">as_usize</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw">unsafe</span> { <span class="ident">x</span>.<span class="ident">deref</span>() })
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>test</span> {
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>HashIndexing</span>, <span class='ident'>Indexing</span>, <span class='ident'>Insertion</span>, <span class='ident'>Ref</span>};
-    <span class='kw'>use</span> ::{<span class='ident'>SymbolId</span>, <span class='ident'>Table</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">test</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">HashIndexing</span>, <span class="ident">Indexing</span>, <span class="ident">Insertion</span>, <span class="ident">Ref</span>};
+    <span class="kw">use</span> ::{<span class="ident">SymbolId</span>, <span class="ident">Table</span>};
 
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Ordering</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>hash</span>::{<span class='ident'>Hash</span>, <span class='ident'>Hasher</span>, <span class='ident'>SipHasher</span>};
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>FromStr</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">hash_map</span>::<span class="ident">DefaultHasher</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>};
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
 
-    <span class='kw'>const</span> <span class='ident'>VALUES</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> [<span class='ident'>usize</span>] <span class='op'>=</span> <span class='kw-2'>&amp;</span>[<span class='number'>101</span>, <span class='number'>203</span>, <span class='number'>500</span>, <span class='number'>30</span>, <span class='number'>0</span>, <span class='number'>1</span>];
+    <span class="kw">const</span> <span class="ident">VALUES</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">usize</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="number">101</span>, <span class="number">203</span>, <span class="number">500</span>, <span class="number">30</span>, <span class="number">0</span>, <span class="number">1</span>];
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>ref_impls_ok</span>() {
-        <span class='kw'>let</span> <span class='ident'>x1</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;foo&quot;</span>).<span class='ident'>unwrap</span>();
-        <span class='kw'>let</span> <span class='ident'>x2</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;foo&quot;</span>).<span class='ident'>unwrap</span>();
-        <span class='kw'>let</span> <span class='ident'>x3</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;fo&quot;</span>).<span class='ident'>unwrap</span>();
-        <span class='kw'>let</span> <span class='ident'>x4</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;fox&quot;</span>).<span class='ident'>unwrap</span>();
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>x1</span> <span class='op'>==</span> <span class='ident'>x2</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>x1</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>String</span> <span class='op'>!=</span> <span class='kw-2'>&amp;</span><span class='ident'>x2</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>String</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">ref_impls_ok</span>() {
+        <span class="kw">let</span> <span class="ident">x1</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from_str</span>(<span class="string">&quot;foo&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">x2</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from_str</span>(<span class="string">&quot;foo&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">x3</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from_str</span>(<span class="string">&quot;fo&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">x4</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from_str</span>(<span class="string">&quot;fox&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">x1</span> <span class="op">==</span> <span class="ident">x2</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="ident">x1</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">String</span> <span class="op">!=</span> <span class="kw-2">&amp;</span><span class="ident">x2</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">String</span>);
 
-        <span class='kw'>let</span> <span class='ident'>r1</span> <span class='op'>=</span> <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>x1</span>);
-        <span class='kw'>let</span> <span class='ident'>r2</span> <span class='op'>=</span> <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>x2</span>);
-        <span class='kw'>let</span> <span class='ident'>r3</span> <span class='op'>=</span> <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>x3</span>);
-        <span class='kw'>let</span> <span class='ident'>r4</span> <span class='op'>=</span> <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>x4</span>);
-        <span class='comment'>// Eq, PartialEq.</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>r1</span>, <span class='ident'>r2</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>r1</span> <span class='op'>!=</span> <span class='ident'>r3</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>r1</span> <span class='op'>!=</span> <span class='ident'>r4</span>);
+        <span class="kw">let</span> <span class="ident">r1</span> <span class="op">=</span> <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">x1</span>);
+        <span class="kw">let</span> <span class="ident">r2</span> <span class="op">=</span> <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">x2</span>);
+        <span class="kw">let</span> <span class="ident">r3</span> <span class="op">=</span> <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">x3</span>);
+        <span class="kw">let</span> <span class="ident">r4</span> <span class="op">=</span> <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">x4</span>);
+        <span class="comment">// Eq, PartialEq.</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">r1</span>, <span class="ident">r2</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">r1</span> <span class="op">!=</span> <span class="ident">r3</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">r1</span> <span class="op">!=</span> <span class="ident">r4</span>);
 
-        <span class='comment'>// Ord (skip PartialOrd).</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>r1</span>.<span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>r2</span>), <span class='ident'>Ordering</span>::<span class='ident'>Equal</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>r1</span>.<span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>r3</span>), <span class='ident'>Ordering</span>::<span class='ident'>Greater</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>r1</span>.<span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>r4</span>), <span class='ident'>Ordering</span>::<span class='ident'>Less</span>);
+        <span class="comment">// Ord (skip PartialOrd).</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">r1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">r2</span>), <span class="ident">Ordering</span>::<span class="ident">Equal</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">r1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">r3</span>), <span class="ident">Ordering</span>::<span class="ident">Greater</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">r1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">r4</span>), <span class="ident">Ordering</span>::<span class="ident">Less</span>);
 
-        <span class='comment'>// Hash.</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rh1</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rh2</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rh3</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rh4</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='ident'>r1</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>rh1</span>);
-        <span class='ident'>r2</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>rh2</span>);
-        <span class='ident'>r3</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>rh3</span>);
-        <span class='ident'>r4</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>rh4</span>);
-        <span class='kw'>let</span> <span class='ident'>rh1</span> <span class='op'>=</span> <span class='ident'>rh1</span>.<span class='ident'>finish</span>();
-        <span class='kw'>let</span> <span class='ident'>rh2</span> <span class='op'>=</span> <span class='ident'>rh2</span>.<span class='ident'>finish</span>();
-        <span class='kw'>let</span> <span class='ident'>rh3</span> <span class='op'>=</span> <span class='ident'>rh3</span>.<span class='ident'>finish</span>();
-        <span class='kw'>let</span> <span class='ident'>rh4</span> <span class='op'>=</span> <span class='ident'>rh4</span>.<span class='ident'>finish</span>();
+        <span class="comment">// Hash.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rh1</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rh2</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rh3</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rh4</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="ident">r1</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rh1</span>);
+        <span class="ident">r2</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rh2</span>);
+        <span class="ident">r3</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rh3</span>);
+        <span class="ident">r4</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rh4</span>);
+        <span class="kw">let</span> <span class="ident">rh1</span> <span class="op">=</span> <span class="ident">rh1</span>.<span class="ident">finish</span>();
+        <span class="kw">let</span> <span class="ident">rh2</span> <span class="op">=</span> <span class="ident">rh2</span>.<span class="ident">finish</span>();
+        <span class="kw">let</span> <span class="ident">rh3</span> <span class="op">=</span> <span class="ident">rh3</span>.<span class="ident">finish</span>();
+        <span class="kw">let</span> <span class="ident">rh4</span> <span class="op">=</span> <span class="ident">rh4</span>.<span class="ident">finish</span>();
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>xh1</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>xh2</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>xh3</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>xh4</span> <span class='op'>=</span> <span class='ident'>SipHasher</span>::<span class='ident'>new</span>();
-        <span class='ident'>x1</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>xh1</span>);
-        <span class='ident'>x2</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>xh2</span>);
-        <span class='ident'>x3</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>xh3</span>);
-        <span class='ident'>x4</span>.<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>xh4</span>);
-        <span class='kw'>let</span> <span class='ident'>xh1</span> <span class='op'>=</span> <span class='ident'>xh1</span>.<span class='ident'>finish</span>();
-        <span class='kw'>let</span> <span class='ident'>xh2</span> <span class='op'>=</span> <span class='ident'>xh2</span>.<span class='ident'>finish</span>();
-        <span class='kw'>let</span> <span class='ident'>xh3</span> <span class='op'>=</span> <span class='ident'>xh3</span>.<span class='ident'>finish</span>();
-        <span class='kw'>let</span> <span class='ident'>xh4</span> <span class='op'>=</span> <span class='ident'>xh4</span>.<span class='ident'>finish</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xh1</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xh2</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xh3</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xh4</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="ident">x1</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">xh1</span>);
+        <span class="ident">x2</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">xh2</span>);
+        <span class="ident">x3</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">xh3</span>);
+        <span class="ident">x4</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">xh4</span>);
+        <span class="kw">let</span> <span class="ident">xh1</span> <span class="op">=</span> <span class="ident">xh1</span>.<span class="ident">finish</span>();
+        <span class="kw">let</span> <span class="ident">xh2</span> <span class="op">=</span> <span class="ident">xh2</span>.<span class="ident">finish</span>();
+        <span class="kw">let</span> <span class="ident">xh3</span> <span class="op">=</span> <span class="ident">xh3</span>.<span class="ident">finish</span>();
+        <span class="kw">let</span> <span class="ident">xh4</span> <span class="op">=</span> <span class="ident">xh4</span>.<span class="ident">finish</span>();
 
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>rh1</span>, <span class='ident'>xh1</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>rh2</span>, <span class='ident'>xh2</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>rh3</span>, <span class='ident'>xh3</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>rh4</span>, <span class='ident'>xh4</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rh1</span>, <span class="ident">xh1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rh2</span>, <span class="ident">xh2</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rh3</span>, <span class="ident">xh3</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rh4</span>, <span class="ident">xh4</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>hash_indexing_empty_ok</span>() {
-        <span class='kw'>let</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>t</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
-        <span class='kw'>let</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>HashIndexing</span>::<span class='ident'>from_table</span>(<span class='ident'>t</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>by_symbol</span>.<span class='ident'>is_empty</span>());
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>by_id</span>.<span class='ident'>is_empty</span>());
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">hash_indexing_empty_ok</span>() {
+        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">HashIndexing</span>::<span class="ident">from_table</span>(<span class="ident">t</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">by_symbol</span>.<span class="ident">is_empty</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">by_id</span>.<span class="ident">is_empty</span>());
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>hash_indexing_from_table_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">hash_indexing_from_table_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='kw'>let</span> <span class='ident'>expected_len</span> <span class='op'>=</span> <span class='ident'>t</span>.<span class='ident'>len</span>();
-        <span class='kw'>let</span> <span class='ident'>expected_values</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> <span class='op'>=</span>
-            <span class='ident'>t</span>.<span class='ident'>iter</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> (<span class='op'>*</span><span class='ident'>s</span>.<span class='ident'>data</span>(), <span class='op'>*</span><span class='ident'>s</span>.<span class='ident'>id</span>())).<span class='ident'>collect</span>();
+        <span class="kw">let</span> <span class="ident">expected_len</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">len</span>();
+        <span class="kw">let</span> <span class="ident">expected_values</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span>
+            <span class="ident">t</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> (<span class="kw-2">*</span><span class="ident">s</span>.<span class="ident">data</span>(), <span class="kw-2">*</span><span class="ident">s</span>.<span class="ident">id</span>())).<span class="ident">collect</span>();
 
-        <span class='kw'>let</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>HashIndexing</span>::<span class='ident'>from_table</span>(<span class='ident'>t</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>by_symbol</span>.<span class='ident'>len</span>(), <span class='ident'>expected_len</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>by_id</span>.<span class='ident'>len</span>(), <span class='ident'>expected_len</span>);
-        <span class='kw'>for</span> (<span class='ident'>data</span>, <span class='ident'>id</span>) <span class='kw'>in</span> <span class='ident'>expected_values</span>.<span class='ident'>into_iter</span>() {
-            <span class='kw'>let</span> <span class='ident'>data_ref</span> <span class='op'>=</span> <span class='ident'>Ref</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>data</span>);
-            <span class='kw'>unsafe</span> {
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>by_symbol</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_ref</span>).<span class='ident'>unwrap</span>().<span class='ident'>deref</span>().<span class='ident'>data</span>(), <span class='kw-2'>&amp;</span><span class='ident'>data</span>);
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>by_symbol</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_ref</span>).<span class='ident'>unwrap</span>().<span class='ident'>deref</span>().<span class='ident'>id</span>(), <span class='kw-2'>&amp;</span><span class='ident'>id</span>);
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>by_id</span>[<span class='ident'>id</span>.<span class='ident'>as_usize</span>()].<span class='ident'>deref</span>().<span class='ident'>data</span>(), <span class='kw-2'>&amp;</span><span class='ident'>data</span>);
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">HashIndexing</span>::<span class="ident">from_table</span>(<span class="ident">t</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">by_symbol</span>.<span class="ident">len</span>(), <span class="ident">expected_len</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">by_id</span>.<span class="ident">len</span>(), <span class="ident">expected_len</span>);
+        <span class="kw">for</span> (<span class="ident">data</span>, <span class="ident">id</span>) <span class="kw">in</span> <span class="ident">expected_values</span>.<span class="ident">into_iter</span>() {
+            <span class="kw">let</span> <span class="ident">data_ref</span> <span class="op">=</span> <span class="ident">Ref</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>);
+            <span class="kw">unsafe</span> {
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">by_symbol</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">data_ref</span>).<span class="ident">unwrap</span>().<span class="ident">deref</span>().<span class="ident">data</span>(), <span class="kw-2">&amp;</span><span class="ident">data</span>);
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">by_symbol</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">data_ref</span>).<span class="ident">unwrap</span>().<span class="ident">deref</span>().<span class="ident">id</span>(), <span class="kw-2">&amp;</span><span class="ident">id</span>);
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">by_id</span>[<span class="ident">id</span>.<span class="ident">as_usize</span>()].<span class="ident">deref</span>().<span class="ident">data</span>(), <span class="kw-2">&amp;</span><span class="ident">data</span>);
             }
         }
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>hash_indexing_empty_insertion_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>HashIndexing</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>default</span>();
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">hash_indexing_empty_insertion_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">HashIndexing</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">default</span>();
 
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>get</span>(<span class='ident'>v</span>).<span class='ident'>is_none</span>());
-            <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>i</span>.<span class='ident'>get_or_insert</span>(<span class='op'>*</span><span class='ident'>v</span>) {
-                <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(_) <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
-                <span class='ident'>Insertion</span>::<span class='ident'>New</span>(<span class='ident'>symbol</span>) <span class='op'>=&gt;</span> {
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>(), <span class='ident'>v</span>);
-                    <span class='op'>*</span><span class='ident'>symbol</span>.<span class='ident'>id</span>()
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">get</span>(<span class="ident">v</span>).<span class="ident">is_none</span>());
+            <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">i</span>.<span class="ident">get_or_insert</span>(<span class="kw-2">*</span><span class="ident">v</span>) {
+                <span class="ident">Insertion</span>::<span class="ident">Present</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
+                <span class="ident">Insertion</span>::<span class="ident">New</span>(<span class="ident">symbol</span>) <span class="op">=&gt;</span> {
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">symbol</span>.<span class="ident">data</span>(), <span class="ident">v</span>);
+                    <span class="kw-2">*</span><span class="ident">symbol</span>.<span class="ident">id</span>()
                 },
             };
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>get_symbol</span>(<span class='kw-2'>&amp;</span><span class='ident'>id</span>).<span class='ident'>unwrap</span>().<span class='ident'>data</span>(), <span class='ident'>v</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>).<span class="ident">unwrap</span>().<span class="ident">data</span>(), <span class="ident">v</span>);
         }
     }
 
     
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>indexed_present_ok</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">indexed_present_ok</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>HashIndexing</span>::<span class='ident'>from_table</span>(<span class='ident'>t</span>);
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>get</span>(<span class='ident'>v</span>).<span class='ident'>unwrap</span>().<span class='ident'>data</span>(), <span class='ident'>v</span>);
-            <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>i</span>.<span class='ident'>get_or_insert</span>(<span class='op'>*</span><span class='ident'>v</span>) {
-                <span class='ident'>Insertion</span>::<span class='ident'>New</span>(_) <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
-                <span class='ident'>Insertion</span>::<span class='ident'>Present</span>(<span class='ident'>symbol</span>) <span class='op'>=&gt;</span> {
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>symbol</span>.<span class='ident'>data</span>(), <span class='ident'>v</span>);
-                    <span class='op'>*</span><span class='ident'>symbol</span>.<span class='ident'>id</span>()
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">HashIndexing</span>::<span class="ident">from_table</span>(<span class="ident">t</span>);
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">get</span>(<span class="ident">v</span>).<span class="ident">unwrap</span>().<span class="ident">data</span>(), <span class="ident">v</span>);
+            <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">i</span>.<span class="ident">get_or_insert</span>(<span class="kw-2">*</span><span class="ident">v</span>) {
+                <span class="ident">Insertion</span>::<span class="ident">New</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
+                <span class="ident">Insertion</span>::<span class="ident">Present</span>(<span class="ident">symbol</span>) <span class="op">=&gt;</span> {
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">symbol</span>.<span class="ident">data</span>(), <span class="ident">v</span>);
+                    <span class="kw-2">*</span><span class="ident">symbol</span>.<span class="ident">id</span>()
                 },
             };
-            <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>i</span>.<span class='ident'>get_symbol</span>(<span class='kw-2'>&amp;</span><span class='ident'>id</span>).<span class='ident'>unwrap</span>().<span class='ident'>data</span>(), <span class='ident'>v</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>).<span class="ident">unwrap</span>().<span class="ident">data</span>(), <span class="ident">v</span>);
         }
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>send_to_thread_safe_ok</span>() {
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>Arc</span>;
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>thread</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">send_to_thread_safe_ok</span>() {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">thread</span>;
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>Arc</span>::<span class='ident'>new</span>(<span class='ident'>HashIndexing</span>::<span class='ident'>from_table</span>(<span class='ident'>t</span>));
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">HashIndexing</span>::<span class="ident">from_table</span>(<span class="ident">t</span>));
         {
-            <span class='kw'>let</span> <span class='ident'>id1</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>0</span>]).<span class='ident'>unwrap</span>().<span class='ident'>id</span>().<span class='ident'>clone</span>();
-            <span class='kw'>let</span> <span class='ident'>id2</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>1</span>]).<span class='ident'>unwrap</span>().<span class='ident'>id</span>().<span class='ident'>clone</span>();
-            <span class='kw'>let</span> <span class='ident'>t1</span> <span class='op'>=</span> {
-                <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>clone</span>();
-                <span class='ident'>thread</span>::<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> <span class='ident'>index</span>.<span class='ident'>get_symbol</span>(<span class='kw-2'>&amp;</span><span class='ident'>id1</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> (<span class='op'>*</span><span class='ident'>x</span>.<span class='ident'>data</span>(), <span class='ident'>x</span>.<span class='ident'>id</span>().<span class='ident'>clone</span>())))
+            <span class="kw">let</span> <span class="ident">id1</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">0</span>]).<span class="ident">unwrap</span>().<span class="ident">id</span>().<span class="ident">clone</span>();
+            <span class="kw">let</span> <span class="ident">id2</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">1</span>]).<span class="ident">unwrap</span>().<span class="ident">id</span>().<span class="ident">clone</span>();
+            <span class="kw">let</span> <span class="ident">t1</span> <span class="op">=</span> {
+                <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">clone</span>();
+                <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> <span class="ident">index</span>.<span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="ident">id1</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">data</span>(), <span class="ident">x</span>.<span class="ident">id</span>().<span class="ident">clone</span>())))
             };
-            <span class='kw'>let</span> <span class='ident'>t2</span> <span class='op'>=</span> {
-                <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>clone</span>();
-                <span class='ident'>thread</span>::<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> <span class='ident'>index</span>.<span class='ident'>get_symbol</span>(<span class='kw-2'>&amp;</span><span class='ident'>id2</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> (<span class='op'>*</span><span class='ident'>x</span>.<span class='ident'>data</span>(), <span class='ident'>x</span>.<span class='ident'>id</span>().<span class='ident'>clone</span>())))
+            <span class="kw">let</span> <span class="ident">t2</span> <span class="op">=</span> {
+                <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">clone</span>();
+                <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> <span class="ident">index</span>.<span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="ident">id2</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">data</span>(), <span class="ident">x</span>.<span class="ident">id</span>().<span class="ident">clone</span>())))
             };
-            <span class='kw'>let</span> <span class='ident'>v1</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>0</span>]).<span class='ident'>unwrap</span>();
-            <span class='kw'>let</span> <span class='ident'>v2</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>1</span>]).<span class='ident'>unwrap</span>();
+            <span class="kw">let</span> <span class="ident">v1</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">0</span>]).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">v2</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">1</span>]).<span class="ident">unwrap</span>();
 
-            <span class='kw'>match</span> <span class='ident'>t1</span>.<span class='ident'>join</span>() {
-                <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>((<span class='ident'>data</span>, <span class='ident'>id</span>))) <span class='op'>=&gt;</span> {
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>id</span>, <span class='ident'>v1</span>.<span class='ident'>id</span>());
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>data</span>, <span class='op'>*</span><span class='ident'>v1</span>.<span class='ident'>data</span>());
+            <span class="kw">match</span> <span class="ident">t1</span>.<span class="ident">join</span>() {
+                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">data</span>, <span class="ident">id</span>))) <span class="op">=&gt;</span> {
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>, <span class="ident">v1</span>.<span class="ident">id</span>());
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">data</span>, <span class="kw-2">*</span><span class="ident">v1</span>.<span class="ident">data</span>());
                 },
-                _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
+                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
             }
-            <span class='kw'>match</span> <span class='ident'>t2</span>.<span class='ident'>join</span>() {
-                <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>((<span class='ident'>data</span>, <span class='ident'>id</span>))) <span class='op'>=&gt;</span> {
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>id</span>, <span class='ident'>v2</span>.<span class='ident'>id</span>());
-                    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>data</span>, <span class='op'>*</span><span class='ident'>v2</span>.<span class='ident'>data</span>());
+            <span class="kw">match</span> <span class="ident">t2</span>.<span class="ident">join</span>() {
+                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">data</span>, <span class="ident">id</span>))) <span class="op">=&gt;</span> {
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>, <span class="ident">v2</span>.<span class="ident">id</span>());
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">data</span>, <span class="kw-2">*</span><span class="ident">v2</span>.<span class="ident">data</span>());
                 },
-                _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
+                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
             }
         }
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>sync_to_thread_ok</span>() {
-        <span class='kw'>use</span> ::<span class='ident'>crossbeam</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">sync_to_thread_ok</span>() {
+        <span class="kw">use</span> ::<span class="ident">crossbeam</span>;
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>t</span> <span class='op'>=</span> <span class='ident'>Table</span>::<span class='op'>&lt;</span><span class='ident'>usize</span>, <span class='ident'>usize</span><span class='op'>&gt;</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>v</span> <span class='kw'>in</span> <span class='ident'>VALUES</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>t</span>.<span class='ident'>insert</span>(<span class='op'>*</span><span class='ident'>v</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Table</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">VALUES</span>.<span class="ident">iter</span>() {
+            <span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">v</span>);
         }
-        <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>HashIndexing</span>::<span class='ident'>from_table</span>(<span class='ident'>t</span>);
-        <span class='kw'>let</span> <span class='ident'>id1</span> <span class='op'>=</span> <span class='op'>*</span><span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>0</span>]).<span class='ident'>unwrap</span>().<span class='ident'>id</span>();
-        <span class='kw'>let</span> <span class='ident'>id2</span> <span class='op'>=</span> <span class='op'>*</span><span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>1</span>]).<span class='ident'>unwrap</span>().<span class='ident'>id</span>();
-        <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>index</span>;
-        <span class='kw'>let</span> <span class='ident'>t1</span> <span class='op'>=</span> 
-            <span class='ident'>crossbeam</span>::<span class='ident'>scope</span>(<span class='kw'>move</span> <span class='op'>|</span><span class='ident'>scope</span><span class='op'>|</span> <span class='ident'>scope</span>.<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> <span class='ident'>index</span>.<span class='ident'>get_symbol</span>(<span class='kw-2'>&amp;</span><span class='ident'>id1</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> (<span class='ident'>x</span>.<span class='ident'>data</span>(), <span class='ident'>x</span>.<span class='ident'>id</span>()))));
-        <span class='kw'>let</span> <span class='ident'>t2</span> <span class='op'>=</span>
-            <span class='ident'>crossbeam</span>::<span class='ident'>scope</span>(<span class='kw'>move</span> <span class='op'>|</span><span class='ident'>scope</span><span class='op'>|</span> <span class='ident'>scope</span>.<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> <span class='ident'>index</span>.<span class='ident'>get_symbol</span>(<span class='kw-2'>&amp;</span><span class='ident'>id2</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> (<span class='ident'>x</span>.<span class='ident'>data</span>(), <span class='ident'>x</span>.<span class='ident'>id</span>()))));
-        <span class='kw'>let</span> <span class='ident'>v1</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>0</span>]).<span class='ident'>unwrap</span>();
-        <span class='kw'>let</span> <span class='ident'>v2</span> <span class='op'>=</span> <span class='ident'>index</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>VALUES</span>[<span class='number'>1</span>]).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">HashIndexing</span>::<span class="ident">from_table</span>(<span class="ident">t</span>);
+        <span class="kw">let</span> <span class="ident">id1</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">0</span>]).<span class="ident">unwrap</span>().<span class="ident">id</span>();
+        <span class="kw">let</span> <span class="ident">id2</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">1</span>]).<span class="ident">unwrap</span>().<span class="ident">id</span>();
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">index</span>;
+        <span class="kw">let</span> <span class="ident">t1</span> <span class="op">=</span> 
+            <span class="ident">crossbeam</span>::<span class="ident">scope</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">scope</span><span class="op">|</span> <span class="ident">scope</span>.<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> <span class="ident">index</span>.<span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="ident">id1</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="ident">x</span>.<span class="ident">data</span>(), <span class="ident">x</span>.<span class="ident">id</span>()))));
+        <span class="kw">let</span> <span class="ident">t2</span> <span class="op">=</span>
+            <span class="ident">crossbeam</span>::<span class="ident">scope</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">scope</span><span class="op">|</span> <span class="ident">scope</span>.<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> <span class="ident">index</span>.<span class="ident">get_symbol</span>(<span class="kw-2">&amp;</span><span class="ident">id2</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="ident">x</span>.<span class="ident">data</span>(), <span class="ident">x</span>.<span class="ident">id</span>()))));
+        <span class="kw">let</span> <span class="ident">v1</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">0</span>]).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">v2</span> <span class="op">=</span> <span class="ident">index</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">VALUES</span>[<span class="number">1</span>]).<span class="ident">unwrap</span>();
 
-        <span class='kw'>match</span> <span class='ident'>t1</span>.<span class='ident'>join</span>() {
-            <span class='prelude-val'>Some</span>((<span class='ident'>data</span>, <span class='ident'>id</span>)) <span class='op'>=&gt;</span> {
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>id</span>, <span class='ident'>v1</span>.<span class='ident'>id</span>());
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>data</span>, <span class='ident'>v1</span>.<span class='ident'>data</span>());
+        <span class="kw">match</span> <span class="ident">t1</span>.<span class="ident">join</span>() {
+            <span class="prelude-val">Some</span>((<span class="ident">data</span>, <span class="ident">id</span>)) <span class="op">=&gt;</span> {
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">id</span>, <span class="ident">v1</span>.<span class="ident">id</span>());
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">data</span>, <span class="ident">v1</span>.<span class="ident">data</span>());
             },
-            _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
         }
-        <span class='kw'>match</span> <span class='ident'>t2</span>.<span class='ident'>join</span>() {
-            <span class='prelude-val'>Some</span>((<span class='ident'>data</span>, <span class='ident'>id</span>)) <span class='op'>=&gt;</span> {
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>id</span>, <span class='ident'>v2</span>.<span class='ident'>id</span>());
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>data</span>, <span class='ident'>v2</span>.<span class='ident'>data</span>());
+        <span class="kw">match</span> <span class="ident">t2</span>.<span class="ident">join</span>() {
+            <span class="prelude-val">Some</span>((<span class="ident">data</span>, <span class="ident">id</span>)) <span class="op">=&gt;</span> {
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">id</span>, <span class="ident">v2</span>.<span class="ident">id</span>());
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">data</span>, <span class="ident">v2</span>.<span class="ident">data</span>());
             },
-            _ <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(),
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
         }
     }
 }
-</pre>
-</section>
-    <section id='search' class="content hidden"></section>
-
-    <section class="footer"></section>
-
-    <aside id="help" class="hidden">
-        <div>
-            <h1 class="hidden">Help</h1>
-
-            <div class="shortcuts">
-                <h2>Keyboard Shortcuts</h2>
-
-                <dl>
-                    <dt>?</dt>
-                    <dd>Show this help dialog</dd>
-                    <dt>S</dt>
-                    <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
-                    <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
-                    <dd>Move down in search results</dd>
-                    <dt>&#9166;</dt>
-                    <dd>Go to active search result</dd>
-                    <dt>+</dt>
-                    <dd>Collapse/expand all sections</dd>
-                </dl>
-            </div>
-
-            <div class="infos">
-                <h2>Search Tricks</h2>
-
-                <p>
-                    Prefix searches with a type followed by a colon (e.g.
-                    <code>fn:</code>) to restrict the search to a given type.
-                </p>
-
-                <p>
-                    Accepted types are: <code>fn</code>, <code>mod</code>,
-                    <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>type</code>, <code>macro</code>,
-                    and <code>const</code>.
-                </p>
-
-                <p>
-                    Search functions by type signature (e.g.
-                    <code>vec -> usize</code> or <code>* -> vec</code>)
-                </p>
-            </div>
-        </div>
-    </aside>
-
-    
-
-    <script>
-        window.rootPath = "../../";
-        window.currentCrate = "symbol_map";
-        window.playgroundUrl = "";
-    </script>
-    <script src="../../jquery.js"></script>
-    <script src="../../main.js"></script>
-    
-    <script defer src="../../search-index.js"></script>
-</body>
-</html>
+</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "symbol_map";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
