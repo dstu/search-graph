@@ -85,7 +85,6 @@
 //! # }
 //! ```
 
-use r4::iterate;
 use symbol_map::indexing::Indexing;
 
 use crate::base::{EdgeId, RawEdge, RawVertex, VertexId};
@@ -97,6 +96,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
+use std::slice;
 
 #[derive(Clone, Copy)]
 pub(crate) struct InvariantLifetime<'id>(pub PhantomData<*mut &'id ()>);
@@ -425,9 +425,11 @@ where
   /// });
   /// # }
   /// ```
-  pub fn children<'s>(&'s self, node: NodeRef<'id>) -> impl Iterator<Item = EdgeRef<'id>> + 's {
-    iterate!(for id in self.raw_vertex(node).children.iter();
-             yield EdgeRef { id: *id, _lifetime: self.lifetime, })
+  pub fn children<'s>(&'s self, node: NodeRef<'id>) -> EdgeIter<'a, 's, 'id, T, S, A> {
+    EdgeIter {
+      view: self,
+      edges: self.raw_vertex(node).children.iter(),
+    }
   }
 
   /// Returns the number of parents (incoming edges) that `node` has.
@@ -458,9 +460,11 @@ where
   /// });
   /// # }
   /// ```
-  pub fn parents<'s>(&'s self, node: NodeRef<'id>) -> impl Iterator<Item = EdgeRef<'id>> + 's {
-    iterate!(for id in self.raw_vertex(node).parents.iter();
-             yield EdgeRef { id: *id, _lifetime: self.lifetime, })
+  pub fn parents<'s>(&'s self, node: NodeRef<'id>) -> EdgeIter<'a, 's, 'id, T, S, A> {
+    EdgeIter {
+      view: self,
+      edges: self.raw_vertex(node).parents.iter(),
+    }
   }
 
   /// Deletes all graph components that are not reachable by a traversal
@@ -684,5 +688,30 @@ impl<'id> cmp::Eq for EdgeRef<'id> {}
 impl<'id> fmt::Debug for EdgeRef<'id> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "EdgeRef({:?})", self.id)
+  }
+}
+
+/// Iterator over edges in a [View](struct.View.html).
+pub struct EdgeIter<'a, 'b, 'id, T: Hash + Eq + Clone, S, A>
+  where 'a: 'id,
+{
+  view: &'b View<'a, 'id, T, S, A>,
+  edges: slice::Iter<'b, EdgeId>,
+}
+
+impl<'a, 'b, 'id, T: Hash + Eq + Clone, S, A> Iterator for EdgeIter<'a, 'b, 'id, T, S, A>
+where 'a: 'id,
+{
+  type Item = EdgeRef<'id>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    match self.edges.next() {
+      None => return None,
+      Some(&id) => return Some(EdgeRef { id, _lifetime: self.view.lifetime, }),
+    }
+  }
+
+  fn size_hint(&self) -> (usize, Option<usize>) {
+    self.edges.size_hint()
   }
 }

@@ -5,7 +5,6 @@ authors = ["Stu Black"]
 edition = "2018"
 
 [dependencies]
-r4 = "1.0"
 symbol-map = "1.0"
 
 [dev-dependencies]
